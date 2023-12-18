@@ -1,0 +1,3 @@
+C:/Users/Jacob/STM32CubeIDE/workspace_1.13.1/t2/Debug/CMakeFiles/t2.dir
+C:/Users/Jacob/STM32CubeIDE/workspace_1.13.1/t2/Debug/CMakeFiles/edit_cache.dir
+C:/Users/Jacob/STM32CubeIDE/workspace_1.13.1/t2/Debug/CMakeFiles/rebuild_cache.dir
