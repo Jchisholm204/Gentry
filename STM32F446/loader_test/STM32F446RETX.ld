@@ -46,8 +46,8 @@ MEMORY
 {
   RAM       (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
   BOOT      (rx)  : ORIGIN = 0x8000000,  LENGTH = 16K
-  FLASH     (rx)  : ORIGIN = 0x8004000,  LENGTH = 368K
-  STATIC    (rx)  : ORIGIN = 0x08060000, LENGTH = 128K
+  /*FLASH     (rx)  : ORIGIN = 0x8004000,  LENGTH = 368K*/
+  /*STATIC    (rx)  : ORIGIN = 0x08060000, LENGTH = 128K*/
 }
 
 /* Sections */
@@ -81,7 +81,7 @@ SECTIONS
 
   /* Check if BOOT usage exeeds its size */
   ASSERT(LENGTH(BOOT) >= (_etext - _sboot), "BOOT overflowed !")
-
+/*
   .staticPrograms :
   {
       . = ALIGN(4);
@@ -89,9 +89,9 @@ SECTIONS
       *(.staticPrograms*)
       _estatic = .;
   } > STATIC
-
+*/
   /* Check if MY_MEMORY usage exeeds its size */
-  ASSERT(LENGTH(STATIC) >= (_estatic - _sstatic), "Static Memory overflowed !")
+  /*ASSERT(LENGTH(STATIC) >= (_estatic - _sstatic), "Static Memory overflowed !") */
 
   /* Constant data into "FLASH" Rom type memory */
   .rodata :

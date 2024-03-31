@@ -5,42 +5,26 @@
  * @date 2024-03-30
  * 
  */
-
 #include "hal.h"
+#include "stm32f446xx.h"
 
-#define FLASH_APP_ADDR 0x8004000
-#define STATIC __attribute__((section(".staticPrograms")))
-
-typedef void (*pFunction)(void);
-
-uint32_t SystemCoreClock = FREQ;
 void SystemInit(void){
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    return;
+}
+
+#define BOOTLOADER_SIZE (0x4000)
+#define MAIN_APP_START_ADDR  (FLASH_BASE + BOOTLOADER_SIZE)
+
+void jump_to_main(void){
+    uint32_t *reset_vector_entry = (uint32_t*)(MAIN_APP_START_ADDR + 4UL);
+    uint32_t *reset_vector = (uint32_t*)(*reset_vector_entry);
+    void (*jmpFunction)(void) = (void (*)(void))reset_vector;
+    jmpFunction();
 }
 
 int main(void){
-    gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
-    gpio_set_mode(PIN('B', 1), GPIO_MODE_OUTPUT);
-    gpio_write(PIN('B', 1), false);
-    for(int i = 0; i < 999999; i++) __asm__("nop");
-    gpio_write(PIN('B', 0), false);
-    uint32_t jmpAddr;
-    pFunction jmpTo;
-    if(*((uint32_t *)(FLASH_APP_ADDR)) == 0x0UL){
-        jmpAddr = *(uint32_t *)(FLASH_APP_ADDR + 4UL);
-        jmpTo = (pFunction) jmpAddr;
-        __set_MSP(*(uint32_t *)FLASH_APP_ADDR);
-        jmpTo();
-    }
-    else{
-        for(;;){
-            gpio_write(PIN('B', 1), true);
-            gpio_write(PIN('B', 0), false);
-            spin(99999);
-            gpio_write(PIN('B', 1), false);
-            gpio_write(PIN('B', 0), true);
-            spin(99999);
-        }
-    }
+    jump_to_main();
+
+    // never return
     return 0;
 }
