@@ -44,28 +44,36 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM       (xrw) : ORIGIN = 0x20000000, LENGTH = 128K
-  BOOT      (rx)  : ORIGIN = 0x8000000,  LENGTH = 16K
-  /*FLASH     (rx)  : ORIGIN = 0x8004000,  LENGTH = 368K*/
-  /*STATIC    (rx)  : ORIGIN = 0x08060000, LENGTH = 128K*/
+  RAM     (xrw)    : ORIGIN = 0x20000000,  LENGTH = 128K
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 384K
+  STORAGE (xrw)    : ORIGIN =  0x08060000, LENGTH = 128K
 }
 
 /* Sections */
 SECTIONS
 {
+  /*
+  .bootloader : {
+    . = ALIGN(4);
+    KEEP(*(.bootloader))
+    . = ALIGN(4);
+  } >FLASH
+*/
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
   {
     . = ALIGN(4);
+    KEEP(*(.bootloader_section))
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
+  
+
 
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
   {
     . = ALIGN(4);
-    _sboot = .;
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
     *(.glue_7)         /* glue arm to thumb code */
@@ -77,21 +85,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >BOOT
-
-  /* Check if BOOT usage exeeds its size */
-  ASSERT(LENGTH(BOOT) >= (_etext - _sboot), "BOOT overflowed !")
-/*
-  .staticPrograms :
-  {
-      . = ALIGN(4);
-      _sstatic = .;
-      *(.staticPrograms*)
-      _estatic = .;
-  } > STATIC
-*/
-  /* Check if MY_MEMORY usage exeeds its size */
-  /*ASSERT(LENGTH(STATIC) >= (_estatic - _sstatic), "Static Memory overflowed !") */
+  } >FLASH
 
   /* Constant data into "FLASH" Rom type memory */
   .rodata :
@@ -100,13 +94,13 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   .ARM.extab   : {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   .ARM : {
     . = ALIGN(4);
@@ -114,7 +108,7 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   .preinit_array     :
   {
@@ -123,7 +117,7 @@ SECTIONS
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   .init_array :
   {
@@ -133,7 +127,7 @@ SECTIONS
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   .fini_array :
   {
@@ -143,7 +137,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
-  } >BOOT
+  } >FLASH
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -161,7 +155,7 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
 
-  } >RAM AT> BOOT
+  } >RAM AT> FLASH
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);

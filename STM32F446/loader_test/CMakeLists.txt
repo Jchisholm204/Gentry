@@ -55,7 +55,9 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
 
 add_executable(${EXECUTABLE}
     ${PROJECT_SOURCES}
-    ${STARTUP_SCRIPT})
+    ${STARTUP_SCRIPT}
+    ${CMAKE_CURRENT_SOURCE_DIR}/loader.s)
+
 
 target_include_directories(${EXECUTABLE} PRIVATE
     ${INCLUDE_DIRECTORIES})
@@ -95,5 +97,5 @@ target_link_options(${EXECUTABLE} PRIVATE
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> firmware.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin
-    COMMAND py ../tools/paddBootloader.py)
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin)
+    # COMMAND py ../tools/paddBootloader.py)
