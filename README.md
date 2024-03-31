@@ -30,8 +30,8 @@ Anyone is free to use any of the code contained within this repository so long a
 - STM32F446
 	- FreeRTOS Bare Metal Template
 	- Blank CMake Template
-	- Bare Metal Blink *No external includes*
-	- Basic Boot/Pre-Loader *Proof of Concept*
+	- Bare Metal Blink (*No external includes*)
+	- Basic Boot/Pre-Loader (*Proof of Concept*)
 - VCU
     - FreeRTOS Based Vehicle Control Unit designed for Queen's Formula SAE Design Team
     - *NOTE: This is an old copy of the project saved for my own records, please see the [Queen's Formula 'Zenith' GitHub repository](https://github.com/qfsae/zenith/tree/master/Q24ECU) for the latest version.*
