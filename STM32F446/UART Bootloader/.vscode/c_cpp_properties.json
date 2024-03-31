@@ -5,16 +5,13 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/vendor/cmsis_f4/Include",
-                "${workspaceFolder}/core/include",
                 "${workspaceFolder}/FreeRTOS-Kernel/include",
                 "${workspaceFolder}/FreeRTOS-Kernel/portable/GCC/ARM_CM4F",
-                "${workspaceFolder}/core/config",
-                "${workspaceFolder}/core/include/hal",
-                "${workspaceFolder}/core/include",
-                "${workspaceFolder}/core/include",
+                "${workspaceFolder}/config",
                 "${workspaceFolder}/vendor/cmsis_f4/Include",
-                "${workspaceFolder}/core/include",
-                "${workspaceFolder}/core/include"
+                "${workspaceFolder}/project/include",
+                "${workspaceFolder}/project/include",
+                "${workspaceFolder}/Tools/ExternalLoader/IS61WV51216BLL_STM3210E-EVAL/Includes/CMSIS_Files"
             ],
             "defines": [
                 "_DEBUG",
