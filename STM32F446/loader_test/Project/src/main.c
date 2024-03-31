@@ -9,22 +9,28 @@
 #include "stm32f446xx.h"
 
 void SystemInit(void){
+    RCC->AHB2ENR |= RCC_APB2ENR_SYSCFGEN;
+    SysTick_Config(FREQ/1000);
     return;
-    SCB->VTOR = 0x4000U;
 }
 
+static volatile uint32_t counter = 0;
+void SysTick_Handler(void){
+    counter++;
+}
 
 int main(void){
     // SCB->VTOR = 0x4000U;
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN('B', 1), GPIO_MODE_OUTPUT);
-    for(;;){
-        gpio_write(PIN('B', 0), 1);
-        gpio_write(PIN('B', 1), 0);
-        spin(1000000);
-        gpio_write(PIN('B', 0), 0);
-        gpio_write(PIN('B', 1), 1);
-        spin(1000000);
+    volatile uint32_t timer = 0, period = 500;
+    bool led_on = false;
+    for(;;) {
+        if(timer_expired(&timer, period, counter)){
+            gpio_write(PIN('B', 0), led_on);
+            led_on = !led_on;
+            gpio_write(PIN('B', 1), led_on);
+        }
     }
     return 0;
 }
