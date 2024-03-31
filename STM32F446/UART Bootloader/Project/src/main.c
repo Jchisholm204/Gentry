@@ -25,7 +25,7 @@ void vTask_main(void *param){
     gpio_set_mode(debug_led1, GPIO_MODE_OUTPUT);
     for(;;){
         gpio_write(debug_led1, true);
-        printf("Controller Task Running\n");
+        uart_write(&Serial2, "Hello World!\n", 13, 10);
         gpio_write(debug_led1, false);
         vTaskDelay(1000);
     }

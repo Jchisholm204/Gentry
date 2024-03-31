@@ -45,7 +45,7 @@ set(INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cmsis_f4/Include
     ${PROJECT_DIR}/include
     ${RTOS_DIR}/portable/GCC/ARM_CM4F
-    ${PROJECT_DIR}/config
+    ${CMAKE_SOURCE_DIR}/config
     ${RTOS_DIR}/include
     
 )

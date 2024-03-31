@@ -40,6 +40,7 @@ set(INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cmsis_core/CMSIS/Core/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cmsis_f4/Include
     ${PROJECT_DIR}/include
+    ${CMAKE_SOURCE_DIR}/config
 )
 
 set(GENERIC_COMPILE_OPTIONS
