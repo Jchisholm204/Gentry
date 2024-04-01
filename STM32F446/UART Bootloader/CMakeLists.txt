@@ -1,15 +1,24 @@
+# CMakeLists.txt
+# Jacob Chisholm (https://jchisholm.github.io)
+# 2024-03-31
+#
+# STM32 CMake project template for a UART Bootloader
+# 
+
 cmake_minimum_required(VERSION 3.21)
 
-#set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
+# Include the toolchain file
 include(./gcc-arm-none-eabi.cmake)
-# set(CMAKE_SYSTEM_NAME Generic)
 
+# Project name
 project(UARTBoot)
 
-
+# Set the project source directory
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Project)
+# Include the FreeRTOS Kernel
 set(RTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS-Kernel)
 
+# Compiler options for MCU family and model
 set(MCU_FAMILY STM32F4xx)
 set(MCU_MODEL STM32F446xx)
 set(CPU_PARAMETERS
@@ -20,10 +29,12 @@ set(CPU_PARAMETERS
     -mfloat-abi=hard
     )
 
+# Select the startup code, bootloader link file, and linker script
 set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/core/startup_stm32f446retx.s)
 set(BOOT_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/core/loader.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/core/STM32F446RETX.ld)
 
+# Basic project settings
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
 enable_language(C ASM)
 set(CMAKE_C_STANDARD 11)
@@ -37,9 +48,10 @@ include_directories(SYSTEM ${CMAKE_C_COMPILER_INCLUDE_DIRS})
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -isystem ${CMAKE_C_COMPILER_INCLUDE_DIRS}")
 
 # Enable export of compile_commands.json
+# Used for clangd static analysis and makefile generation
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-
+# Project specific include directories + FreeRTOS includes + cmsis includes
 set(INCLUDE_DIRECTORIES
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cmsis_core/CMSIS/Core/Include
     ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cmsis_f4/Include
@@ -50,9 +62,11 @@ set(INCLUDE_DIRECTORIES
     
 )
 
+# Locate all FreeRTOS sources
 file(GLOB RTOS_SOURCES
     ${RTOS_DIR}/*.c)
 
+# Compiler warnings and options
 set(GENERIC_COMPILE_OPTIONS
     -Wall
     -Wextra
@@ -61,22 +75,31 @@ set(GENERIC_COMPILE_OPTIONS
     -fno-common
     )
 
+# Locate all project sources
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/src/*.c)
 
+# Create the executable
 add_executable(${EXECUTABLE}
+    # Include the FreeRTOS sources (heap + port selected seperatly)
     ${RTOS_DIR}/portable/GCC/ARM_CM4F/port.c
     ${RTOS_DIR}/portable/MemMang/heap_4.c
     ${RTOS_SOURCES}
+    # Include the project sources
     ${PROJECT_SOURCES}
+    # Include the ASM startup code and bootloader ELF (linked in loader.asm)
     ${STARTUP_SCRIPT}
     ${BOOT_LINKER_SCRIPT})
 
+# Add the include directories to the Executable
 target_include_directories(${EXECUTABLE} PRIVATE
     ${INCLUDE_DIRECTORIES})
 
+# Add the BootLoader project as a subproject
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Loader)
+# Enable exports for the LOADER project (to get the binary file)
 set_target_properties(LOADER PROPERTIES ENABLE_EXPORTS 1)
+# Link the LOADER project to the main project (so that it compiles first)
 target_link_libraries(${EXECUTABLE} LOADER)
 
 # Add custom command to recompile BOOT_LINKER_SCRIPT when LOADER project changes
@@ -84,6 +107,7 @@ add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E touch ${BOOT_LINKER_SCRIPT}
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Loader)
 
+# MCU specific compiler and linker options
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
     ${GENERIC_COMPILE_OPTIONS}
@@ -99,9 +123,9 @@ target_compile_options(${EXECUTABLE} PRIVATE
     --specs=nano.specs
     #$<$<CONFIG:Debug>:-Os -g3>
     #$<$<CONFIG:Release>:-Os -g0>
-    
     )
 
+# MCU specific linker options
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
@@ -116,10 +140,13 @@ target_link_options(${EXECUTABLE} PRIVATE
 
     # Printf floats can be removed in production code
     -Wl,-u_printf_float
+    # Generate a map file (useful for debugging memory placement)
     -Wl,-Map=${PROJECT_NAME}.map
+    # Print memory usage (ALWAYS double check this)
     -Wl,--print-memory-usage
 )
 
+# Generate the binary and hex files after compilation
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> firmware.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin)

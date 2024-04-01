@@ -47,7 +47,7 @@ MEMORY
   RAM     (xrw)    : ORIGIN = 0x20000000,  LENGTH = 128K
   BOOT     (rx)    : ORIGIN = 0x8000000,   LENGTH = 32K
   FLASH    (rx)    : ORIGIN = 0x8008000,   LENGTH = 352K
-  STORAGE (xrw)    : ORIGIN =  0x08060000, LENGTH = 128K
+  DATA    (xrw)    : ORIGIN =  0x08060000, LENGTH = 128K
 }
 
 /* Sections */
