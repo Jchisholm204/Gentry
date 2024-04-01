@@ -11,7 +11,6 @@
 #include "uart.h"
 
 void SystemInit(void){
-    __disable_irq();
     return;
 }
 

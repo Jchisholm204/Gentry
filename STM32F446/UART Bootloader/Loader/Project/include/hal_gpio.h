@@ -11,7 +11,11 @@
 #pragma once
 #include <stm32f4xx.h>
 #include <stdbool.h>
-typedef __SIZE_TYPE__ size_t;
+
+// To keep clang happy
+#ifndef size_t
+    typedef __SIZE_TYPE__ size_t;
+#endif
 
 // default system clock frequency for stm32f4xx
 #define FREQ 16000000
@@ -31,7 +35,7 @@ enum { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF, GPIO_MODE_ANALOG };
 enum { GPIO_AF_UART = 7};
 
 static inline void spin(volatile uint32_t count) {
-  while (count--) asm("nop");
+  while (count--) __asm__("nop");
 }
 
 /**
