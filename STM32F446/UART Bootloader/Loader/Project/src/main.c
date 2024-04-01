@@ -5,9 +5,10 @@
  * @date 2024-03-30
  * 
  */
-#include "hal.h"
+#include "hal_gpio.h"
 #include "stm32f446xx.h"
 #include "pins.h"
+#include "uart.h"
 
 void SystemInit(void){
     __disable_irq();
@@ -27,7 +28,15 @@ void jump_to_main(void){
 int main(void){
     gpio_set_mode(debug_led1, GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN('B', 1), GPIO_MODE_OUTPUT);
-    for(uint32_t i = 0; i < 20; i++){
+    gpio_set_mode(PIN_USART2_RX, GPIO_MODE_AF);
+    gpio_set_mode(PIN_USART2_TX, GPIO_MODE_AF);
+    gpio_set_af(PIN_USART2_RX, GPIO_AF_UART);
+    gpio_set_af(PIN_USART2_TX, GPIO_AF_UART);
+    
+    uart_init();
+
+    for(;;){
+        uart_write((uint8_t*)"hello\n", 7);
         gpio_write(PIN('B', 0), 1);
         gpio_write(PIN('B', 1), 0);
         spin(99999);
@@ -35,6 +44,7 @@ int main(void){
         gpio_write(PIN('B', 1), 1);
         spin(99999);
     }
+
     SCB->VTOR = BOOTLOADER_SIZE;
     jump_to_main();
 
