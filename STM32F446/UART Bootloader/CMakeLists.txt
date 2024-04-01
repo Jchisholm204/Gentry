@@ -79,6 +79,10 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Loader)
 set_target_properties(LOADER PROPERTIES ENABLE_EXPORTS 1)
 target_link_libraries(${EXECUTABLE} LOADER)
 
+# Add custom command to recompile BOOT_LINKER_SCRIPT when LOADER project changes
+add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E touch ${BOOT_LINKER_SCRIPT}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/Loader)
 
 target_compile_options(${EXECUTABLE} PRIVATE
     ${CPU_PARAMETERS}
@@ -119,3 +123,5 @@ target_link_options(${EXECUTABLE} PRIVATE
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> firmware.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin)
+
+
