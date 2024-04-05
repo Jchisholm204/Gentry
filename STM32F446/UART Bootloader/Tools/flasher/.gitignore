@@ -1,0 +1,6 @@
+# Rust Git ignore
+
+/debug
+/target
+
+Cargo.lock
