@@ -25,15 +25,14 @@ void jump_to_main(void){
 }
 
 int main(void){
+
     gpio_set_mode(debug_led1, GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN('B', 1), GPIO_MODE_OUTPUT);
-    gpio_set_mode(PIN_USART2_RX, GPIO_MODE_AF);
-    gpio_set_mode(PIN_USART2_TX, GPIO_MODE_AF);
-    gpio_set_af(PIN_USART2_RX, GPIO_AF_UART);
-    gpio_set_af(PIN_USART2_TX, GPIO_AF_UART);
     
+    // Initialize UART
     uart_init();
 
+    // Bootloader Loop
     for(;;){
         uart_write((uint8_t*)"hello\n", 7);
         gpio_write(PIN('B', 0), 1);
@@ -44,7 +43,11 @@ int main(void){
         spin(99999);
     }
 
+    // Deinit Everything
+    uart_deinit();
+    // Offset the Interrupt vector table
     SCB->VTOR = BOOTLOADER_SIZE;
+    // Boot into the main program
     jump_to_main();
 
     // never return

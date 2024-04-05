@@ -15,6 +15,7 @@
 #include <stdbool.h>
 
 void uart_init(void);
+void uart_deinit(void);
 void uart_write(uint8_t *data, const size_t len);
 void uart_write_byte(uint8_t data);
 uint32_t uart_read(char *data, const size_t len);

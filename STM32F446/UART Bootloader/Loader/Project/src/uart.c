@@ -11,6 +11,8 @@
 #include "uart.h"
 #include "hal_uart.h"
 #include "ringBuffer.h"
+#include "nvicConfig.h"
+#include "pins.h"
 
 #define BUFFNR_SIZE 64
 static uint8_t data_buffer[BUFFNR_SIZE];
@@ -18,9 +20,25 @@ static uint8_t data_buffer[BUFFNR_SIZE];
 static ring_buffer_t rb = {0U};
 
 void uart_init(void){
+    gpio_set_mode(PIN_USART2_RX, GPIO_MODE_AF);
+    gpio_set_mode(PIN_USART2_TX, GPIO_MODE_AF);
+    gpio_set_af(PIN_USART2_RX, GPIO_AF_UART);
+    gpio_set_af(PIN_USART2_TX, GPIO_AF_UART);
     ring_buffer_init(&rb, data_buffer, BUFFNR_SIZE);
     hal_uart_init(USART2, 9600);
     hal_uart_enable_rxne(USART2, true);
+    NVIC_SetPriority(USART2_IRQn, NVIC_Priority_MIN);
+    NVIC_EnableIRQ(USART2_IRQn);
+}
+
+void uart_deinit(void){
+    // Deinit the GPIO pins
+    gpio_set_mode(PIN_USART2_RX, 0);
+    gpio_set_mode(PIN_USART2_TX, 0);
+    gpio_set_af(PIN_USART2_RX, 0);
+    gpio_set_af(PIN_USART2_TX, 0);
+    hal_uart_enable_rxne(USART2, false);
+    NVIC_DisableIRQ(USART2_IRQn);
 }
 
 void uart_write(uint8_t *data, const size_t len){

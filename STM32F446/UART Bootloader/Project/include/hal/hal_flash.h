@@ -49,9 +49,9 @@ static inline uint8_t hal_FLASH_Unlock(void){
     FLASH->KEYR = FLASH_KEY2;
 
     /* Verify Flash is unlocked */
-        if((FLASH->CR & FLASH_CR_LOCK) != 0) {
-            return FLASH_WRITE_NOACC;
-        }
+    if ((FLASH->CR & FLASH_CR_LOCK) != 0){
+      return FLASH_WRITE_NOACC;
+    }
   }
   return SYS_OK;
 }
