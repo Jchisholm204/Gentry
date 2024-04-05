@@ -10,6 +10,8 @@
  */
 
 #pragma once
+#include <stdint.h>
+#include <stdbool.h>
 
 #define PACKET_MAX_LEN 16
 
@@ -28,7 +30,7 @@ typedef struct comms_staticPacket_t {
     // Valid Packet length
     uint8_t length;
     // Packet data
-    uint8_t *data;
+    uint8_t data[PACKET_MAX_LEN];
     // Packet CRC Checksum
     uint8_t crc;
 } comms_staticPacket_t;
@@ -67,4 +69,22 @@ void comms_write(comms_packet_t *packet);
  * @param packet pointer to the packet to read into
  */
 void comms_read(comms_packet_t *packet);
+
+
+static inline uint8_t crc8(uint8_t *data, uint32_t len){
+    uint8_t crc = 0;
+    for(uint32_t i = 0; i < len; i++){
+        crc ^= data[i];
+        for(uint8_t j = 0; j < 8; j++){
+            if(crc & 0x80) {
+                crc = (uint8_t)(crc << 1U) ^ 0x07U;
+            }
+            else{
+                crc <<= 1U;
+            }
+        }
+    }
+    return crc;
+}
+
 
