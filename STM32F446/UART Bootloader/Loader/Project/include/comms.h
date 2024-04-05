@@ -13,27 +13,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define PACKET_MAX_LEN 16
+#define PACKET_DATA_LEN   16U
+#define PACKET_LENGTH_LEN 1U
+#define PACKET_CRC_LEN    1U
+#define PACKET_LEN        (PACKET_DATA_LEN +PACKET_LENGTH_LEN + PACKET_CRC_LEN)
+
+// Retransmit request data[0]
+#define COMMS_RETX 0x34
+#define COMMS_ACC  0x35
 
 // Packet structure
 typedef struct comms_packet_t {
     // Valid Packet length
     uint8_t length;
     // Packet data
-    uint8_t *data;
+    uint8_t data[PACKET_DATA_LEN];
     // Packet CRC Checksum
     uint8_t crc;
 } comms_packet_t;
-
-// Static packet structure (uses fixed length data array)
-typedef struct comms_staticPacket_t {
-    // Valid Packet length
-    uint8_t length;
-    // Packet data
-    uint8_t data[PACKET_MAX_LEN];
-    // Packet CRC Checksum
-    uint8_t crc;
-} comms_staticPacket_t;
 
 
 /**
@@ -69,6 +66,9 @@ void comms_write(comms_packet_t *packet);
  * @param packet pointer to the packet to read into
  */
 void comms_read(comms_packet_t *packet);
+
+
+uint8_t comms_compute_crc(comms_packet_t *packet);
 
 
 static inline uint8_t crc8(uint8_t *data, uint32_t len){
