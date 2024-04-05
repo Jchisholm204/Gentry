@@ -34,13 +34,17 @@ int main(void){
 
     // Bootloader Loop
     for(;;){
-        uart_write((uint8_t*)"hello\n", 7);
-        gpio_write(PIN('B', 0), 1);
-        gpio_write(PIN('B', 1), 0);
-        spin(99999);
-        gpio_write(PIN('B', 0), 0);
-        gpio_write(PIN('B', 1), 1);
-        spin(99999);
+        uint8_t data_buffer[1];
+        if(uart_read(data_buffer, 1) > 0){
+            uart_write(data_buffer, 1);
+        }
+        // uart_write((uint8_t*)"hello\n", 7);
+        // gpio_write(PIN('B', 0), 1);
+        // gpio_write(PIN('B', 1), 0);
+        // spin(99999);
+        // gpio_write(PIN('B', 0), 0);
+        // gpio_write(PIN('B', 1), 1);
+        // spin(99999);
     }
 
     // Deinit Everything
