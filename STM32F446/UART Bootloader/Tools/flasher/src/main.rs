@@ -5,8 +5,10 @@ use std::thread;
 
 pub mod echo_test;
 pub mod comms;
+use comms::Comms;
 pub mod serial;
 use serial::Serial;
+
 
 fn main() {
     // List the Serial Ports
@@ -36,23 +38,20 @@ fn main() {
     println!("Connecting to port: {}", port_name);
     // Open the serial port
     let serial = Serial::new(port_name, 9600);
-    let s2 = serial.tx.clone();
-
-    thread::spawn(move || loop{
-        let _= s2.send(43);
-        thread::sleep(Duration::from_millis(20));
-    });
-
-    loop {
-        let _=serial.tx.send(97);
-        let _=serial.tx.send(98);
-        let _=serial.tx.send(99);
-        while let Ok(byte) = serial.rx.try_recv(){
-            print!("{}", byte)
-        }
-        println!();
-        thread::sleep(Duration::from_millis(200));
-    }
-    //echo_test::echo_test(&mut port);
     
+    let mut com = Comms::new(serial);
+    loop {
+        let mut samplePacket = comms::CommPacket{
+            length: 1,
+            data: [3; 16],
+            crc: 0,
+        };
+        samplePacket.crc = Comms::compute_crc(&samplePacket);
+        com.write(samplePacket);
+        if com.packets_available() {
+            let packet = com.read();
+            println!("{}: {}", packet.length, packet.data[0]);
+        }
+        thread::sleep(Duration::from_millis(100));
+    }
 }

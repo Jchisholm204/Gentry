@@ -1,22 +1,22 @@
 use crate::serial::Serial;
 
 
-const PACKET_DATA_LEN : usize = 16;
-const PACKET_LENGTH_LEN : usize = 16;
-const PACKET_CRC_LEN : usize = 16;
-const PACKET_LEN : usize = PACKET_LENGTH_LEN + PACKET_DATA_LEN + PACKET_CRC_LEN;
+pub const PACKET_DATA_LEN : usize = 16;
+pub const PACKET_LENGTH_LEN : usize = 1;
+pub const PACKET_CRC_LEN : usize = 1;
+pub const PACKET_LEN : usize = PACKET_LENGTH_LEN + PACKET_DATA_LEN + PACKET_CRC_LEN;
 
-const COMMS_RETX : u8 = 0x34;
-const COMMS_ACC : u8 = 0x35;
+pub const COMMS_RETX : u8 = 0x34;
+pub const COMMS_ACC : u8 = 0x35;
 
 const RX_BUFFER_LEN: usize = 64;
 
 
 #[derive(Default, Clone, Copy)]
-struct CommPacket {
-    length : u8,
-    data   : [u8; PACKET_DATA_LEN],
-    crc    : u8,
+pub struct CommPacket {
+    pub length : u8,
+    pub data   : [u8; PACKET_DATA_LEN],
+    pub crc    : u8,
 }
 
 enum CommState{
@@ -25,7 +25,7 @@ enum CommState{
     CRC,
 }
 
-struct Comms {
+pub struct Comms {
     port:                  Serial,
     state:                 CommState,
     rx_byte_count:         usize,
@@ -133,13 +133,15 @@ impl Comms {
     }
 
     pub fn read(&mut self) -> CommPacket{
-        return CommPacket::default();
+        let read_index = self.rx_buffer_read_index;
+        self.rx_buffer_read_index = (self.rx_buffer_read_index + 1) & self.rx_buffer_mask;
+        return self.rx_buffer[read_index];
     }
 
-    fn compute_crc(packet: &CommPacket) -> u8{
+    pub fn compute_crc(packet: &CommPacket) -> u8{
         let mut bytes = [0u8; PACKET_LEN-PACKET_CRC_LEN];
         bytes[0] = packet.length;
-        for i in 0..(PACKET_LEN - PACKET_CRC_LEN){
+        for i in 0..PACKET_DATA_LEN {
             bytes[i+1] = packet.data[i];
         }
         return Self::crc8(&bytes);
