@@ -11,8 +11,8 @@ const RESEND_ID  : u32   = 404;
 #[derive(Clone, Copy, Serialize)]
 pub struct CANmsg{
     pub id : u32,
-    pub data : [u8; 8],
     pub len : u8,
+    pub data : [u8; 8],
     pub crc : u8,
 }
 
@@ -28,11 +28,11 @@ impl CANmsg {
         msg.gen_crc();
         return msg;
     }
-    pub fn resend(rtx_id: u32) -> Self {
+    pub fn resend(_rtx_id: u32) -> Self {
         let mut msg = CANmsg {
             id: RESEND_ID,
             len: 4,
-            data: [(rtx_id >> 24) as u8, (rtx_id >> 16) as u8, (rtx_id >> 8) as u8, rtx_id as u8, 0, 0, 0, 0],
+            data: [0;8],//[(rtx_id >> 24) as u8, (rtx_id >> 16) as u8, (rtx_id >> 8) as u8, rtx_id as u8, 0, 0, 0, 0],
             crc: 0,
         };
         msg.gen_crc();
@@ -60,13 +60,35 @@ impl CANmsg {
     }
 
     pub fn check_crc(&self) -> bool {
-        let mut cpy = self.clone();
-        cpy.gen_crc();
-        if cpy.crc == self.crc { return true }
+        if self.crc8() == self.crc { return true }
         else { return false; }
     }
 
-    pub fn gen_crc(&mut self) { unimplemented!() }
+    pub fn gen_crc(&mut self) {
+        self.crc = self.crc8();
+    }
+
+    fn crc8(&self) -> u8 {
+        let mut crc: u8 = 0;
+        let bytes = self.serialize();
+        for i in 0..(4+self.len) as usize {
+            crc ^= bytes[i];
+            for _ in 0..8 {
+                if crc & 0x80 != 0 {
+                    crc = (crc << 1) ^ 0x07;
+                }
+                else {
+                    crc = crc << 1;
+                }
+            }
+        }
+        return crc;
+    }
+
+    pub fn serialize(&self) -> Vec<u8> {
+        return bincode::serialize(self).unwrap();
+    }
+
 }
 
 enum State {
@@ -118,48 +140,44 @@ impl SerialCAN {
                                 if byte_count >= 4 {
                                     byte_count = 0;
                                     state = State::LEN;
-                                    break;
                                 }
                             }
                             State::LEN => {
+                                //println!("RXID: {}", temp_msg.id);
                                 temp_msg.len = byte_buffer[i];
+                                if temp_msg.len > 8 { temp_msg.len = 8; }
                                 state = State::Data;
-                                break;
+                                byte_count = 0;
                             }
                             State::Data => {
                                 temp_msg.data[byte_count] = byte_buffer[i];
                                 byte_count += 1;
-                                if byte_count as u8 >= temp_msg.len {
-                                    for j in byte_count..7 {
-                                        temp_msg.data[j] = 0;
-                                    }
+                                if byte_count >= 8 {
                                     byte_count = 0;
                                     state = State::CRC;
-                                    break;
                                 }
                             }
                             State::CRC => {
                                 temp_msg.crc = byte_buffer[i];
                                 if temp_msg.check_crc() == false {
-                                    let resend = CANmsg::resend(temp_msg.id);
-                                    let bytes  = bincode::serialize(&resend).unwrap();
-                                    let _ = port.write_all(&bytes);
-                                    break;
+                                    let _ = port.write_all(&CANmsg::ack().serialize());
+                                    temp_msg = CANmsg::default();
                                 }
-                                if temp_msg.is_ack() {
-                                    break;
+                                else if temp_msg.is_ack() {
+                                    temp_msg = CANmsg::default();
+                                    //println!("ACK");
+                                }                                
+                                else if temp_msg.is_resend() {
+                                    let _ = port.write_all(&last_msg.serialize());
+                                    temp_msg = CANmsg::default();
                                 }
-                                if temp_msg.is_resend() {
-                                    let bytes  = bincode::serialize(&last_msg).unwrap();
-                                    let _ = port.write_all(&bytes);
-                                    break;
+                                else {
+                                    //println!("ID: {}", temp_msg.id);
+                                    let _ = writer.send(temp_msg);
+                                    temp_msg = CANmsg::default();
+                                    let _ = port.write_all(&CANmsg::ack().serialize());
                                 }
-                                let _ = writer.send(temp_msg);
-                                temp_msg = CANmsg::default();
-                                let ack = CANmsg::ack();
-                                let bytes  = bincode::serialize(&ack).unwrap();
-                                let _ = port.write_all(&bytes);
-                                break;
+                                state = State::ID;
                             }
                         }
                     }
@@ -172,11 +190,13 @@ impl SerialCAN {
                     if msg.check_crc() == false {
                         msg.gen_crc();
                     }
+                    last_msg = msg;
                     let bytes = bincode::serialize(&msg).unwrap();
                     let _ = port.write_all(&bytes);
                     }
                 Err(_) => {}
             }
+            thread::sleep(Duration::from_millis(10));
         }
     }
 

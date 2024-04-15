@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define PACKET_DATA_LEN   16U
+#define PACKET_DATA_LEN   8U
 #define PACKET_LENGTH_LEN 1U
 #define PACKET_CRC_LEN    1U
 #define PACKET_LEN        (PACKET_DATA_LEN +PACKET_LENGTH_LEN + PACKET_CRC_LEN)
