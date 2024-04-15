@@ -33,6 +33,14 @@ static can_msg_t lastTX_msg = {0U};
 
 void serialCAN_init(void){
     state = STATE_ID;
+    retx_msg.id = PACKET_RESEND_ID;
+    retx_msg.len = 0;
+    acc_msg.id = PACKET_ACK_ID;
+    acc_msg.len = 0;
+    for(int i = 0; i < 8; i++){
+        retx_msg.data[i] = 0;
+        acc_msg.data[i] = 0;
+    }
 }
 
 void serialCAN_tick(void){}

@@ -47,7 +47,7 @@ typedef enum {DATA_FRAME = 0, REMOTE_FRAME}         CAN_FRAME;
 
 #ifndef PACKET_ACK_ID
 
-#define PACKET_ACK_ID 80
+#define PACKET_ACK_ID 80UL
 
 #endif
 
