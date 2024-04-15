@@ -10,7 +10,6 @@
  */
 
 #include "serialCAN.h"
-#include "ringBuffer.h"
 #include "uart.h"
 
 #define BUFFER_SIZE 64
@@ -24,6 +23,7 @@ typedef enum {
 
 static serialCAN_state_t state = STATE_ID;
 static can_msg_t data_buffer[BUFFER_SIZE];
+static uint32_t write_index = 0, read_index = 0;
 static uint32_t rx_byte_count = 0;
 static can_msg_t temp_msg = {0U};
 static can_msg_t retx_msg = {0U};
@@ -32,6 +32,7 @@ static can_msg_t lastTX_msg = {0U};
 
 
 void serialCAN_init(void){
+    state = STATE_ID;
 }
 
 void serialCAN_tick(void){}

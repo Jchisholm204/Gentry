@@ -1,6 +1,7 @@
 pub mod serial_can;
 use std::time::Duration;
 use std::thread;
+use std::io;
 
 use serial_can::CANmsg;
 
@@ -10,8 +11,23 @@ pub fn serial_main(){
     for (i, port) in ports.iter().enumerate() {
         println!("{i}: {}", port.port_name);
     }
+    
+    println!("Select a Serial Port:\t");
+    let mut selection_input = String::new();
+    let mut selection : usize = 0xBEEF;
 
-    let p_connect = &ports[1].port_name;
+    match io::stdin().read_line(&mut selection_input) {
+        Ok(_) => {
+            selection = selection_input.trim().parse().unwrap();
+        }
+        Err(_) => {},
+    }
+    
+    if selection > ports.len().try_into().unwrap() {
+        panic!("Invalid Port Selection");
+    }
+
+    let p_connect = &ports[selection].port_name;
 
     //let mut sport = serialport::new(p_connect, 9600).open().expect("Failed to open Port");
     let can = serial_can::SerialCAN::new(p_connect.to_string(), 9600);
