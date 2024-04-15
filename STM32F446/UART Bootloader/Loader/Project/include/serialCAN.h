@@ -52,12 +52,12 @@ typedef enum {DATA_FRAME = 0, REMOTE_FRAME}         CAN_FRAME;
 #endif
 
 
-void serialCan_init(void);
+void serialCAN_init(void);
 
-void serialCan_tick(void);
+void serialCAN_tick(void);
 
-void serialCan_write(can_msg_t * msg);
+void serialCAN_write(can_msg_t * msg);
 
-void serialCan_read(can_msg_t *msg);
+void serialCAN_read(can_msg_t *msg);
 
-bool serialCan_read_ready(void);
+bool serialCAN_read_ready(void);
