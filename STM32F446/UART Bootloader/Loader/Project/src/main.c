@@ -9,6 +9,7 @@
 #include "stm32f446xx.h"
 #include "pins.h"
 #include "uart.h"
+#include "serialCAN.h"
 
 void SystemInit(void){
     return;
@@ -31,12 +32,19 @@ int main(void){
     
     // Initialize UART
     uart_init();
+    serialCAN_init();
 
     // Bootloader Loop
     for(;;){
-        uint8_t data_buffer[1];
-        if(uart_read(data_buffer, 1) > 0){
-            uart_write(data_buffer, 1);
+        //uint8_t data_buffer[1];
+        //if(uart_read(data_buffer, 1) > 0){
+            //uart_write(data_buffer, 1);
+        //}
+        serialCAN_tick();
+        if(serialCAN_read_ready()){
+            scan_msg_t msg;
+            serialCAN_read(&msg);
+            serialCAN_write(&msg);
         }
         // uart_write((uint8_t*)"hello\n", 7);
         // gpio_write(PIN('B', 0), 1);

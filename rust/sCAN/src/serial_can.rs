@@ -71,7 +71,7 @@ impl CANmsg {
     fn crc8(&self) -> u8 {
         let mut crc: u8 = 0;
         let bytes = self.serialize();
-        for i in 0..(4+self.len) as usize {
+        for i in 0..12 as usize {
             crc ^= bytes[i];
             for _ in 0..8 {
                 if crc & 0x80 != 0 {

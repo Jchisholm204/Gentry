@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>N25Q512A_STM32F769I-EVAL</name>
+	<name>MX25LM51245G_STM32L4R9I-DISCO</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -20,15 +20,8 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
-		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
-		<nature>com.st.stm32cube.ide.mcu.MCUSW4STM32ConvertedProjectNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
+		<nature>fr.ac6.mcu.ide.core.MCUProjectNature</nature>
 	</natures>
-	<linkedResources>
-		<link>
-			<name>Drivers/CMSIS/system_stm32f7xx.c</name>
-			<type>1</type>
-			<location>E:/21 aout/N25Q512A_STM32F769I-EVAL/Drivers/CMSIS/Device/ST/STM32F7xx/Source/Templates/system_stm32f7xx.c</location>
-		</link>
-	</linkedResources>
 </projectDescription>

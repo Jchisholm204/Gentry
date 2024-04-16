@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>M25P64_STM3210E-EVAL</name>
+	<name>M29W128GL_STM3210E-EVAL</name>
 	<comment></comment>
 	<projects>
 	</projects>
@@ -20,9 +20,8 @@
 	</buildSpec>
 	<natures>
 		<nature>org.eclipse.cdt.core.cnature</nature>
-		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
-		<nature>com.st.stm32cube.ide.mcu.MCUTSConvertedProjectNature</nature>
+		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
 	<linkedResources>
 		<link>
@@ -46,14 +45,14 @@
 			<locationURI>PARENT-3-PROJECT_LOC/Sources/Loader_Files/Loader_Src.c</locationURI>
 		</link>
 		<link>
-			<name>STM32F10x/stm3210e_eval.c</name>
+			<name>STM32F10x/stm3210e_eval_fsmc_nor.c</name>
 			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm3210e_eval.c</locationURI>
+			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm3210e_eval_fsmc_nor.c</locationURI>
 		</link>
 		<link>
-			<name>STM32F10x/stm32_eval_spi_flash.c</name>
+			<name>STM32F10x/stm32f10x_fsmc.c</name>
 			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm32_eval_spi_flash.c</locationURI>
+			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm32f10x_fsmc.c</locationURI>
 		</link>
 		<link>
 			<name>STM32F10x/stm32f10x_gpio.c</name>
@@ -66,20 +65,9 @@
 			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm32f10x_rcc.c</locationURI>
 		</link>
 		<link>
-			<name>STM32F10x/stm32f10x_spi.c</name>
-			<type>1</type>
-			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/stm32f10x_spi.c</locationURI>
-		</link>
-		<link>
 			<name>STM32F10x/system_stm32f10x.c</name>
 			<type>1</type>
 			<locationURI>PARENT-3-PROJECT_LOC/Sources/Library_Files/system_stm32f10x.c</locationURI>
 		</link>
 	</linkedResources>
-	<variableList>
-		<variable>
-			<name>copy_PARENT</name>
-			<value>$%7BPARENT-5-PROJECT_LOC%7D/M25P64_STM3210E-EVAL</value>
-		</variable>
-	</variableList>
 </projectDescription>

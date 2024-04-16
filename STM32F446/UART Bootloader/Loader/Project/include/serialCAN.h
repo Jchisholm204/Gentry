@@ -13,31 +13,13 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifndef can_msg_t
-
+#define PACKET_LEN 12
 typedef struct {
     uint32_t id;
-    uint8_t data[8];
     uint8_t len;
-    uint8_t format;
-    uint8_t type;
-    uint32_t timestamp;
-} can_msg_t;
-
-#endif
-
-
-#ifndef CAN_FORMAT
-/* Symbolic names for formats of CAN message                                 */
-typedef enum {STANDARD_FORMAT = 0, EXTENDED_FORMAT} CAN_FORMAT;
-
-#endif
-
-#ifndef CAN_FRAME
-/* Symbolic names for type of CAN message                                    */
-typedef enum {DATA_FRAME = 0, REMOTE_FRAME}         CAN_FRAME;
-
-#endif
+    uint8_t data[8];
+    uint8_t crc;
+} scan_msg_t;
 
 #ifndef PACKET_RESEND_ID
 
@@ -56,8 +38,28 @@ void serialCAN_init(void);
 
 void serialCAN_tick(void);
 
-void serialCAN_write(can_msg_t * msg);
+void serialCAN_write(scan_msg_t * msg);
 
-void serialCAN_read(can_msg_t *msg);
+void serialCAN_read(scan_msg_t *msg);
 
 bool serialCAN_read_ready(void);
+
+
+static inline uint8_t crc8(uint8_t *data, uint32_t len){
+    uint8_t crc = 0;
+    for(uint32_t i = 0; i < len; i++){
+        crc ^= data[i];
+        for(uint8_t j = 0; j < 8; j++){
+            if(crc & 0x80) {
+                crc = (uint8_t)(crc << 1U) ^ 0x07U;
+            }
+            else{
+                crc <<= 1U;
+            }
+        }
+    }
+    return crc;
+}
+
+
+
