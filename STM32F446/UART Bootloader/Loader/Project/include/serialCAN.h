@@ -13,24 +13,19 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define PACKET_LEN 12
+#define PACKET_LEN 13
 typedef struct {
     uint32_t id;
     uint8_t len;
     uint8_t data[8];
-    uint8_t crc;
 } scan_msg_t;
 
 #ifndef PACKET_RESEND_ID
-
-#define PACKET_RESEND_ID 404UL
-
+    #define PACKET_RESEND_ID 404UL
 #endif
 
 #ifndef PACKET_ACK_ID
-
-#define PACKET_ACK_ID 80UL
-
+    #define PACKET_ACK_ID 80UL
 #endif
 
 
@@ -54,7 +49,7 @@ static inline uint8_t crc8(uint8_t *data, uint32_t len){
                 crc = (uint8_t)(crc << 1U) ^ 0x07U;
             }
             else{
-                crc <<= 1U;
+                crc = (uint8_t)(crc << 1);
             }
         }
     }

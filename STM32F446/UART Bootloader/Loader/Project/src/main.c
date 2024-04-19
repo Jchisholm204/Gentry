@@ -25,6 +25,8 @@ void jump_to_main(void){
     jmpFunction();
 }
 
+uint32_t cnt = 0;
+
 int main(void){
 
     gpio_set_mode(debug_led1, GPIO_MODE_OUTPUT);
@@ -33,19 +35,37 @@ int main(void){
     // Initialize UART
     uart_init();
     serialCAN_init();
+    bool tick = false;
 
     // Bootloader Loop
     for(;;){
-        //uint8_t data_buffer[1];
-        //if(uart_read(data_buffer, 1) > 0){
-            //uart_write(data_buffer, 1);
-        //}
+        // uint8_t data_buffer[1];
+        // if(uart_read((char*)data_buffer, 1) > 0){
+        //     uart_write(data_buffer, 1);
+        // }
         serialCAN_tick();
+        scan_msg_t msg;
+        if(cnt > 99) {
+            cnt = 0;
+            msg.id = 2;
+            msg.len = 1;
+            for(uint8_t i = 0; i < 8; i++){
+                msg.data[i] = i*4;
+            }
+            msg.data[0] = 9;
+            serialCAN_write(&msg);
+        }
+        else{
+            cnt++;
+        }
+
         if(serialCAN_read_ready()){
-            scan_msg_t msg;
+            gpio_toggle_pin(debug_led1);
             serialCAN_read(&msg);
             serialCAN_write(&msg);
         }
+
+        spin(9999);
         // uart_write((uint8_t*)"hello\n", 7);
         // gpio_write(PIN('B', 0), 1);
         // gpio_write(PIN('B', 1), 0);

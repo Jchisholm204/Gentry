@@ -31,19 +31,19 @@ pub fn serial_main(){
 
     //let mut sport = serialport::new(p_connect, 9600).open().expect("Failed to open Port");
     let can = serial_can::SerialCAN::new(p_connect.to_string(), 9600);
+    let mut msg : CANmsg = CANmsg::default();
     loop{
-        let mut msg : CANmsg = CANmsg::default();
         msg.id = 77;
         msg.data[0] = 9;
         msg.len = 1;
-        msg.gen_crc();
+        // msg.gen_crc();
         let _ = can.transmitter.send(msg);
         
         match can.receiver.try_recv() {
-            Ok(msg) => {println!("ID: {}, Data: {:?}", msg.id, msg.data);}
+            Ok(msg) => {println!("ID: {:#02x}, Data: {:?}", msg.id, msg.data);}
             Err(_) => {}
         }
-        thread::sleep(Duration::from_millis(1000));
+        thread::sleep(Duration::from_millis(200));
         //let msg = "Hello";
         //let _ = sport.write_all(msg.as_bytes());
     }

@@ -1,4 +1,4 @@
-use serialport;
+use serialport::{self, ClearBuffer};
 use serde::Serialize;
 use bincode;
 use std::time::Duration;
@@ -7,78 +7,66 @@ use std::sync::mpsc;
 
 const BUFFER_LEN : usize = 64;
 const RESEND_ID  : u32   = 404;
+const ACK_ID     : u32   = 80;
 
 #[derive(Clone, Copy, Serialize)]
-pub struct CANmsg{
+pub struct CANmsg {
     pub id : u32,
     pub len : u8,
     pub data : [u8; 8],
-    pub crc : u8,
 }
 
 
 impl CANmsg {
     pub fn default() -> Self {
-        let mut msg = CANmsg {
+        let msg = CANmsg {
             id : 0,
             data : [0; 8],
             len: 0,
-            crc: 0,
         };
-        msg.gen_crc();
         return msg;
     }
-    pub fn resend(_rtx_id: u32) -> Self {
-        let mut msg = CANmsg {
+    pub fn resend() -> Self {
+        let msg = CANmsg {
             id: RESEND_ID,
-            len: 4,
+            len: 0,
             data: [0;8],//[(rtx_id >> 24) as u8, (rtx_id >> 16) as u8, (rtx_id >> 8) as u8, rtx_id as u8, 0, 0, 0, 0],
-            crc: 0,
         };
-        msg.gen_crc();
         return msg;
     }
     pub fn is_resend(&self) -> bool {
-        return self.id == RESEND_ID;
+        return self.id == RESEND_ID && self.len == 0;
     }
 
     pub fn ack() -> Self {
-        let mut msg = CANmsg {
-            id: 80,
+        let msg = CANmsg {
+            id: ACK_ID,
             len: 0,
             data: [0; 8],
-            crc: 0,
         };
-        msg.gen_crc();
         return msg;
     }
 
     pub fn is_ack(&self) -> bool {
-        if self.id != 80 { return false; }
-        if self.len != 0 { return false; }
-        return true;
+        return self.id == ACK_ID && self.len == 0;
     }
 
-    pub fn check_crc(&self) -> bool {
-        if self.crc8() == self.crc { return true }
-        else { return false; }
+    pub fn check_crc(&self, packet_crc: u8) -> bool {
+        // println!("CRC: {}, Gen: {}", self.crc, self.crc8());
+        return self.gen_crc() == packet_crc;
     }
 
-    pub fn gen_crc(&mut self) {
-        self.crc = self.crc8();
-    }
-
-    fn crc8(&self) -> u8 {
+    pub fn gen_crc(&self) -> u8 {
         let mut crc: u8 = 0;
-        let bytes = self.serialize();
-        for i in 0..12 as usize {
-            crc ^= bytes[i];
+        let bytes = &bincode::serialize(self).unwrap();
+        for &byte in bytes {
+            crc ^= byte;
             for _ in 0..8 {
                 if crc & 0x80 != 0 {
                     crc = (crc << 1) ^ 0x07;
                 }
                 else {
-                    crc = crc << 1;
+                    crc <<= 1;
                 }
             }
         }
@@ -86,7 +74,9 @@ impl CANmsg {
     }
 
     pub fn serialize(&self) -> Vec<u8> {
-        return bincode::serialize(self).unwrap();
+        let mut bytes = bincode::serialize(self).unwrap();
+        bytes.push(self.gen_crc());
+        return bytes;
     }
 
 }
@@ -107,6 +97,7 @@ impl SerialCAN {
         let (rtx, rrx) = mpsc::channel();
         
         let serial_port = serialport::new(port_name.as_str(), baud).open().expect("Failed to open Serial Port");
+        serial_port.clear(ClearBuffer::All).expect("Failed to clear Serial Port Buffer");
         thread::spawn(move ||{
             let mut serial_port = serial_port;
             let _ = serial_port.set_timeout(Duration::from_millis(1));
@@ -158,25 +149,25 @@ impl SerialCAN {
                                 }
                             }
                             State::CRC => {
-                                temp_msg.crc = byte_buffer[i];
-                                if temp_msg.check_crc() == false {
-                                    let _ = port.write_all(&CANmsg::ack().serialize());
-                                    temp_msg = CANmsg::default();
+                                let temp_crc = byte_buffer[i];
+                                if temp_msg.check_crc(temp_crc) == false {
+                                    //println!("CRC Error");
+                                    //println!("CRC: {}, Gen: {}", temp_msg.crc, temp_msg.crc8());
+                                    let _ = port.write_all(&CANmsg::resend().serialize());
                                 }
                                 else if temp_msg.is_ack() {
-                                    temp_msg = CANmsg::default();
                                     //println!("ACK");
                                 }                                
                                 else if temp_msg.is_resend() {
                                     let _ = port.write_all(&last_msg.serialize());
-                                    temp_msg = CANmsg::default();
+                                    //println!("Resend");
                                 }
                                 else {
                                     //println!("ID: {}", temp_msg.id);
                                     let _ = writer.send(temp_msg);
-                                    temp_msg = CANmsg::default();
                                     let _ = port.write_all(&CANmsg::ack().serialize());
                                 }
+                                temp_msg = CANmsg::default();
                                 state = State::ID;
                             }
                         }
@@ -185,14 +176,15 @@ impl SerialCAN {
                 Err(_) => {}
             }
             // End Receiver
+            // let iter = reader.try_iter();
+            // for msg in iter {
+            //     last_msg = msg;
+            //     let _ = port.write_all(&msg.serialize());
+            // }
             match reader.try_recv() {
-                Ok(mut msg) => {
-                    if msg.check_crc() == false {
-                        msg.gen_crc();
-                    }
+                Ok(msg) => {
                     last_msg = msg;
-                    let bytes = bincode::serialize(&msg).unwrap();
-                    let _ = port.write_all(&bytes);
+                    let _ = port.write_all(&msg.serialize());
                     }
                 Err(_) => {}
             }

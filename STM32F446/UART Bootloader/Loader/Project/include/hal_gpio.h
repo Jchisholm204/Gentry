@@ -75,3 +75,18 @@ static inline void gpio_write(uint16_t pin, bool value) {
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
     gpio->BSRR = (1U << PINNO(pin)) << (value ? 0 : 16);
 }
+
+static inline void gpio_toggle_pin(uint16_t pin){
+    GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
+    gpio->BSRR = (uint32_t)((1UL << PINNO(pin)) << (gpio->ODR & (1UL << PINNO(pin)) ? 16 : 0));
+}
+
+static inline bool gpio_read_idr(uint16_t pin) {
+    const GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
+    return (bool)((gpio->IDR >> PINNO(pin)) & 0x1UL);
+}
+
+static inline bool gpio_read_odr(uint16_t pin){
+    const GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
+    return (bool)((gpio->ODR >> PINNO(pin)) & 0x1UL);
+}
