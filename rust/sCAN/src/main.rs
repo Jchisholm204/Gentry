@@ -2,6 +2,9 @@ pub mod serial_can;
 use std::time::Duration;
 use std::thread;
 use std::io;
+use std::fs::File;
+use std::io::prelude::*;
+use std::path::Path;
 
 use serial_can::CANmsg;
 
@@ -31,11 +34,36 @@ pub fn serial_main(){
 
     let can = serial_can::SerialCAN::new(p_connect.to_string(), 9600, 99);
     let mut msg : CANmsg = CANmsg::default();
+    msg.id = 0;
+    
+    let path = Path::new("firmware.bin");
+    let display = path.display();
+
+    let mut file = match File::open(&path) {
+        Err(why) => panic!("Couldn't read {}: {}", display, why),
+        Ok(file) => file,
+    };
+
     loop{
-        msg.id = 77;
-        msg.data[0] = 9;
-        msg.len = 1;
-        // msg.gen_crc();
+        msg.id += 1;
+        msg.data = [0; 8];
+
+        match file.read(&mut msg.data) {
+            Ok(bytes) => {
+                println!("Bytes: {}", bytes);
+                if bytes == 0 {
+                    println!("EOF Reached");
+                    break;
+                }
+                msg.len = bytes as u8;
+            },
+            Err(e)=> {
+                panic!("Encountered {} while trying to read file", e);
+            },
+        }
+        
+        // println!("ID: {:#02x}, LEN: {}, Data: {}", msg.id, msg.len, std::str::from_utf8(&msg.data).unwrap());
+
         let _ = can.transmitter.send(msg);
         
         // match can.receiver.try_recv() {
@@ -44,12 +72,14 @@ pub fn serial_main(){
         // }
         let iter = can.receiver.try_iter();
         for m in iter {
-            println!("ID: {:#02x}, Data: {:?}", m.id, m.data);
+            print!("ID: {}, LEN: {}, Data: {:?}", m.id, m.len, m.data);
+            println!();
         }
-        thread::sleep(Duration::from_millis(500));
+        thread::sleep(Duration::from_millis(100));
         //let msg = "Hello";
         //let _ = sport.write_all(msg.as_bytes());
     }
+    println!("End of Program..");
 }
 
 
