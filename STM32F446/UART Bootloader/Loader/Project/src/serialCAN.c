@@ -115,9 +115,14 @@ void serialCAN_tick(void){
 }
 
 void serialCAN_write(scan_msg_t * msg){
+    gpio_write(debug_led1, true);
+    lastTX_msg.id = msg->id;
+    lastTX_msg.len = msg->len;
+    for(int i =0; i < 8; i++) lastTX_msg.data[i] = msg->data[i];
     uint8_t crc = crc8((uint8_t*)msg, PACKET_LEN);
     uart_write((uint8_t*)msg, PACKET_LEN);
     uart_write_byte(crc);
+    gpio_write(debug_led1, false);
 }
 
 void serialCAN_read(scan_msg_t *msg){

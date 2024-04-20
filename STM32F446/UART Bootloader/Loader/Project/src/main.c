@@ -45,7 +45,7 @@ int main(void){
         // }
         serialCAN_tick();
         scan_msg_t msg;
-        if(cnt > 99) {
+        if(cnt > 99 && false) {
             cnt = 0;
             msg.id = 2;
             msg.len = 1;
@@ -60,12 +60,12 @@ int main(void){
         }
 
         if(serialCAN_read_ready()){
-            gpio_toggle_pin(debug_led1);
+            // gpio_toggle_pin(debug_led1);
             serialCAN_read(&msg);
             serialCAN_write(&msg);
         }
 
-        spin(9999);
+        spin(999);
         // uart_write((uint8_t*)"hello\n", 7);
         // gpio_write(PIN('B', 0), 1);
         // gpio_write(PIN('B', 1), 0);
