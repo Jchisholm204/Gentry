@@ -35,7 +35,6 @@ int main(void){
     // Initialize UART
     uart_init();
     serialCAN_init();
-    bool tick = false;
 
     // Bootloader Loop
     for(;;){
