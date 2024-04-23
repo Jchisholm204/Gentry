@@ -10,6 +10,8 @@
 #include "pins.h"
 #include "uart.h"
 #include "serialCAN.h"
+#include "hal_flash.h"
+#include "stdio.h"
 
 void SystemInit(void){
     return;
@@ -35,6 +37,7 @@ int main(void){
     // Initialize UART
     uart_init();
     serialCAN_init();
+    hal_flash_unlock(999);
 
     // Bootloader Loop
     for(;;){
@@ -42,29 +45,46 @@ int main(void){
         // if(uart_read((char*)data_buffer, 1) > 0){
         //     uart_write(data_buffer, 1);
         // }
-        serialCAN_tick();
-        scan_msg_t msg;
-        if(cnt > 99 && false) {
-            cnt = 0;
-            msg.id = 2;
-            msg.len = 1;
-            for(uint8_t i = 0; i < 8; i++){
-                msg.data[i] = i*4;
-            }
-            msg.data[0] = 9;
-            serialCAN_write(&msg);
-        }
-        else{
-            cnt++;
-        }
+        // serialCAN_tick();
+        // scan_msg_t msg;
+        // if(cnt > 99 && false) {
+        //     cnt = 0;
+        //     msg.id = 2;
+        //     msg.len = 1;
+        //     for(uint8_t i = 0; i < 8; i++){
+        //         msg.data[i] = i*4;
+        //     }
+        //     msg.data[0] = 9;
+        //     serialCAN_write(&msg);
+        // }
+        // else{
+        //     cnt++;
+        // }
+        //
+        // if(serialCAN_read_ready()){
+        //     // gpio_toggle_pin(debug_led1);
+        //     serialCAN_read(&msg);
+        //     serialCAN_write(&msg);
+        // }
 
-        if(serialCAN_read_ready()){
-            // gpio_toggle_pin(debug_led1);
-            serialCAN_read(&msg);
-            serialCAN_write(&msg);
-        }
-
-        spin(999);
+        // hal_flash_write(0x08060000, 0UL);
+        hal_flash_busy_wait(9999);
+        FLASH->CR &= ~(FLASH_CR_PSIZE);
+        FLASH->CR |= FLASH_CR_PSIZE_1;
+        FLASH->CR |= FLASH_CR_PG;
+        // for(uint32_t i = 0; i < 99; i++){
+        //     hal_flash_busy_wait(9999);
+        //     *((uint32_t*)(0x0800C000+(i*0x4U))) = i;
+        // }
+        *((volatile uint32_t*)0x0800C000UL) = 93UL;
+        printf("%ld\n", *((volatile uint32_t*)0x0800C000));
+        // *((uint32_t*)0x0800C000) = 0UL;
+        gpio_write(debug_led1, true);
+        spin(999999);
+        hal_flash_sector_erase(3, 999);
+        gpio_write(debug_led1, false);
+        spin(999999);
+        // gpio_write(debug_led1, false);
         // uart_write((uint8_t*)"hello\n", 7);
         // gpio_write(PIN('B', 0), 1);
         // gpio_write(PIN('B', 1), 0);
