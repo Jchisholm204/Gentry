@@ -8,6 +8,11 @@ use std::sync::{mpsc, Arc, Mutex};
 const BUFFER_LEN : usize = 64;
 const RESEND_ID  : u32   = 404;
 const ACK_ID     : u32   = 80;
+const INIT_0     : u8    = 0x43;
+const INIT_1     : u8    = 0x55;
+const INIT_2     : u8    = 0xF7;
+const INIT_3     : u8    = 0xA9;
+// const INIT_CODE  : u32   = 0x4344F7A9;
 
 #[derive(Clone, Copy, Serialize)]
 pub struct CANmsg {
@@ -104,7 +109,7 @@ impl SerialCAN {
 
         thread::spawn(move ||{
             let mut serial_port = serial_port;
-            let _ = serial_port.set_timeout(Duration::from_millis(1));
+            let _ = serial_port.set_timeout(Duration::from_millis(10));
             let mut trx = trx;
             let mut rtx = rtx;
             let failures_clone = failures_clone;
@@ -130,6 +135,23 @@ impl SerialCAN {
         let mut resend_count     : u32   = 0;
         let mut rx_failure_count : u32   = 0;
         let mut tx_failure_count : u32   = 0;
+        let mut connection_established : bool  = false;
+
+        while !connection_established {
+            println!("SerialCAN: Awaiting Connection");
+            let _ = port.clear(ClearBuffer::All);
+            let _ = port.write(&[INIT_0, INIT_1, INIT_2, INIT_3]);
+            thread::sleep(Duration::from_millis(500));
+            let mut buffer : [u8;4] = [0;4];
+            match port.read_exact(&mut buffer) {
+                Ok(_len) => {
+                    if buffer[0] == INIT_0 && buffer[1] == INIT_1 && buffer[2] == INIT_2 && buffer[3] == INIT_3 {
+                        connection_established = true;
+                    }
+                },
+                Err(_) => {},
+            }
+        }
 
         loop{
             // Begin Receiver

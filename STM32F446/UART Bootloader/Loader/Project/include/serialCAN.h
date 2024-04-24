@@ -12,6 +12,7 @@
 #pragma once
 #include <stdint.h>
 #include <stdbool.h>
+#include "uart.h"
 
 #define PACKET_LEN 13
 typedef struct {
@@ -28,16 +29,50 @@ typedef struct {
     #define PACKET_ACK_ID 80UL
 #endif
 
+#ifdef BUFFER_SIZE
+    #define SERIALCAN_BUFFER_SIZE BUFFER_SIZE
+#else
+    #define SERIALCAN_BUFFER_SIZE 64
+#endif
 
-void serialCAN_init(void);
+#define SERIALCAN_INIT_0 0x43
+#define SERIALCAN_INIT_1 0x55
+#define SERIALCAN_INIT_2 0xF7
+#define SERIALCAN_INIT_4 0xA9
+#define SERIALCAN_INIT_CODE 0x4355F7A9 
 
-void serialCAN_tick(void);
+typedef struct {
+    enum STATE {
+        STATE_ID,
+        STATE_LEN,
+        STATE_DATA,
+        STATE_CRC
+    } state;
+    scan_msg_t msg_buffer[SERIALCAN_BUFFER_SIZE];
+    uint32_t write_index, read_index;
+    uint32_t rx_byte_count;
+    scan_msg_t temp_msg;
+    scan_msg_t lastTX_msg;
+    void (*write_handler)(uint8_t*, size_t);
+    uint8_t (*read_handler)(void);
+    bool (*read_ready_handler)(void);
+    void (*buffer_reset_handler)(void);
+    bool connection_established;
+    uint8_t rx_failures;
+    uint8_t tx_failures;
+} SerialCAN_t;
 
-void serialCAN_write(scan_msg_t * msg);
+void serialCAN_init(SerialCAN_t *self, void (*write_handler)(uint8_t*, size_t), uint8_t (*read_handler)(void), void (*buffer_reset_handler)(void), bool (*read_ready_handler)(void));
 
-void serialCAN_read(scan_msg_t *msg);
+bool serialCAN_connect(SerialCAN_t *self, uint32_t timeout);
 
-bool serialCAN_read_ready(void);
+bool serialCAN_tick(SerialCAN_t *self);
+
+void serialCAN_write(SerialCAN_t *self, scan_msg_t * msg);
+
+void serialCAN_read(SerialCAN_t *self, scan_msg_t * msg);
+
+bool serialCAN_read_ready(SerialCAN_t *self);
 
 
 static inline uint8_t crc8(uint8_t *data, uint32_t len){

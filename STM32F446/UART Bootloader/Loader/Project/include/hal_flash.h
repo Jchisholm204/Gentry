@@ -52,8 +52,8 @@ static inline bool hal_flash_sector_erase(uint8_t sector, uint32_t timeout){
 
 static inline bool hal_flash_write(uint32_t address, uint32_t data){
     if(READ_BIT(FLASH->CR, FLASH_CR_LOCK) == true) return false;
-    // CLEAR_BIT(FLASH->CR, FLASH_CR_PSIZE);
-    // SET_BIT(FLASH->CR, FLASH_CR_PSIZE);
+    FLASH->CR &= ~(FLASH_CR_PSIZE);
+    FLASH->CR |= FLASH_CR_PSIZE_1;
     SET_BIT(FLASH->CR, FLASH_CR_PG);
     *((volatile uint32_t*)address) = data;
     return true;
