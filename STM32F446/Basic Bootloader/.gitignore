@@ -4,6 +4,7 @@ build/*
 *.lo
 *.o
 *.obj
+*.idx
 # Precompiled Headers
 *.gch
 *.pch
@@ -24,7 +25,6 @@ build/*
 *.lib
 
 # Executables
-*.exe
 *.out
 *.app
 

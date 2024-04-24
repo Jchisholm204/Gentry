@@ -94,6 +94,6 @@ target_link_options(${EXECUTABLE} PRIVATE
     )
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.hex
-    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> ${EXECUTABLE}.bin)
+    COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> firmware.hex
+    COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin)
     # COMMAND py ../tools/paddBootloader.py ${CMAKE_BINARY_DIR}/${EXECUTABLE}.bin)
