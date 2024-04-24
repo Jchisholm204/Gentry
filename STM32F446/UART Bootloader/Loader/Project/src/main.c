@@ -39,11 +39,13 @@ uint8_t u2_read(void){
 }
 
 bool u2_read_ready(void){
+    gpio_write(debug_led2, uart_read_ready(&Serial2));
     return uart_read_ready(&Serial2);
 }
 
 void u2_clear_buffer(void){
-
+    // Serial2.rb.read_index = 0;
+    // Serial2.rb.write_index = 0;
 }
 
 int main(void){
@@ -55,10 +57,23 @@ int main(void){
     uart_init(&Serial2, USART2, 9600, PIN_USART2_TX, PIN_USART2_RX);
 
     SerialCAN_t SerialCAN;
-    serialCAN_init(&SerialCAN, u2_write, u2_read, u2_clear_buffer, u2_read_ready);
-    while(!serialCAN_connect(&SerialCAN, 999));
-    hal_flash_unlock(999);
-    
+    // serialCAN_init(&SerialCAN, u2_write, u2_read, u2_clear_buffer, u2_read_ready);
+    gpio_write(debug_led1, true);
+    // while(!serialCAN_connect(&SerialCAN, 999));
+    gpio_write(debug_led1, false);
+    // hal_flash_unlock(999);
+    for(;;){
+        // if(u2_read_ready()){
+        //     uint8_t byte = u2_read();
+        //     u2_write(&byte, 1);
+        // }
+        if(uart_read_ready(&Serial2)){
+            uint8_t byte = uart_read_byte(&Serial2);
+            uart_write_byte(&Serial2, byte);
+        }
+        gpio_toggle_pin(debug_led1);
+        spin(999);
+    }
     // Bootloader Loop
     for(;;){
         // uint8_t data_buffer[1];

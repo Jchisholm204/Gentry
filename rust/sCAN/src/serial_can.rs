@@ -101,11 +101,32 @@ impl SerialCAN {
         let (ttx, trx) = mpsc::channel();
         let (rtx, rrx) = mpsc::channel();
         
-        let serial_port = serialport::new(port_name.as_str(), baud).open().expect("Failed to open Serial Port");
+        let mut serial_port = serialport::new(port_name.as_str(), baud).open().expect("Failed to open Serial Port");
         serial_port.clear(ClearBuffer::All).expect("Failed to clear Serial Port Buffer");
 
         let failures = Arc::new(Mutex::new(0 as u32));
         let failures_clone = Arc::clone(&failures);
+
+        let mut connection_established : bool  = false;
+
+        let _ = serial_port.set_timeout(Duration::from_millis(1000));
+        let _ = serial_port.clear(ClearBuffer::All);
+
+        while !connection_established {
+            println!("SerialCAN: Awaiting Connection");
+            let _ = serial_port.write_all(&[INIT_0, INIT_1, INIT_2, INIT_3]);
+            thread::sleep(Duration::from_millis(1000));
+            let mut buffer : [u8;4] = [0;4];
+            match serial_port.read_exact(&mut buffer) {
+                Ok(_len) => {
+                    if buffer[0] == INIT_0 && buffer[1] == INIT_1 && buffer[2] == INIT_2 && buffer[3] == INIT_3 {
+                        connection_established = true;
+                        println!("SerialCAN: Connection Established");
+                    }
+                },
+                Err(_) => {},
+            }
+        }
 
         thread::spawn(move ||{
             let mut serial_port = serial_port;
@@ -135,23 +156,6 @@ impl SerialCAN {
         let mut resend_count     : u32   = 0;
         let mut rx_failure_count : u32   = 0;
         let mut tx_failure_count : u32   = 0;
-        let mut connection_established : bool  = false;
-
-        while !connection_established {
-            println!("SerialCAN: Awaiting Connection");
-            let _ = port.clear(ClearBuffer::All);
-            let _ = port.write(&[INIT_0, INIT_1, INIT_2, INIT_3]);
-            thread::sleep(Duration::from_millis(500));
-            let mut buffer : [u8;4] = [0;4];
-            match port.read_exact(&mut buffer) {
-                Ok(_len) => {
-                    if buffer[0] == INIT_0 && buffer[1] == INIT_1 && buffer[2] == INIT_2 && buffer[3] == INIT_3 {
-                        connection_established = true;
-                    }
-                },
-                Err(_) => {},
-            }
-        }
 
         loop{
             // Begin Receiver

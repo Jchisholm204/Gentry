@@ -52,6 +52,7 @@ void serialCAN_init(SerialCAN_t *self, void (*write_handler)(uint8_t*, size_t), 
 
 bool serialCAN_connect(SerialCAN_t *self, uint32_t timeout){
     uint8_t buffer[4] = {0};
+    uint8_t code_buf[] = {0x43, 0x55, 0xF7, 0xA9};
     if(self->buffer_reset_handler != NULL)
         self->buffer_reset_handler();
     for(uint32_t i = 0; i<timeout; i++){
@@ -60,11 +61,14 @@ bool serialCAN_connect(SerialCAN_t *self, uint32_t timeout){
             buffer[1] = buffer[2];
             buffer[2] = buffer[3];
             buffer[3] = self->read_handler();
-        }
-        if(*((uint32_t*)buffer) == SERIALCAN_INIT_CODE){
-            self->write_handler(buffer, 4);
-            self->connection_established = true;
-            return true;
+            if(buffer[0] == 0x43 && buffer[1] == 0x55 && buffer[2] == 0xF7 && buffer[3] == 0xA9){
+                self->write_handler(buffer, 4);
+                self->connection_established = true;
+                return true;
+            }
+            else{
+                self->write_handler(buffer, 4);
+            }
         }
         spin(999);
     }

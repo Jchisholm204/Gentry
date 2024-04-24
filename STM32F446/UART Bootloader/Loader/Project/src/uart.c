@@ -12,6 +12,7 @@
 #include "hal_uart.h"
 #include "nvicConfig.h"
 #include <stddef.h>
+#include "pins.h"
 
 
 void uart_init(Serial_t *Serial, USART_TypeDef * UART, uint32_t baud, uint16_t pin_tx, uint16_t pin_rx){
@@ -26,8 +27,8 @@ void uart_init(Serial_t *Serial, USART_TypeDef * UART, uint32_t baud, uint16_t p
     gpio_set_mode(pin_tx, GPIO_MODE_AF);
     gpio_set_af(pin_rx, GPIO_AF_UART);
     gpio_set_af(pin_tx, GPIO_AF_UART);
-    hal_uart_init(Serial->UART, baud);
-    hal_uart_enable_rxne(Serial->UART, true);
+    hal_uart_init(UART, baud);
+    hal_uart_enable_rxne(UART, true);
 
     switch ((uint32_t)UART){
         case USART1_BASE: {
@@ -105,7 +106,6 @@ uint8_t uart_read_byte(Serial_t *Serial){
 bool uart_read_ready(Serial_t *Serial){
     return !ring_buffer_empty(&Serial->rb);
 }
-
 
 void USART2_IRQHandler(void){
     if(hal_uart_read_ready(USART2)){

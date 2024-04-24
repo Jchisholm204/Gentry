@@ -50,7 +50,7 @@ pub fn serial_main(){
 
         match file.read(&mut msg.data) {
             Ok(bytes) => {
-                println!("Bytes: {}", bytes);
+                // println!("Bytes: {}", bytes);
                 if bytes == 0 {
                     println!("EOF Reached");
                     break;
