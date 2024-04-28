@@ -2,8 +2,7 @@
 // All rights reserved
 
 #include <sys/stat.h>
-
-#include "hal.h"
+#include "hal//hal_uart.h"
 
 int _fstat(int fd, struct stat *st) {
   if (fd < 0) return -1;
@@ -86,7 +85,7 @@ int _getpid(void) {
 
 int _write(int fd, char *ptr, int len) {
   (void) fd, (void) ptr, (void) len;
-  if (fd == 1 || fd == 2) uart_write_buf(USART2, ptr, (size_t) len);
+  if (fd == 1 || fd == 2) hal_uart_write_buf(USART2, ptr, (size_t) len);
   return -1;
 }
 

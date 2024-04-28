@@ -107,26 +107,26 @@ impl SerialCAN {
         let failures = Arc::new(Mutex::new(0 as u32));
         let failures_clone = Arc::clone(&failures);
 
-        let mut connection_established : bool  = false;
+        // let mut connection_established : bool  = false;
 
-        let _ = serial_port.set_timeout(Duration::from_millis(1000));
+        let _ = serial_port.set_timeout(Duration::from_millis(1));
         let _ = serial_port.clear(ClearBuffer::All);
 
-        while !connection_established {
-            println!("SerialCAN: Awaiting Connection");
-            let _ = serial_port.write_all(&[INIT_0, INIT_1, INIT_2, INIT_3]);
-            thread::sleep(Duration::from_millis(1000));
-            let mut buffer : [u8;4] = [0;4];
-            match serial_port.read_exact(&mut buffer) {
-                Ok(_len) => {
-                    if buffer[0] == INIT_0 && buffer[1] == INIT_1 && buffer[2] == INIT_2 && buffer[3] == INIT_3 {
-                        connection_established = true;
-                        println!("SerialCAN: Connection Established");
-                    }
-                },
-                Err(_) => {},
-            }
-        }
+        // while !connection_established {
+        //     println!("SerialCAN: Awaiting Connection");
+        //     let _ = serial_port.write_all(&[INIT_0, INIT_1, INIT_2, INIT_3]);
+        //     thread::sleep(Duration::from_millis(1000));
+        //     let mut buffer : [u8;4] = [0;4];
+        //     match serial_port.read_exact(&mut buffer) {
+        //         Ok(_len) => {
+        //             if buffer[0] == INIT_0 && buffer[1] == INIT_1 && buffer[2] == INIT_2 && buffer[3] == INIT_3 {
+        //                 connection_established = true;
+        //                 println!("SerialCAN: Connection Established");
+        //             }
+        //         },
+        //         Err(_) => {},
+        //     }
+        // }
 
         thread::spawn(move ||{
             let mut serial_port = serial_port;
@@ -195,7 +195,9 @@ impl SerialCAN {
                                 }
                                 else if temp_msg.is_ack() {
                                     // de-increment failure count on ACK receive
-                                    tx_failure_count -= 1;
+                                    if tx_failure_count > 0 {
+                                        tx_failure_count -= 1;
+                                    }
                                 }
                                 else if temp_msg.is_resend() {
                                     let _ = port.write_all(&last_msg.serialize());
