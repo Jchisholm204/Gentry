@@ -38,6 +38,12 @@ int main(void){
     SerialCAN_t scan;
     serialCAN_init(&scan, &Serial2);
     uint32_t tick = 0;
+    // for(;;){
+    //     while(uart_read_ready(scan.pSerial)){
+    //         uint8_t byte = uart_read_byte(scan.pSerial);
+    //         uart_write_byte(scan.pSerial, byte);
+    //     }
+    // }
     for(;;){
         bool ok = serialCAN_tick(&scan);
         gpio_write(debug_led2, ok);
@@ -54,7 +60,7 @@ int main(void){
         // else{
         //     gpio_toggle_pin(debug_led2);
         // }
-        if(tick > 9999){
+        if(tick > 999){
             msg.id = 99;
             msg.len = 8;
             for(uint8_t i = 0; i < 8; i++) msg.data[i] = i;
@@ -64,7 +70,7 @@ int main(void){
         else{
             tick++;
         }
-        spin(9999);
+        spin(1);
     }
 
     for(uint32_t i = 0; i < 20; i++){

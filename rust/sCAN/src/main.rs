@@ -107,9 +107,9 @@ pub fn serial_main(){
 
     let p_connect = &ports[selection].port_name;
 
-    let mut serial_port = serialport::new(p_connect.as_str(), 9600).open().expect("Failed to open Serial Port");
+    // let mut serial_port = serialport::new(p_connect.as_str(), 9600).open().expect("Failed to open Serial Port");
 
-    // let can = serial_can::SerialCAN::new(p_connect.to_string(), 9600, 99);
+    let can = serial_can::SerialCAN::new(p_connect.to_string(), 9600, 99);
     let mut msg : CANmsg = CANmsg::default();
     msg.id = 0;
 
@@ -120,18 +120,18 @@ pub fn serial_main(){
         //     Err(_) => {}
         // }
 
-        // let iter = can.receiver.try_iter();
-        // for m in iter {
-        //     print!("ID: {}, LEN: {}, Data: {:?}", m.id, m.len, m.data);
-        //     println!();
-        // }
-        let mut byte_buffer: [u8; 1] = [0; 1];
-        match serial_port.read(&mut byte_buffer){
-            Ok(_) => {
-                let _ = serial_port.write_all(&byte_buffer);
-            },
-            Err(_) => {}
+        let iter = can.receiver.try_iter();
+        for m in iter {
+            print!("ID: {}, LEN: {}, Data: {:?}", m.id, m.len, m.data);
+            println!();
         }
+        // let mut byte_buffer: [u8; 1] = [0; 1];
+        // match serial_port.read(&mut byte_buffer){
+        //     Ok(_) => {
+        //         let _ = serial_port.write_all(&byte_buffer);
+        //     },
+        //     Err(_) => {}
+        // }
         // thread::sleep(Duration::from_millis(1));
         //let msg = "Hello";
         //let _ = sport.write_all(msg.as_bytes());
