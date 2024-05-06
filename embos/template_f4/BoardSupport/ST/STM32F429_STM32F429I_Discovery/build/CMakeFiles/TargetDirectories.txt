@@ -1,0 +1,3 @@
+C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build/CMakeFiles/stm32f429.dir
+C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build/CMakeFiles/edit_cache.dir
+C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build/CMakeFiles/rebuild_cache.dir

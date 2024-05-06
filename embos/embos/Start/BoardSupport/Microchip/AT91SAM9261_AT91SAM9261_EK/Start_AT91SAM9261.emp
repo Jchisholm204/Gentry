@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<emIDE_project_file>
+  <FileVersion major="1" minor="7" />
+  <Project>
+    <Option title="Start_AT91SAM9261" />
+    <Option pch_mode="2" />
+    <Option compiler="armelfgcc" />
+    <Option virtualFolders="Setup\;Application\;Application\Excluded\;" />
+    <Build>
+      <Target title="Debug">
+        <Option output="Output/Debug/Exe/Start_AT91SAM9261" prefix_auto="1" extension_auto="1" />
+        <Option object_output="Output/Debug/Obj" />
+        <Option type="1" />
+        <Option compiler="armelfgcc" />
+        <Compiler>
+          <Add option="-marm" />
+          <Add option="-fomit-frame-pointer" />
+          <Add option="-g" />
+          <Add option="-ffunction-sections" />
+          <Add option="-fdata-sections" />
+          <Add option="-mcpu=arm926ej-s" />
+          <Add option="-mno-unaligned-access" />
+          <Add option="-DDEBUG=1" />
+          <Add directory="../../../Inc" />
+        </Compiler>
+        <Linker>
+          <Add option="-Wl,-Map" />
+          <Add option="-Wl,${TARGET_OUTPUT_FILE}.map" />
+          <Add option="-Wl,--gc-sections" />
+          <Add option="-n" />
+          <Add option="-Wl,-cref" />
+          <Add option="-mcpu=arm926ej-s" />
+          <Add option="-TSetup/iRAM.ld" />
+          <Add library="..\..\..\Lib\libosA5LNDP.a" />
+        </Linker>
+        <PostOutput>
+          <ConvertedOutput PostOutputCreate="0" />
+          <ConvertedOutput PostOutputType="HEX" />
+          <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+        </PostOutput>
+      </Target>
+      <Target title="Release">
+        <Option output="Output/Release/Exe/Start_AT91SAM92610" prefix_auto="1" extension_auto="1" />
+        <Option object_output="Output/Release/Obj" />
+        <Option type="1" />
+        <Option compiler="armelfgcc" />
+        <Compiler>
+          <Add option="-marm" />
+          <Add option="-fomit-frame-pointer" />
+          <Add option="-O3" />
+          <Add option="-g" />
+          <Add option="-ffunction-sections" />
+          <Add option="-fdata-sections" />
+          <Add option="-mcpu=arm926ej-s" />
+          <Add option="-mno-unaligned-access" />
+          <Add directory="../../../Inc" />
+        </Compiler>
+        <Linker>
+          <Add option="-Wl,-Map" />
+          <Add option="-Wl,${TARGET_OUTPUT_FILE}.map" />
+          <Add option="-Wl,--gc-sections" />
+          <Add option="-n" />
+          <Add option="-Wl,-cref" />
+          <Add option="-mcpu=arm926ej-s" />
+          <Add option="-TSetup/iRAM.ld" />
+          <Add library="..\..\..\Lib\libosA5LNR.a" />
+        </Linker>
+        <PostOutput>
+          <ConvertedOutput PostOutputCreate="0" />
+          <ConvertedOutput PostOutputType="HEX" />
+          <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+        </PostOutput>
+      </Target>
+    </Build>
+    <PostOutput>
+      <ConvertedOutput PostOutputCreate="0" />
+      <ConvertedOutput PostOutputType="HEX" />
+      <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+    </PostOutput>
+    <Unit filename="Application/OS_EventObjects.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_ExtendTaskContext.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_ExtendedTask.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_Mailboxes.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_MeasureCPU_Performance.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_MeasureCST_Scope.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_Mutexes.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_Queues.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_ReadersWriterLock.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_SWTimer.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_Start2Tasks.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_Start2TasksEx.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="Application/OS_StartLEDBlink.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/" />
+    </Unit>
+    <Unit filename="Application/OS_ThreadLocalStorage_GNU.c">
+      <Option compilerVar="CC" />
+      <Option compile="0" />
+      <Option link="0" />
+      <Option virtualFolder="Application/Excluded/" />
+    </Unit>
+    <Unit filename="ReadMe.txt" />
+    <Unit filename="Setup/BSP.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/JLINKDCC_HandleDataAbort.s">
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/JLINKDCC_Process.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_Error.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_Syscalls.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_ThreadSafe.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/RTOSInit_AT91SAM9261.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/Startup_RAM.S">
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/iRAM.ld">
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Extensions>
+      <projectwizard isCreated="true" />
+      <code_completion />
+      <debugger>
+        <remote_debugging>
+          <options conn_type="1806320574" Break_at_Main="0" />
+        </remote_debugging>
+        <remote_debugging target="Debug">
+          <options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" remote_server="J-Link GDB Server" Break_at_Main="1" Break_at_Main_Symbol="main" additional_cmds="######################################################################&#x0A;#&#x0A;#       GDB init file for AT91SAM9261-EK board&#x0A;#       with AT91SAM9261 CPU and internal RAM&#x0A;#       used with J-Link&#x0A;#&#x0A;monitor reset&#x0A;# Give debugger some information about memory&#x0A;monitor exec map region 0x300000-0x31FFFF C&#x0A;#&#x0A;# Ensure JTAG speed is not too high, use adaptive clocking&#x0A;#&#x0A;monitor speed adaptive&#x0A;#&#x0A;# Perform a peripheral reset (NOT CPU reset)&#x0A;#&#x0A;monitor memU32 0xFFFFFD00 = 0xA5000004&#x0A;#&#x0A;# Disable watchdog&#x0A;#&#x0A;monitor memU32 0xFFFFFD44 = 0x00008000&#x0A;#&#x0A;# Enable main oscillator to speed up CPU&#x0A;#&#x0A;monitor memU32 0xFFFFFC20 = 0x00000601&#x0A;monitor sleep 10&#x0A;#&#x0A;# Switch CPU to master clock&#x0A;#&#x0A;monitor memU32 0xFFFFFC30 = 0x00000001&#x0A;monitor sleep 1&#x0A;#&#x0A;# Allow user reset&#x0A;#&#x0A;monitor memU32 0xFFFFFD08 = 0xA5000001&#x0A;#&#x0A;# Finally load the executable&#x0A;#&#x0A;load&#x0A;" />
+        </remote_debugging>
+        <remote_debugging target="Release">
+          <options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" remote_server="J-Link GDB Server" Break_at_Main="1" Break_at_Main_Symbol="main" additional_cmds="######################################################################&#x0A;#&#x0A;#       GDB init file for AT91SAM9261-EK board&#x0A;#       with AT91SAM9261 CPU and internal RAM&#x0A;#       used with J-Link&#x0A;#&#x0A;monitor reset&#x0A;# Give debugger some information about memory&#x0A;monitor exec map region 0x300000-0x31FFFF C&#x0A;#&#x0A;# Ensure JTAG speed is not too high, use adaptive clocking&#x0A;#&#x0A;monitor speed adaptive&#x0A;#&#x0A;# Perform a peripheral reset (NOT CPU reset)&#x0A;#&#x0A;monitor memU32 0xFFFFFD00 = 0xA5000004&#x0A;#&#x0A;# Disable watchdog&#x0A;#&#x0A;monitor memU32 0xFFFFFD44 = 0x00008000&#x0A;#&#x0A;# Enable main oscillator to speed up CPU&#x0A;#&#x0A;monitor memU32 0xFFFFFC20 = 0x00000601&#x0A;monitor sleep 10&#x0A;#&#x0A;# Switch CPU to master clock&#x0A;#&#x0A;monitor memU32 0xFFFFFC30 = 0x00000001&#x0A;monitor sleep 1&#x0A;#&#x0A;# Allow user reset&#x0A;#&#x0A;monitor memU32 0xFFFFFD08 = 0xA5000001&#x0A;#&#x0A;# Finally load the executable&#x0A;#&#x0A;load&#x0A;" />
+        </remote_debugging>
+      </debugger>
+      <J-Link>
+        <GDBServer TargetName="Debug">
+          <CmdOption UseGDBServer="1" />
+          <CmdOption TargetDevice="AT91SAM9261" />
+          <CmdOption TargetInterface="0" />
+          <CmdOption InterfaceSpeed="Adaptive" />
+          <CmdOption TargetEndian="0" />
+          <CmdOption OverrideExe="0" Filename="" />
+          <CmdOption StartServer="1" />
+          <CmdOption CloseServer="1" />
+          <CmdOption ServerIP="localhost" />
+          <CmdOption ServerPort="2331" />
+          <CmdOption UseAdvancedOptions="0" />
+          <CmdOption SelectJLink="" />
+          <CmdOption InitRegs="1" />
+          <CmdOption LocalhostOnly="1" />
+          <CmdOption Log="0" Filename="" />
+          <CmdOption Silent="0" />
+          <CmdOption StayOnTop="0" />
+          <CmdOption VerifyDownload="0" />
+          <CmdOption NoTargetTimeout="0" />
+          <CmdOption JTAGConf="0" IRPre="0" DRPre="0" />
+          <CmdOption JLinkScript="0" Filename="" />
+          <CmdOption JLinkSettings="0" Filename="" />
+          <CmdOption GDBInit="0" Filename="" />
+          <CmdOption AdditionalOptions="" />
+        </GDBServer>
+        <GDBServer TargetName="Release">
+          <CmdOption UseGDBServer="1" />
+          <CmdOption TargetDevice="AT91SAM9261" />
+          <CmdOption TargetInterface="0" />
+          <CmdOption InterfaceSpeed="Adaptive" />
+          <CmdOption TargetEndian="0" />
+          <CmdOption OverrideExe="0" Filename="" />
+          <CmdOption StartServer="1" />
+          <CmdOption CloseServer="1" />
+          <CmdOption ServerIP="localhost" />
+          <CmdOption ServerPort="2331" />
+          <CmdOption UseAdvancedOptions="0" />
+          <CmdOption SelectJLink="" />
+          <CmdOption InitRegs="1" />
+          <CmdOption LocalhostOnly="1" />
+          <CmdOption Log="0" Filename="" />
+          <CmdOption Silent="0" />
+          <CmdOption StayOnTop="0" />
+          <CmdOption VerifyDownload="0" />
+          <CmdOption NoTargetTimeout="0" />
+          <CmdOption JTAGConf="0" IRPre="0" DRPre="0" />
+          <CmdOption JLinkScript="0" Filename="" />
+          <CmdOption JLinkSettings="0" Filename="" />
+          <CmdOption GDBInit="0" Filename="" />
+          <CmdOption AdditionalOptions="" />
+        </GDBServer>
+      </J-Link>
+    </Extensions>
+  </Project>
+</emIDE_project_file>

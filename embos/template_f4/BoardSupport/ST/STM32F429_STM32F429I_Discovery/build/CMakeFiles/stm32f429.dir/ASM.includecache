@@ -1,0 +1,10 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/DeviceSupport/startup_stm32f4xx.s
+

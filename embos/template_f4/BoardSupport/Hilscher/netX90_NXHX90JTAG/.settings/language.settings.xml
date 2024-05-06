@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project>
+	<configuration id="preference.org.eclipse.cdt.managedbuilder.core.configurationDataProvider.624659452" name="Start_netX90_Debug">
+		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
+			<provider copy-of="extension" id="com.hilscher.netx.cdt.core.WAFLanguageSettingsProvider"/>
+			<provider class="com.hilscher.netx.cdt.core.language.settings.CompilerBuiltinSpecsDetector" console="false" env-hash="-21241940342052" id="com.hilscher.netx.cdt.core.CompilerBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Built-in Compiler Settings" parameter="&quot;${COMMAND}&quot; ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+				<language-scope id="org.eclipse.cdt.core.gcc"/>
+			</provider>
+			<provider class="org.eclipse.cdt.core.language.settings.providers.LanguageSettingsGenericProvider" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider" name="CDT User Setting Entries" prefer-non-shared="true" store-entries-with-project="true"/>
+		</extension>
+	</configuration>
+	<configuration id="preference.org.eclipse.cdt.managedbuilder.core.configurationDataProvider.1347675749" name="Start_netX90_Release">
+		<extension point="org.eclipse.cdt.core.LanguageSettingsProvider">
+			<provider copy-of="extension" id="com.hilscher.netx.cdt.core.WAFLanguageSettingsProvider"/>
+			<provider class="com.hilscher.netx.cdt.core.language.settings.CompilerBuiltinSpecsDetector" console="false" env-hash="-21241940342052" id="com.hilscher.netx.cdt.core.CompilerBuiltinSpecsDetector" keep-relative-paths="false" name="CDT Built-in Compiler Settings" parameter="&quot;${COMMAND}&quot; ${FLAGS} -E -P -v -dD &quot;${INPUTS}&quot;" prefer-non-shared="true">
+				<language-scope id="org.eclipse.cdt.core.gcc"/>
+			</provider>
+			<provider class="org.eclipse.cdt.core.language.settings.providers.LanguageSettingsGenericProvider" id="org.eclipse.cdt.ui.UserLanguageSettingsProvider" name="CDT User Setting Entries" prefer-non-shared="true" store-entries-with-project="true"/>
+		</extension>
+	</configuration>
+</project>

@@ -1,0 +1,7 @@
+Start_netX90_Debug/BREAKPOINT_AT_ENABLE=true
+Start_netX90_Debug/DEBUG_ADAPTER=nxhx90_onboard
+Start_netX90_Debug/TARGET_BOARD=nxhx90
+Start_netX90_Release/BREAKPOINT_AT_ENABLE=true
+Start_netX90_Release/DEBUG_ADAPTER=nxhx90_onboard
+Start_netX90_Release/TARGET_BOARD=nxhx90
+eclipse.preferences.version=1

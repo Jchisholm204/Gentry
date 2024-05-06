@@ -1,0 +1,98 @@
+[
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Application/OS_StartLEDBlink.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Application/OS_StartLEDBlink.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Application/OS_StartLEDBlink.c",
+  "output": "CMakeFiles/stm32f429.dir/Application/OS_StartLEDBlink.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_Syscalls_GCC.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT_Syscalls_GCC.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT_Syscalls_GCC.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_Syscalls_GCC.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_printf.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT_printf.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_RTT_printf.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_printf.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_Config_embOS.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW_Config_embOS.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW_Config_embOS.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_Config_embOS.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_embOS.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW_embOS.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER/SEGGER_SYSVIEW_embOS.c",
+  "output": "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_embOS.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/BSP.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/BSP.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/BSP.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/BSP.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/BSP_Memory.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/BSP_Memory.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/BSP_Memory.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/BSP_Memory.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/JLINKMEM_Process.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/JLINKMEM_Process.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/JLINKMEM_Process.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/JLINKMEM_Process.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/OS_Error.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_Error.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_Error.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/OS_Error.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/OS_Syscalls.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_Syscalls.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_Syscalls.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/OS_Syscalls.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/OS_ThreadSafe.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_ThreadSafe.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/OS_ThreadSafe.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/OS_ThreadSafe.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/RTOSInit_STM32F4xx.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/RTOSInit_STM32F4xx.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/RTOSInit_STM32F4xx.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/RTOSInit_STM32F4xx.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -std=gnu11 -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/Setup/SEGGER_HardFaultHandler.c.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/SEGGER_HardFaultHandler.c",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/Setup/SEGGER_HardFaultHandler.c",
+  "output": "CMakeFiles/stm32f429.dir/Setup/SEGGER_HardFaultHandler.c.obj"
+},
+{
+  "directory": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/build",
+  "command": "\"C:/Program Files (x86)/GNU Arm Embedded Toolchain/10 2021.10/bin/arm-none-eabi-gcc.exe\" -fdata-sections -ffunction-sections -Wl,--gc-sections  -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/SEGGER -IC:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/CoreSupport -isystem C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/../../../Inc -g -mcpu=cortex-m4 -mthumb -Wall -Wextra -g -fmessage-length=0 -ffunction-sections -fdata-sections --specs=nano.specs -o CMakeFiles/stm32f429.dir/DeviceSupport/startup_stm32f4xx.s.obj -c C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/DeviceSupport/startup_stm32f4xx.s",
+  "file": "C:/Users/Jacob/Documents/GitHub/Gentry/embos/template_f4/BoardSupport/ST/STM32F429_STM32F429I_Discovery/DeviceSupport/startup_stm32f4xx.s",
+  "output": "CMakeFiles/stm32f429.dir/DeviceSupport/startup_stm32f4xx.s.obj"
+}
+]

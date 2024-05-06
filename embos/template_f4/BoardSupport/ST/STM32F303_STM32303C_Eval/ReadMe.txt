@@ -1,0 +1,25 @@
+ReadMe.txt for the ST STM32F303 tart project.
+
+This project was built for emIDE V2.20.
+
+Supported hardware:
+===================
+The sample project for the ST STM32F303 is prepared to run on
+a ST STM32303C-Eval eval board. Using different target
+hardware may require modifications.
+
+Configurations:
+===============
+- Debug:
+  This configuration is prepared for download into internal
+  Flash using J-Link. An embOS debug and profiling library is
+  used.
+  To use SEGGER SystemView with this configuration, configure
+  SystemViewer for Cortex-M4 as target device and SWD at
+  1000 kHz as target interface. In addition, the RTT buffer
+  address must be specified with this target (in case of doubt,
+  search for _SEGGER_RTT in the respective mapfile).
+
+- Release:
+  This configuration is prepared for download into internal
+  Flash using J-Link. An embOS release library is used.

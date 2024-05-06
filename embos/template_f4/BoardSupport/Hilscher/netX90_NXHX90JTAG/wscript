@@ -1,0 +1,134 @@
+import sys
+top = "."
+out = "build"
+
+REQUIRED_TOOLCHAINS = ["gccarmemb"]
+HILSCHER_VERSION_COMPATIBILITY = '1.10.1.0'
+
+def options(ctx):
+    try:
+        ctx.load("hilscher_netx hilscher_firmware hilscher_extras", tooldir="WAF")
+        print("Loaded WAF options from project.")
+    except:
+        ctx.load("hilscher_netx hilscher_firmware hilscher_extras")
+        print("Loaded WAF options from netX Studio.")
+    from hilscher_netx import HILSCHER_VERSION
+    if (HILSCHER_VERSION < HILSCHER_VERSION_COMPATIBILITY):
+        sys.stderr.write("Hilscher Waf V" + HILSCHER_VERSION + " is not recommended, please use at least V" + HILSCHER_VERSION_COMPATIBILITY + " or newer!\n")
+    sys.stdout.flush()
+    ctx.autorecurse(mandatory=False)
+
+def configure(conf):
+    try:
+        conf.load("hilscher_netx hilscher_firmware hilscher_extras", tooldir="WAF")
+        print("Loaded WAF configuration from project.")
+    except:
+        conf.load("hilscher_netx hilscher_firmware hilscher_extras")
+        print("Loaded WAF configuration from netX Studio.")
+    sys.stdout.flush()
+    conf.autorecurse(mandatory=False)
+
+def dist(bld):
+    pass
+
+def build(bld):
+    toolchain   = "gccarmemb"
+    platform    = "netx90"
+    comp_prefix = bld.get_name_prefix(toolchain = toolchain, platform  = platform)
+
+    __STACK_SIZE = 0x00000300
+    __HEAP_SIZE  = 0x00000400
+    
+    bld.externalcomponent(
+        name = "embOS Debug Library",
+        target = "osT7LDP",
+        path = "../../../Lib/",
+        description = "SEGGER embOS RTOS"
+    )
+    
+    bld.externalcomponent(
+        name = "embOS Release Library",
+        target = "osT7LR",
+        path = "../../../Lib/",
+        description = "SEGGER embOS RTOS"
+    )
+
+    defines = [
+        "__NETX90",
+        "_NETX_",
+        "__STACK_SIZE = %u" % __STACK_SIZE,
+        "__HEAP_SIZE = %u" % __HEAP_SIZE,
+        "__STARTUP_CLEAR_BSS",
+        "__START = main",
+    ]
+
+    sources = [
+        "Application/OS_StartLEDBlink.c",
+        "DeviceSupport/startup_netx90_app.S",
+        "DeviceSupport/system_netx.c",
+        "SEGGER/SEGGER_RTT_ASM_ARMv7M.S",
+        "SEGGER/SEGGER_RTT.c",
+        "SEGGER/SEGGER_RTT_printf.c",
+        "SEGGER/SEGGER_RTT_Syscalls_GCC.c",
+        "SEGGER/SEGGER_SYSVIEW.c",
+        "SEGGER/SEGGER_SYSVIEW_Config_embOS.c",
+        "SEGGER/SEGGER_SYSVIEW_embOS.c",
+        "Setup/netx_drv/Source/netx_drv_cortex.c",
+        "Setup/netx_drv/Source/netx_drv_dio.c",
+        "Setup/BSP.c",
+        "Setup/HardFaultHandler.S",
+        "Setup/JLINKMEM_Process.c",
+        "Setup/netx90_app_header.c",
+        "Setup/OS_Error.c",
+        "Setup/OS_ThreadSafe.c",
+        "Setup/OS_Syscalls.c",
+        "Setup/RTOSInit_netX90.c",
+        "Setup/SEGGER_HardFaultHandler.c",
+    ]
+
+    includes = [
+        "../../../Inc",
+        "CoreSupport",
+        "DeviceSupport",
+        "SEGGER",
+        "Setup/netx_drv/Include",
+        "Setup/netx_drv",
+    ]
+    
+    cflags = [
+        "-Wno-redundant-decls",
+    ] 
+
+    bld.program(
+        target           = "Start_netX90_Debug",
+        toolchain        = toolchain,
+        platform         = platform,
+        source           = sources,
+        includes         = includes,
+        defines          = defines + ["DEBUG = 1"],
+        use              = ["embOS Debug Library"],
+        linkerscript     = ["Setup/netx90_app_iflash.ld"],
+        cflags           = cflags,
+    )
+    
+    bld.program(
+        target           = "Start_netX90_Release",
+        toolchain        = toolchain,
+        platform         = platform,
+        source           = sources,
+        includes         = includes,
+        defines          = defines,
+        use              = ["embOS Release Library"],
+        linkerscript     = ["Setup/netx90_app_iflash.ld"],
+        cflags           = cflags,
+    )
+
+    bld.generate_netx90_intflash2_image(
+        target           = "Start_netX90_Debug.nai",
+        use              = "Start_netX90_Debug"
+    )
+    
+    bld.generate_netx90_intflash2_image(
+        target           = "Start_netX90_Release.nai",
+        use              = "Start_netX90_Release"
+    )

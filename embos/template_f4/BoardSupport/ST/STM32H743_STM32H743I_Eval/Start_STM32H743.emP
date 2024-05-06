@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<emIDE_project_file>
+  <FileVersion major="1" minor="7" />
+  <Project>
+    <Option title="Start_STM32H743" />
+    <Option pch_mode="2" />
+    <Option compiler="armelfgcc" />
+    <Option virtualFolders="Application\;Application\Excluded\;Setup\;DeviceSupport\;SEGGER\;" />
+    <Build>
+      <Target title="Debug">
+        <Option output="Output/Debug/exe/Start_STM32H743.elf" prefix_auto="1" extension_auto="0" />
+        <Option object_output="Output/Debug/obj/" />
+        <Option type="1" />
+        <Option compiler="armelfgcc" />
+        <Compiler>
+          <Add option="-mthumb" />
+          <Add option="-g" />
+          <Add option="-O0" />
+          <Add option="-ffunction-sections" />
+          <Add option="-fdata-sections" />
+          <Add option="-mcpu=cortex-m4" />
+          <Add option="-mfpu=fpv4-sp-d16" />
+          <Add option="-mfloat-abi=softfp" />
+          <Add option="-I..\..\..\Inc" />
+          <Add option="-ICoreSupport" />
+          <Add option="-IDeviceSupport" />
+          <Add option="-ISEGGER" />
+          <Add option="-DDEBUG=1" />
+          <Add option="-DSTM32H743xx=1" />
+        </Compiler>
+        <Linker>
+          <Add option="-mthumb" />
+          <Add option="-Wl,--gc-sections" />
+          <Add option="-Wl,-cref" />
+          <Add option="-mcpu=cortex-m4" />
+          <Add option="-mfpu=fpv4-sp-d16" />
+          <Add option="-mfloat-abi=softfp" />
+          <Add option="-Wl,-Map,Output\Debug\Start_STM32H743.map" />
+          <Add option="-TSetup\STM32H743XIHx_FLASH.ld" />
+          <Add library="..\..\..\Lib\libosT7VLDP.a" />
+        </Linker>
+        <PostOutput>
+          <ConvertedOutput PostOutputCreate="0" />
+          <ConvertedOutput PostOutputType="HEX" />
+          <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+        </PostOutput>
+      </Target>
+      <Target title="Release">
+        <Option output="Output/Release/exe/Start_STM32H743.elf" prefix_auto="1" extension_auto="0" />
+        <Option object_output="Output/Release/obj/" />
+        <Option type="1" />
+        <Option compiler="armelfgcc" />
+        <Compiler>
+          <Add option="-mthumb" />
+          <Add option="-fomit-frame-pointer" />
+          <Add option="-O3" />
+          <Add option="-g" />
+          <Add option="-ffunction-sections" />
+          <Add option="-fdata-sections" />
+          <Add option="-mcpu=cortex-m4" />
+          <Add option="-mfpu=fpv4-sp-d16" />
+          <Add option="-mfloat-abi=softfp" />
+          <Add option="-I..\..\..\Inc" />
+          <Add option="-ICoreSupport" />
+          <Add option="-IDeviceSupport" />
+          <Add option="-ISEGGER" />
+          <Add option="-DSTM32H743xx=1" />
+        </Compiler>
+        <Linker>
+          <Add option="-mthumb" />
+          <Add option="-Wl,--gc-sections" />
+          <Add option="-Wl,-cref" />
+          <Add option="-mcpu=cortex-m4" />
+          <Add option="-mfpu=fpv4-sp-d16" />
+          <Add option="-mfloat-abi=softfp" />
+          <Add option="-Wl,-Map,Output\Release\Start_STM32H743.map" />
+          <Add option="-TSetup\STM32H743XIHx_FLASH.ld" />
+          <Add library="..\..\..\Lib\libosT7VLR.a" />
+        </Linker>
+        <PostOutput>
+          <ConvertedOutput PostOutputCreate="0" />
+          <ConvertedOutput PostOutputType="HEX" />
+          <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+        </PostOutput>
+      </Target>
+    </Build>
+    <Compiler>
+      <Add option="-Wall" />
+    </Compiler>
+    <PostOutput>
+      <ConvertedOutput PostOutputCreate="0" />
+      <ConvertedOutput PostOutputType="HEX" />
+      <ConvertedOutput PostOutputFile="${TARGET_OUTPUT_DIR}${TARGET_OUTPUT_BASENAME}" />
+    </PostOutput>
+    <Unit filename="Application/OS_EventObjects.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_ExtendTaskContext.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_ExtendedTask.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Mailboxes.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_MeasureCPU_Performance.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_MeasureCST_Scope.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Mutexes.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_ObjectIdentifier.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Queues.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_ReadersWriterLock.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_SWTimer.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Semaphores.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Start2Tasks.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Start2TasksEx.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_StartLEDBlink.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/" />
+    </Unit>
+    <Unit filename="Application/OS_Stop.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_TaskStartHook.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_ThreadLocalStorage_GNU.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="Application/OS_Watchdog.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Application/Excluded/" />
+      <Option target="&lt;{~None~}&gt;" />
+    </Unit>
+    <Unit filename="DeviceSupport/startup_stm32H743xx.s">
+      <Option virtualFolder="DeviceSupport/" />
+    </Unit>
+    <Unit filename="DeviceSupport/system_stm32h7xx.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="DeviceSupport/" />
+    </Unit>
+    <Unit filename="ReadMe.txt" />
+    <Unit filename="SEGGER/SEGGER_RTT.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="SEGGER/SEGGER_RTT_ASM_ARMv7M.S" />
+    <Unit filename="SEGGER/SEGGER_RTT_Syscalls_GCC.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="SEGGER/SEGGER_RTT_printf.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="SEGGER/SEGGER_SYSVIEW.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="SEGGER/SEGGER_SYSVIEW_Config_embOS.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="SEGGER/SEGGER_SYSVIEW_embOS.c">
+      <Option compilerVar="CC" />
+    </Unit>
+    <Unit filename="Setup/BSP.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/HardFaultHandler.S">
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/JLINKMEM_Process.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_Error.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_ThreadSafe.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/OS_Syscalls.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/RTOSInit_STM32H7xx.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/SEGGER_HardFaultHandler.c">
+      <Option compilerVar="CC" />
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Unit filename="Setup/STM32H743XIHx_FLASH.ld">
+      <Option virtualFolder="Setup/" />
+    </Unit>
+    <Extensions>
+      <code_completion />
+      <debugger>
+        <remote_debugging>
+          <options conn_type="1806320574" ip_address="localhost" ip_port="2331" remote_server="J-Link GDB Server" Break_at_Main="0" Break_at_Main_Symbol="main" />
+        </remote_debugging>
+        <remote_debugging target="Debug">
+          <options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" remote_server="J-Link GDB Server" Break_at_Main="1" Break_at_Main_Symbol="main" additional_cmds="monitor reset&#x0A;load" />
+        </remote_debugging>
+        <remote_debugging target="Release">
+          <options conn_type="0" serial_baud="115200" ip_address="localhost" ip_port="2331" remote_server="J-Link GDB Server" Break_at_Main="1" Break_at_Main_Symbol="main" additional_cmds="monitor reset&#x0A;load" />
+        </remote_debugging>
+      </debugger>
+      <J-Link>
+        <GDBServer TargetName="Debug">
+          <CmdOption UseGDBServer="1" />
+          <CmdOption TargetDevice="STM32H743XI" />
+          <CmdOption TargetInterface="1" />
+          <CmdOption InterfaceSpeed="1000" />
+          <CmdOption TargetEndian="0" />
+          <CmdOption OverrideExe="0" Filename="" />
+          <CmdOption StartServer="1" />
+          <CmdOption CloseServer="1" />
+          <CmdOption ServerIP="localhost" />
+          <CmdOption ServerPort="2331" />
+          <CmdOption UseAdvancedOptions="0" />
+          <CmdOption SelectJLink="" />
+          <CmdOption InitRegs="1" />
+          <CmdOption LocalhostOnly="1" />
+          <CmdOption Log="0" Filename="" />
+          <CmdOption Silent="0" />
+          <CmdOption StayOnTop="0" />
+          <CmdOption VerifyDownload="0" />
+          <CmdOption NoTargetTimeout="0" />
+          <CmdOption JTAGConf="0" IRPre="0" DRPre="0" />
+          <CmdOption JLinkScript="0" Filename="" />
+          <CmdOption JLinkSettings="0" Filename="" />
+          <CmdOption GDBInit="0" Filename="" />
+          <CmdOption AdditionalOptions="" />
+        </GDBServer>
+        <GDBServer TargetName="Release">
+          <CmdOption UseGDBServer="1" />
+          <CmdOption TargetDevice="STM32H743XI" />
+          <CmdOption TargetInterface="1" />
+          <CmdOption InterfaceSpeed="1000" />
+          <CmdOption TargetEndian="0" />
+          <CmdOption OverrideExe="0" Filename="" />
+          <CmdOption StartServer="1" />
+          <CmdOption CloseServer="1" />
+          <CmdOption ServerIP="localhost" />
+          <CmdOption ServerPort="2331" />
+          <CmdOption UseAdvancedOptions="0" />
+          <CmdOption SelectJLink="" />
+          <CmdOption InitRegs="1" />
+          <CmdOption LocalhostOnly="1" />
+          <CmdOption Log="0" Filename="" />
+          <CmdOption Silent="0" />
+          <CmdOption StayOnTop="0" />
+          <CmdOption VerifyDownload="0" />
+          <CmdOption NoTargetTimeout="0" />
+          <CmdOption JTAGConf="0" IRPre="0" DRPre="0" />
+          <CmdOption JLinkScript="0" Filename="" />
+          <CmdOption JLinkSettings="0" Filename="" />
+          <CmdOption GDBInit="0" Filename="" />
+          <CmdOption AdditionalOptions="" />
+        </GDBServer>
+      </J-Link>
+    </Extensions>
+  </Project>
+</emIDE_project_file>

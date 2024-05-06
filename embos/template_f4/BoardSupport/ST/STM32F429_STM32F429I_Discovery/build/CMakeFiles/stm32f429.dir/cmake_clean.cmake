@@ -1,0 +1,41 @@
+file(REMOVE_RECURSE
+  "CMakeFiles/stm32f429.dir/Application/OS_StartLEDBlink.c.obj"
+  "CMakeFiles/stm32f429.dir/Application/OS_StartLEDBlink.c.obj.d"
+  "CMakeFiles/stm32f429.dir/DeviceSupport/startup_stm32f4xx.s.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT.c.obj.d"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_Syscalls_GCC.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_Syscalls_GCC.c.obj.d"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_printf.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_RTT_printf.c.obj.d"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW.c.obj.d"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_Config_embOS.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_Config_embOS.c.obj.d"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_embOS.c.obj"
+  "CMakeFiles/stm32f429.dir/SEGGER/SEGGER_SYSVIEW_embOS.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/BSP.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/BSP.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/BSP_Memory.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/BSP_Memory.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/JLINKMEM_Process.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/JLINKMEM_Process.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/OS_Error.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/OS_Error.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/OS_Syscalls.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/OS_Syscalls.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/OS_ThreadSafe.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/OS_ThreadSafe.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/RTOSInit_STM32F4xx.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/RTOSInit_STM32F4xx.c.obj.d"
+  "CMakeFiles/stm32f429.dir/Setup/SEGGER_HardFaultHandler.c.obj"
+  "CMakeFiles/stm32f429.dir/Setup/SEGGER_HardFaultHandler.c.obj.d"
+  "stm32f429.elf"
+  "stm32f429.elf.manifest"
+  "stm32f429.pdb"
+)
+
+# Per-language clean rules from dependency scanning.
+foreach(lang ASM C)
+  include(CMakeFiles/stm32f429.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

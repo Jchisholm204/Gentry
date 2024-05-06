@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.b": "brainfuck",
+        "rtos.h": "c"
+    }
+}
