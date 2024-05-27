@@ -1,0 +1,25 @@
+{
+    "files.associations": {
+        "*.b": "brainfuck",
+        "hal.h": "c",
+        "time.h": "c",
+        "signal.h": "c",
+        "stm32f446xx.h": "c",
+        "stm32f4xx.h": "c",
+        "hal_gpio.h": "c",
+        "hal_uart.h": "c",
+        "hal_clock.h": "c",
+        "float.h": "c",
+        "queue.h": "c",
+        "taskhandlers.h": "c",
+        "freertos.h": "c",
+        "limits.h": "c",
+        "main.h": "c",
+        "interface_uart.h": "c",
+        "task.h": "c",
+        "freertosconfig.h": "c",
+        "hal_can.h": "c",
+        "uart.h": "c",
+        "tasker.h": "c"
+    },
+}
