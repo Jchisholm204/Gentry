@@ -22,7 +22,7 @@ set(STARTUP_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/vendor/startup_stm32f446retx.s)
 set(MCU_LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/vendor/STM32F446RETX_FLASH.ld)
 
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
-enable_language(C ASM)
+enable_language(C CXX ASM)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
@@ -59,7 +59,10 @@ set(GENERIC_COMPILE_OPTIONS
     )
 
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
-    ${PROJECT_DIR}/src/*.c)
+    ${PROJECT_DIR}/src/*.c
+    ${PROJECT_DIR}/src/*.cpp
+    ${PROJECT_DIR}/src/*.cc
+)
 
 add_executable(${EXECUTABLE}
     ${RTOS_DIR}/portable/GCC/ARM_CM4F/port.c
