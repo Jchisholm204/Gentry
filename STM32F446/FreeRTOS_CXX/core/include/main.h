@@ -10,9 +10,7 @@
  */
 
 #include <stm32f4xx.h>
-#include "taskHandlers.h"
-#include "nvicConfig.h"
-#include "interrupts.h"
+#include "os/config/nvic.h"
 
 extern void SystemInit(void);
 
