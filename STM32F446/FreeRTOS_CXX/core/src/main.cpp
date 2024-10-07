@@ -16,17 +16,22 @@
 #include "task.h"
 #include "drivers/uart.hpp"
 #include "string.h"
+#include "hal/hal_clock.h"
 
 #define debug_led PIN('D', 12)
 
-USE_Serial2();
+USE_Serial2()
 
                                     
 
 extern "C" void vTestTask(void * pvParams){
     (void)pvParams;
     const static char* str = "Hello World from Serial 2\n";
-    Serial2.write((uint8_t*)str, strlen(str));
+    for(;;){
+        Serial2.write((uint8_t*)str, strlen(str));
+        // sleep for 1000 ms
+        vTaskDelay(1000);
+    }
 }
 
 // Initialize all system Interfaces

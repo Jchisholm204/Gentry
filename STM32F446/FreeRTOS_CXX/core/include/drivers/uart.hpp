@@ -56,7 +56,7 @@
 
 
 class UART {
-    enum eError {eOK, eSemphr, eHW, eUnInit};
+    enum eError {eOK, eSemphr, eHW, eUnInit, eNoMem};
     public:
         UART(USART_TypeDef *port_base);
         eError setup(uint32_t baud, uint16_t pin_rx, uint16_t pin_tx);
@@ -64,13 +64,15 @@ class UART {
         eError write_byte(uint8_t data, TickType_t wait);
         eError write(uint8_t *data, size_t len);
         eError write(uint8_t *data, size_t len, TickType_t wait);
-        size_t read(uint8_t *data, size_t len);
-        size_t read(uint8_t *data, size_t len, TickType_t wait);
+        eError attach(StreamBufferHandle_t hdnl);
+        eError detatch(void);
         void isr(void);
     private:
+        eError enable_interrupt(void);
+        eError disable_interrupt(void);
         USART_TypeDef *interface;
-        xSemaphoreHandle tx_semphr;
-        StaticSemaphore_t tx_sSemphr;
+        xSemaphoreHandle tx_semphr, rx_semphr;
+        StaticSemaphore_t tx_sSemphr, rx_sSemphr;
         StreamBufferHandle_t rx_buffer;
         TickType_t def_wait;
         bool OK;
