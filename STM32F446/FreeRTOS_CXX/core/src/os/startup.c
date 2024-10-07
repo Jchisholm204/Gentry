@@ -9,7 +9,7 @@
  * 
  */
 
-#include "main.h"
+#include "main.hpp"
 #include "hal/hal_clock.h"
 
 /**
