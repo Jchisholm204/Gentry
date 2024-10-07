@@ -19,18 +19,18 @@
 #include <stm32f446xx.h>
 #include "hal_gpio.h"
 
-static inline void hal_uart_init(USART_TypeDef *uart, unsigned long baud) {
+static inline void hal_uart_init(USART_TypeDef *uart, unsigned long baud, uint16_t rx, uint16_t tx) {
     // figure 19. selecting an alternate function (7=spi2/3, usart1..3, uart5, spdif-in)
     uint8_t af = 7;           // Alternate function
-    uint16_t rx = 0, tx = 0;  // pins
+    // uint16_t rx = 0, tx = 0;  // pins
 
     if (uart == USART1) RCC->APB2ENR |= BIT(4);
     if (uart == USART2) RCC->APB1ENR |= BIT(17);
     if (uart == USART3) RCC->APB1ENR |= BIT(18);
 
-    if (uart == USART1) tx = PIN('A', 9), rx = PIN('A', 10);
-    if (uart == USART2) tx = PIN('A', 2), rx = PIN('A', 3);
-    if (uart == USART3) tx = PIN('D', 8), rx = PIN('D', 9);
+    // if (uart == USART1) tx = PIN('A', 9), rx = PIN('A', 10);
+    // if (uart == USART2) tx = PIN('A', 2), rx = PIN('A', 3);
+    // if (uart == USART3) tx = PIN('D', 8), rx = PIN('D', 9);
 
     gpio_set_mode(tx, GPIO_MODE_AF);
     gpio_set_af(tx, af);
