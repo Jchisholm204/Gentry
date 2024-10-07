@@ -14,13 +14,13 @@
 #include "FreeRTOS.h"
 #include "os/config/FreeRTOSConfig.h"
 #include "task.h"
-#include "hal/hal_gpio.h"
+#include "drivers/uart.hpp"
 
 #define debug_led PIN('D', 12)
 
 // Initialize all system Interfaces
 void Init(void){
-
+    Serial2.setup(9600, PIN('D', 5), PIN('D', 6));
 }
 
 

@@ -10,29 +10,170 @@
  */
 
 #include "drivers/uart.hpp"
+#include "os/config/nvic.h"
 
-UART::UART(USART_TypeDef *interface, uint32_t baudrate, uint16_t pin_rx, uint16_t pin_tx){
-    OK = true;
+UART Serial1(USART1);
+UART Serial2(USART2);
+UART Serial3(USART3);
+UART Serial4(UART4);
+UART Serial5(UART5);
+UART Serial6(USART6);
+
+UART::UART(USART_TypeDef *port_base){
+    // interface has not been initialized
+    this->OK = false;
+    this->interface = port_base;
+    // Default waiting period is 100 ticks
+    this->def_wait = 100;
+}
+
+
+UART::eError UART::setup(uint32_t baud, uint16_t pin_rx, uint16_t pin_tx){
+    if(this->OK)
+        return eOK;
+
     // Setup Semaphores
-    this->rx_semphr = xSemaphoreCreateBinary();
-    if(!this->rx_semphr){
-        OK = false;
-        return;
-    }
     this->tx_semphr = xSemaphoreCreateBinary();
-    if(!this->tx_semphr){
-        OK = false;
-        return;
-    }
+    if(!this->tx_semphr)
+        return eSemphr;
     
+    // Setup RX stream buffer
     this->rx_buffer = xStreamBufferCreate(64, 1);
     if(!this->rx_buffer){
-        OK = false;
-        return;
+        return eSemphr;
     }
 
-    hal_uart_init(interface, baudrate, pin_rx, pin_tx);
-    xSemaphoreGive(this->rx_semphr);
+    // Setup the UART interface
+    hal_uart_init(this->interface, baud, pin_rx, pin_tx);
+    
+    // Enable the UART interrupt
+    hal_uart_enable_rxne(this->interface, true);
+
+    switch((int)this->interface){
+        case (int)USART1_BASE:
+            NVIC_SetPriority(USART1_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(USART1_IRQn);
+            break;
+        case (int)USART2_BASE:
+            NVIC_SetPriority(USART2_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(USART2_IRQn);
+            break;
+        case (int)USART3_BASE:
+            NVIC_SetPriority(USART3_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(USART3_IRQn);
+            break;
+        case (int)UART4_BASE:
+            NVIC_SetPriority(UART4_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(UART4_IRQn);
+            break;
+        case (int)UART5_BASE:
+            NVIC_SetPriority(UART5_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(UART5_IRQn);
+            break;
+        case (int)USART6_BASE:
+            NVIC_SetPriority(USART6_IRQn, NVIC_Priority_MIN);
+            NVIC_EnableIRQ(USART6_IRQn);
+            break;
+        default:
+            return eHW;
+    }
+    
+    // Release the semaphores to be used
     xSemaphoreGive(this->tx_semphr);
+    OK = true;
+    // Return Success
+    return eOK;
+}
+
+UART::eError UART::write_byte(uint8_t data){
+    if(!this->OK)
+        return eUnInit;
+    if(xSemaphoreTake(this->tx_semphr, this->def_wait) == pdTRUE){
+        hal_uart_write_byte(this->interface, data);
+        xSemaphoreGive(this->tx_semphr);
+        return eOK;
+    }
+    return eSemphr;
+}
+
+UART::eError UART::write_byte(uint8_t data, TickType_t wait){
+    if(!this->OK)
+        return eUnInit;
+    if(xSemaphoreTake(this->tx_semphr, wait) == pdTRUE){
+        hal_uart_write_byte(this->interface, data);
+        xSemaphoreGive(this->tx_semphr);
+        return eOK;
+    }
+    return eSemphr;
+}
+
+UART::eError UART::write(uint8_t *data, size_t len){
+    if(!this->OK)
+        return eUnInit;
+    if(xSemaphoreTake(this->tx_semphr, this->def_wait) == pdTRUE){
+        hal_uart_write_buf(this->interface, (char*)data, len);
+        xSemaphoreGive(this->tx_semphr);
+        return eOK;
+    }
+    return eSemphr;
+}
+
+UART::eError UART::write(uint8_t *data, size_t len, TickType_t wait){
+    if(!this->OK)
+        return eUnInit;
+    if(xSemaphoreTake(this->tx_semphr, wait) == pdTRUE){
+        hal_uart_write_buf(this->interface, (char*)data, len);
+        xSemaphoreGive(this->tx_semphr);
+        return eOK;
+    }
+    return eSemphr;
+}
+
+size_t UART::read(uint8_t *data, size_t len){
+    return xStreamBufferReceive(this->rx_buffer, (void*)data, len, this->def_wait);
+}
+
+size_t UART::read(uint8_t *data, size_t len, TickType_t wait){
+    return xStreamBufferReceive(this->rx_buffer, (void*)data, len, wait);
+}
+
+void UART::isr(void){
+    if(!xPortIsInsideInterrupt())
+        return;
+    if(!this->eOK)
+        return;
+    BaseType_t higher_woken = pdFALSE;
+    uint8_t rx_data = hal_uart_read_byte(this->interface);
+    xStreamBufferSendFromISR(this->rx_buffer, &rx_data, sizeof(rx_data), &higher_woken);
+    portYIELD_FROM_ISR(higher_woken);
+}
+
+// USART Interrupt Handlers
+extern "C" {
+
+void USART1_IRQHandler(void){
+    Serial1.isr();
+}
+
+void USART2_IRQHandler(void){
+    Serial2.isr();
+}
+
+void USART3_IRQHandler(void){
+    Serial3.isr();
+}
+
+void UART4_IRQHandler(void){
+    Serial4.isr();
+}
+
+void UART5_IRQHandler(void){
+    Serial5.isr();
+}
+
+void USART6_IRQHandler(void){
+    Serial6.isr();
+}
 
 }
+

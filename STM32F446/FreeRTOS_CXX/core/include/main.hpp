@@ -9,9 +9,21 @@
  * 
  */
 
+#ifndef _MAIN_HPP_
+#define _MAIN_HPP_
+
 #include <stm32f4xx.h>
 #include "os/config/nvic.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern void SystemInit(void);
 
 extern int main(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif

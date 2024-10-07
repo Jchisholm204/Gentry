@@ -6,7 +6,6 @@
 
 #include "stm32f4xx.h"
 #include "hal_clock.h"
-#include "pins.h"
 
 // CPU Frequency
 //#define FREQ 180000000//SystemCoreClock//16000000
@@ -16,6 +15,12 @@ enum GPIO_MODE_IO   { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF, GPIO_MODE
 enum GPIO_PULL_MODE { GPIO_RESET, GPIO_PULLUP, GPIO_PULLDOWN};
 enum GPIO_AF_MODE { GPIO_AF_SYS = 0, GPIO_AF_TIM1 = 1, GPIO_AF_TIM2 = 1, GPIO_AF_TIM3_5 = 2, GPIO_AF_TIM8_11 = 3, GPIO_AF_I2C = 4, GPIO_AF_SPI = 6, GPIO_AF_UART = 7, GPIO_AF_CAN = 9};
 
+// Package a pin bank (U8) and pin number (U8) into single package (U16)
+#define PIN(bank, num) ((((bank) - 'A') << 8) | (num))
+// Retrieve pin number (U8) from pin package (U16)
+#define PINNO(pin) (pin & 255)
+// Retrieve pin bank (U8) from pin package (U16)
+#define PINBANK(pin) (pin >> 8)
 
 
 /**
