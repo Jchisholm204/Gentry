@@ -4,9 +4,8 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 
-#include "stm32f4xx.h"
+#include <stm32f446xx.h>
 #include "hal_clock.h"
-#include "pins.h"
 
 // CPU Frequency
 //#define FREQ 180000000//SystemCoreClock//16000000
@@ -14,8 +13,12 @@
 #define GPIO(bank) ((GPIO_TypeDef *) (GPIOA_BASE + 0x400U * (bank)))
 enum GPIO_MODE_IO   { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF, GPIO_MODE_ANALOG };
 enum GPIO_PULL_MODE { GPIO_RESET, GPIO_PULLUP, GPIO_PULLDOWN};
-enum GPIO_AF_MODE { GPIO_AF_SYS = 0, GPIO_AF_TIM1 = 1, GPIO_AF_TIM2 = 1, GPIO_AF_TIM3_5 = 2, GPIO_AF_TIM8_11 = 3, GPIO_AF_I2C = 4, GPIO_AF_SPI = 6, GPIO_AF_UART = 7, GPIO_AF_CAN = 9};
-
+// Package a pin bank (U8) and pin number (U8) into single package (U16)
+#define PIN(bank, num) ((((bank) - 'A') << 8) | (num))
+// Retrieve pin number (U8) from pin package (U16)
+#define PINNO(pin) (pin & 255)
+// Retrieve pin bank (U8) from pin package (U16)
+#define PINBANK(pin) (pin >> 8)
 
 
 /**
@@ -27,9 +30,9 @@ enum GPIO_AF_MODE { GPIO_AF_SYS = 0, GPIO_AF_TIM1 = 1, GPIO_AF_TIM2 = 1, GPIO_AF
 static inline void gpio_set_mode(uint16_t pin, enum GPIO_MODE_IO mode) {
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
     int n = PINNO(pin);
-    SET_BIT(RCC->AHB1ENR, (uint32_t)(1UL << PINBANK(pin)));       // Enable GPIO clock
-    gpio->MODER &= (uint32_t)~(3U << (n*2));
-    gpio->MODER |= (uint32_t)((mode & 3U) << (n * 2));   // Set new mode
+    RCC->AHB1ENR |= BIT(PINBANK(pin));       // Enable GPIO clock
+    gpio->MODER &= ~(3U << (n*2));
+    gpio->MODER |= (mode & 3U) << (n * 2);   // Set new mode
 
 }
 
@@ -39,11 +42,11 @@ static inline void gpio_set_mode(uint16_t pin, enum GPIO_MODE_IO mode) {
  * @param pin 
  * @param af_num 
  */
-static inline void gpio_set_af(uint16_t pin, enum GPIO_AF_MODE af) {
+static inline void gpio_set_af(uint16_t pin, uint8_t af_num) {
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
     int n = PINNO(pin);
-    gpio->AFR[n >> 3] &= (uint32_t)~(15UL << ((n & 7) * 4));
-    gpio->AFR[n >> 3] |= (uint32_t)((uint32_t) af) << ((n & 7) * 4);
+    gpio->AFR[n >> 3] &= ~(15UL << ((n & 7) * 4));
+    gpio->AFR[n >> 3] |= ((uint32_t) af_num) << ((n & 7) * 4);
 }
 
 /**
@@ -54,28 +57,28 @@ static inline void gpio_set_af(uint16_t pin, enum GPIO_AF_MODE af) {
  */
 static inline void gpio_write(uint16_t pin, bool value) {
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
-    gpio->BSRR = (uint32_t)((1UL << PINNO(pin)) << (value ? 0 : 16));
+    gpio->BSRR = (1U << PINNO(pin)) << (value ? 0 : 16);
 }
 
 static inline void gpio_toggle_pin(uint16_t pin){
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
-    gpio->BSRR = (uint32_t)((1UL << PINNO(pin)) << (gpio->ODR & (1UL << PINNO(pin)) ? 16 : 0));
+    gpio->BSRR = (1UL << PINNO(pin)) << (gpio->ODR & (1UL << PINNO(pin)) ? 16 : 0);
 }
 
 static inline bool gpio_read_idr(uint16_t pin) {
     const GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
-    return (bool)((gpio->IDR >> PINNO(pin)) & 0x1UL);
+    return (gpio->IDR & (1U << PINNO(pin)));
 }
 
 static inline bool gpio_read_odr(uint16_t pin){
     const GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
-    return (bool)((gpio->ODR >> PINNO(pin)) & 0x1UL);
+    return (gpio->ODR & (1U << PINNO(pin)));
 }
 
 static inline void gpio_pull(uint16_t pin, enum GPIO_PULL_MODE mode){
     GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
-    gpio->PUPDR &= (uint32_t)~(3U << (PINNO(pin)*2));
-    if(mode!=GPIO_RESET) gpio->PUPDR |= (uint32_t)(mode << (2*(PINNO(pin))));
+    gpio->PUPDR &= ~(3U << (PINNO(pin)*2));
+    if(mode!=GPIO_RESET) gpio->PUPDR |= mode << (2*(PINNO(pin)));
 }
 
 // t: expiration time, prd: period, now: current time. Return true if expired
