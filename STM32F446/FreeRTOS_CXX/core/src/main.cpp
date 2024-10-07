@@ -15,8 +15,15 @@
 #include "os/config/FreeRTOSConfig.h"
 #include "task.h"
 #include "drivers/uart.hpp"
+#include "string.h"
 
 #define debug_led PIN('D', 12)
+
+extern "C" void vTestTask(void * pvParams){
+    (void)pvParams;
+    const static char* str = "Hello World from Serial 2\n";
+    Serial2.write((uint8_t*)str, strlen(str));
+}
 
 // Initialize all system Interfaces
 void Init(void){
@@ -27,6 +34,8 @@ void Init(void){
 extern "C" int main(void){
 
     Init();
+    
+    xTaskCreate(vTestTask, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     // Start Scheduler
     vTaskStartScheduler();
