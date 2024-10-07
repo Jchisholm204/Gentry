@@ -14,6 +14,45 @@
 #include "semphr.h"
 #include "stream_buffer.h"
 
+#define USE_Serial1()              \
+    UART Serial1(USART1);           \
+    extern "C" void USART1_IRQHandler(void){   \
+        Serial1.isr();              \
+    }                               \
+
+
+
+#define USE_Serial2()           \
+    UART Serial2(USART2);           \
+    extern "C" void USART2_IRQHandler(void){   \
+        Serial2.isr();              \
+    }                               \
+
+
+#define USE_Serial3()             \
+    UART Serial3(USART3);           \
+    extern "C" void USART3_IRQHandler(void){   \
+        Serial3.isr();              \
+    }                               \
+
+#define USE_Serial4()           \
+    UART Serial4(UART4);           \
+    extern "C" void UART4_IRQHandler(void){   \
+        Serial4.isr();              \
+    }                               \
+
+#define USE_Serial5()            \
+    UART Serial5(UART5);           \
+    extern "C" void UART5_IRQHandler(void){   \
+        Serial5.isr();              \
+    }                               \
+
+#define Serial6_Init()             \
+    UART Serial6(USART6);           \
+    extern "C" void USART6_IRQHandler(void){   \
+        Serial6.isr();              \
+    }                               \
+
 
 
 class UART {
@@ -31,6 +70,7 @@ class UART {
     private:
         USART_TypeDef *interface;
         xSemaphoreHandle tx_semphr;
+        StaticSemaphore_t tx_sSemphr;
         StreamBufferHandle_t rx_buffer;
         TickType_t def_wait;
         bool OK;

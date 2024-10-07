@@ -19,6 +19,10 @@
 
 #define debug_led PIN('D', 12)
 
+USE_Serial2();
+
+                                    
+
 extern "C" void vTestTask(void * pvParams){
     (void)pvParams;
     const static char* str = "Hello World from Serial 2\n";

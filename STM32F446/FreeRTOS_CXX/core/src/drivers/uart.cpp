@@ -12,13 +12,6 @@
 #include "drivers/uart.hpp"
 #include "os/config/nvic.h"
 
-UART Serial1(USART1);
-UART Serial2(USART2);
-UART Serial3(USART3);
-UART Serial4(UART4);
-UART Serial5(UART5);
-UART Serial6(USART6);
-
 UART::UART(USART_TypeDef *port_base){
     // interface has not been initialized
     this->OK = false;
@@ -146,34 +139,5 @@ void UART::isr(void){
     uint8_t rx_data = hal_uart_read_byte(this->interface);
     xStreamBufferSendFromISR(this->rx_buffer, &rx_data, sizeof(rx_data), &higher_woken);
     portYIELD_FROM_ISR(higher_woken);
-}
-
-// USART Interrupt Handlers
-extern "C" {
-
-void USART1_IRQHandler(void){
-    Serial1.isr();
-}
-
-void USART2_IRQHandler(void){
-    Serial2.isr();
-}
-
-void USART3_IRQHandler(void){
-    Serial3.isr();
-}
-
-void UART4_IRQHandler(void){
-    Serial4.isr();
-}
-
-void UART5_IRQHandler(void){
-    Serial5.isr();
-}
-
-void USART6_IRQHandler(void){
-    Serial6.isr();
-}
-
 }
 
