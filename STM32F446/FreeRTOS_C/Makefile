@@ -30,7 +30,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 # use this line to select the flash tool
-flash: st-flash-win
+flash: st-flash-lin
 
 
 # must run "run" command or restart target to start program
@@ -46,7 +46,7 @@ st-flash-win: build/firmware.bin
 	./Tools/ST-LINK_CLI.exe -P build/firmware.bin 0x08000000 -V -RST
 
 st-flash-lin: build/firmware.bin
-	st-flash write --reset build/firmware.bin 0x08000000
+	st-flash --reset write build/firmware.bin 0x08000000
 
 clean:
 	rm -r build
