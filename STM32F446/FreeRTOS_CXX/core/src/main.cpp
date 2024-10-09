@@ -17,6 +17,7 @@
 #include "drivers/uart.hpp"
 #include "string.h"
 #include "hal/hal_clock.h"
+#include "hal/hal_gpio.h"
 
 #define debug_led PIN('D', 12)
 
@@ -27,8 +28,10 @@ USE_Serial2()
 extern "C" void vTestTask(void * pvParams){
     (void)pvParams;
     const static char* str = "Hello World from Serial 2\n";
+    gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
     for(;;){
-        Serial2.write((uint8_t*)str, strlen(str));
+        gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
+        // Serial2.write((uint8_t*)str, strlen(str));
         // sleep for 1000 ms
         vTaskDelay(1000);
     }
@@ -36,7 +39,8 @@ extern "C" void vTestTask(void * pvParams){
 
 // Initialize all system Interfaces
 void Init(void){
-    Serial2.setup(9600, PIN('D', 5), PIN('D', 6));
+    
+    Serial2.setup(9600, PIN('D', 6), PIN('D', 5));
 }
 
 
