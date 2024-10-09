@@ -30,7 +30,7 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 # use this line to select the flash tool
-flash: st-flash-lin
+flash: st-flash-win
 
 
 # must run "run" command or restart target to start program
