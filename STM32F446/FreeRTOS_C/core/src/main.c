@@ -16,8 +16,8 @@
 #include "task.h"
 // #include "drivers/uart.hpp"
 #include "string.h"
-#include "hal/hal_clock.h"
-#include "hal/hal_gpio.h"
+#include "os/hal/hal_clock.h"
+#include "os/hal/hal_gpio.h"
 
 #define debug_led PIN('D', 12)
 
