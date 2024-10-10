@@ -18,9 +18,9 @@
 #define BOARD_MOCKECU
 
 #if defined(BOARD_MOCKECU)
-    #include "os/boards/mockecu.h"
+    #include "os/config/boards/mockecu.h"
 #else
-    #include "os/boards/mockecu.h"
+    #include "os/config/boards/mockecu.h"
 #endif
 
 #endif

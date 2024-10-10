@@ -23,3 +23,4 @@
 #define PIN_CAN1_TX PIN('A', 12)
 
 #endif
+

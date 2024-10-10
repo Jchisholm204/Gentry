@@ -14,21 +14,24 @@
 #include "FreeRTOS.h"
 #include "os/config/FreeRTOSConfig.h"
 #include "task.h"
-// #include "drivers/uart.hpp"
+#include "os/drivers/serial.h"
 #include "string.h"
 #include "os/hal/hal_clock.h"
 #include "os/hal/hal_gpio.h"
+#include "os/config/pin_cfg.h"
 
 #define debug_led PIN('D', 12)
 
 
 void vTestTask(void * pvParams){
     (void)pvParams;
-    const static char* str = "Hello World from Serial 2\n";
+    serial_init(&Serial2, 9600, PIN_USART2_RX, PIN_USART2_TX);
+    char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
     // hal_uart_init(USART2, 9600, PIN('A', 2), PIN('A', 3));
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
+        serial_write(&Serial2, str, strlen(str), 100);
         // hal_uart_write_buf(USART2, (char*)str, strlen(str));
         // Serial2.write((uint8_t*)str, strlen(str));
         // sleep for 1000 ms

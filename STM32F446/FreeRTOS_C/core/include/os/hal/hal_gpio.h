@@ -10,6 +10,8 @@
 // CPU Frequency
 //#define FREQ 180000000//SystemCoreClock//16000000
 
+typedef uint16_t pin_t;
+
 #define GPIO(bank) ((GPIO_TypeDef *) (GPIOA_BASE + 0x400U * (bank)))
 enum GPIO_MODE_IO   { GPIO_MODE_INPUT, GPIO_MODE_OUTPUT, GPIO_MODE_AF, GPIO_MODE_ANALOG };
 enum GPIO_PULL_MODE { GPIO_RESET, GPIO_PULLUP, GPIO_PULLDOWN};
