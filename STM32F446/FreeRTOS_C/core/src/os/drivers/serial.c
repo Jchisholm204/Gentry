@@ -10,6 +10,7 @@
  */
 
 #include "os/drivers/serial.h"
+#include "os/config/nvic.h"
 
 
 void generic_handler(Serial_t *pHndl){
@@ -34,6 +35,7 @@ void USART1_IRQHandler(void){
 }
 Serial_t Serial1 = {
     USART1,
+    USART1_IRQn,
     NULL,
     {0},
     NULL,
@@ -46,6 +48,7 @@ void USART2_IRQHandler(void){
 }
 Serial_t Serial2 = {
     USART2,
+    USART2_IRQn,
     NULL,
     {0},
     NULL,
@@ -58,6 +61,7 @@ void USART3_IRQHandler(void){
 }
 Serial_t Serial3 = {
     USART3,
+    USART3_IRQn,
     NULL,
     {0},
     NULL,
@@ -70,6 +74,7 @@ void UART4_IRQHandler(void){
 }
 Serial_t Serial4 = {
     UART4,
+    UART4_IRQn,
     NULL,
     {0},
     NULL,
@@ -82,6 +87,7 @@ void UART5_IRQHandler(void){
 }
 Serial_t Serial5 = {
     UART5,
+    UART5_IRQn,
     NULL,
     {0},
     NULL,
@@ -94,6 +100,7 @@ void USART6_IRQHandler(void){
 }
 Serial_t Serial6 = {
     USART6,
+    USART6_IRQn,
     NULL,
     {0},
     NULL,
@@ -136,10 +143,23 @@ eSerialError serial_attach(Serial_t *pHndl, StreamBufferHandle_t *buf_hndl){
         return pHndl->state;
     if(pHndl->rx_buf == NULL){
         pHndl->rx_buf = buf_hndl;
+        NVIC_EnableIRQ(pHndl->IRQn);
+        NVIC_SetPriority(pHndl->IRQn, NVIC_Priority_MIN);
         hal_uart_enable_rxne(pHndl->UART, true);
         return eSerialOK;
     }
     return eSerialSemphr;
+}
+
+eSerialError serial_detach(Serial_t *pHndl){
+    if(pHndl == NULL)
+        return eSerialNULL;
+    if(pHndl->state != eSerialOK)
+        return pHndl->state;
+    pHndl->rx_buf = NULL;
+    hal_uart_enable_rxne(pHndl->UART, false);
+    NVIC_DisableIRQ(pHndl->IRQn);
+    return eSerialOK;
 }
 
 

@@ -35,6 +35,7 @@ typedef enum eSerialError eSerialError;
 
 typedef struct Serial {
     USART_TypeDef *UART;
+    IRQn_Type IRQn;
     SemaphoreHandle_t semphr_hndl;
     StaticSemaphore_t static_semphr;
     StreamBufferHandle_t *rx_buf;
