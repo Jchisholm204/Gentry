@@ -15,6 +15,7 @@
 void generic_handler(Serial_t *pHndl){
     // MUST read input port to clear iPending bit
     uint8_t rx_data = hal_uart_read_byte(pHndl->UART);
+    // hal_uart_write_byte(pHndl->UART, rx_data);
     // Check that a handler exists
     if(pHndl->rx_buf == NULL || pHndl->state != eSerialOK){
         // If there is no handler disable this interrupt
@@ -23,7 +24,7 @@ void generic_handler(Serial_t *pHndl){
     }
     // If a buffer exists, run the interrupt routine
     BaseType_t higher_woken = pdFALSE;
-    xStreamBufferSendFromISR(pHndl->rx_buf, &rx_data, sizeof(rx_data), &higher_woken);
+    xStreamBufferSendFromISR(*pHndl->rx_buf, &rx_data, sizeof(rx_data), &higher_woken);
     portYIELD_FROM_ISR(higher_woken);
 }
 
@@ -128,7 +129,7 @@ eSerialError serial_write(Serial_t *pHndl, char *buf, size_t len, TickType_t tim
     return eSerialSemphr;
 }
 
-eSerialError serial_attach(Serial_t *pHndl, StreamBufferHandle_t buf_hndl){
+eSerialError serial_attach(Serial_t *pHndl, StreamBufferHandle_t *buf_hndl){
     if(pHndl == NULL || buf_hndl == NULL)
         return eSerialNULL;
     if(pHndl->state != eSerialOK)

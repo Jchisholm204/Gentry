@@ -25,36 +25,45 @@
 
 void vTestTask(void * pvParams){
     (void)pvParams;
-    serial_init(&Serial2, 9600, PIN_USART2_RX, PIN_USART2_TX);
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
     // hal_uart_init(USART2, 9600, PIN('A', 2), PIN('A', 3));
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
-        serial_write(&Serial2, str, strlen(str), 100);
+        // serial_write(&Serial2, str, strlen(str), 100);
+        printf("Hello from Serial 2\n");
         // hal_uart_write_buf(USART2, (char*)str, strlen(str));
         // Serial2.write((uint8_t*)str, strlen(str));
         // sleep for 1000 ms
-        vTaskDelay(100);
+        vTaskDelay(1000);
     }
 }
 
-// void vUART_FeedBack(void * pvParams){
-//     (void)pvParams;
-//     StreamBufferHandle_t xStreamBuffer = xStreamBufferCreate(100, 1);
-//     // Serial2.attach(xStreamBuffer);
-//     for(;;){
-//         char buffer[] = "Task2\n";
-//         // int bytes = xStreamBufferReceive(xStreamBuffer, (void*)buffer, 100, portMAX_DELAY);
-//         // printf("Serial 2 got: %s", buffer);
-//         Serial2.write((uint8_t*)buffer, 7);
-//         vTaskDelay(1000);
-//     }
-// }
+void vUART_FeedBack(void * pvParams){
+    (void)pvParams;
+    StreamBufferHandle_t rx_buf = xStreamBufferCreate(100, 5);
+    // StreamBufferHandle_t xStreamBuffer = xStreamBufferCreate(100, 1);
+    // Serial2.attach(xStreamBuffer);
+    serial_attach(&Serial2, &rx_buf);
+    // char * msg = "Serial 2 got: ";
+    for(;;){
+        char buffer[100] = {0};
+        int bytes = xStreamBufferReceive(rx_buf, (void*)buffer, 100, portMAX_DELAY);
+        gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
+        // serial_write(&Serial2, msg, strlen(msg), 100);
+        // serial_write(&Serial2, buffer, bytes, 100);
+        printf("Serial 2 RX: %s\n", buffer);
+        // printf("Serial 2 got: %s", buffer);
+        // vTaskDelay(10);
+    }
+}
 
 // Initialize all system Interfaces
 void Init(void){
     
+    serial_init(&Serial2, 9600, PIN_USART2_RX, PIN_USART2_TX);
+    NVIC_EnableIRQ(USART2_IRQn);
+    NVIC_SetPriority(USART2_IRQn, NVIC_Priority_MIN);
     // Serial2.setup(9600, PIN('A', 3), PIN('A', 2));
 }
 
@@ -64,7 +73,7 @@ int main(void){
     Init();
     
     xTaskCreate(vTestTask, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-    // xTaskCreate(vUART_FeedBack, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
+    xTaskCreate(vUART_FeedBack, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
 
     // Start Scheduler
     vTaskStartScheduler();
@@ -72,6 +81,7 @@ int main(void){
     // System Main loop (Should never run -> Scheduler runs infinitely)
     for(;;) {
         asm("nop");
+        gpio_write(PIN_LED2, true);
     }
     return 0;
 }

@@ -37,7 +37,7 @@ typedef struct Serial {
     USART_TypeDef *UART;
     SemaphoreHandle_t semphr_hndl;
     StaticSemaphore_t static_semphr;
-    StreamBufferHandle_t rx_buf;
+    StreamBufferHandle_t *rx_buf;
     eSerialError state;
 } Serial_t;
 
@@ -71,7 +71,7 @@ extern eSerialError serial_write(Serial_t *pHndl, char *buf, size_t len, TickTyp
  * @param pBuf Pointer to the Serial Buffer Structure
  * @returns eSerialOK or Error
  */
-extern eSerialError serial_attach(Serial_t *pHndl, StreamBufferHandle_t buf_hndl);
+extern eSerialError serial_attach(Serial_t *pHndl, StreamBufferHandle_t *buf_hndl);
 
 /**
  * @brief detach an RX buffer to a Serial Interface
