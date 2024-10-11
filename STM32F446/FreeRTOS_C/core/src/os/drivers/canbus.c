@@ -1,7 +1,7 @@
 /**
  * @file canbus.c
  * @author Jacob Chisholm (https://Jchisholm204.github.io)
- * @brief UART Serial Driver
+ * @brief CAN Bus FreeRTOS Driver
  * @version 0.1
  * @date 2024-10-10
  * 
@@ -95,7 +95,7 @@ eCanError can_attach(CAN_t *pHndl, CanMailbox_t *pMailbox){
     CanMailbox_t *mailbox = pHndl->mailbox;
     if(mailbox == NULL)
         pHndl->mailbox = pMailbox;
-    while(mailbox != NULL)
+    while(mailbox->next != NULL)
         mailbox = mailbox->next;
     mailbox->next = pMailbox;
     pHndl->n_mailboxes++;
@@ -182,7 +182,8 @@ void vCAN_Hndl_tsk(void *pvParams){
         for(size_t i = 0; i < pHndl->n_mailboxes; i++){
             // Check that this mailbox is compatible with this message
             if((msg.id & pMailbox->id_msk) != 0){
-                xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 10);
+                printf("Attempting to send to mailbox %d\n", i);
+                xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 0);
             }
             // Advance to the next mailbox
             pMailbox = pMailbox->next;

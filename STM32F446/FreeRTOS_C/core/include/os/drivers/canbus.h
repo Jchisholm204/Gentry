@@ -1,7 +1,7 @@
 /**
  * @file canbus.h
  * @author Jacob Chisholm (https://Jchisholm204.github.io)
- * @brief UART Serial Driver
+ * @brief CAN Bus FreeRTOS Driver
  * @version 0.1
  * @date 2024-10-10
  * 

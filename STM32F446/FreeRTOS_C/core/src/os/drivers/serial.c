@@ -115,10 +115,10 @@ eSerialError serial_init(Serial_t *pHndl, unsigned long baud, pin_t pin_rx, pin_
     if(pHndl->state == eSerialOK)
         return pHndl->state;
     hal_uart_init(pHndl->UART, baud, pin_tx, pin_rx);
-    pHndl->semphr_hndl = xSemaphoreCreateMutexStatic(&pHndl->static_semphr);
-    if(pHndl->semphr_hndl == NULL)
+    pHndl->tx_hndl = xSemaphoreCreateMutexStatic(&pHndl->static_tx_semphr);
+    if(pHndl->tx_hndl == NULL)
         return eSerialInitFail;
-    xSemaphoreGive(pHndl->semphr_hndl);
+    xSemaphoreGive(pHndl->tx_hndl);
     pHndl->state = eSerialOK;
     return pHndl->state;
 }
@@ -128,9 +128,9 @@ eSerialError serial_write(Serial_t *pHndl, char *buf, size_t len, TickType_t tim
         return eSerialNULL;
     if(pHndl->state != eSerialOK)
         return pHndl->state;
-    if(xSemaphoreTake(pHndl->semphr_hndl, timeout) == pdTRUE){
+    if(xSemaphoreTake(pHndl->tx_hndl, timeout) == pdTRUE){
         hal_uart_write_buf(pHndl->UART, buf, len);
-        xSemaphoreGive(pHndl->semphr_hndl);
+        xSemaphoreGive(pHndl->tx_hndl);
         return eSerialOK;
     }
     return eSerialSemphr;

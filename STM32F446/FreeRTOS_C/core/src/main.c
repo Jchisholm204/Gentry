@@ -28,7 +28,7 @@ void vTestTask(void * pvParams){
     (void)pvParams;
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
-    
+    vTaskDelay(100);
     // hal_uart_init(USART2, 9600, PIN('A', 2), PIN('A', 3));
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
@@ -64,47 +64,50 @@ void vUART_FeedBack(void * pvParams){
 }
 
 void vCanTask(void *pvParams){
-    CanMailbox_t mailbox;
+    CanMailbox_t mailbox, mailbox2;
     // MUST be static
-    static can_msg_t buf[100];
+    static can_msg_t buf[100], buf2[100];
     // enter critical section for setup
-    // vPortEnterCritical();
     printf("Starting CAN1 rx task\n");
     can_mailbox_init(&mailbox, buf, 100);
+    can_mailbox_init(&mailbox2, buf2, 100);
     // Allow all can messages
     can_mailbox_addMask(&mailbox, UINT32_MAX);
+    // Only allow messages with the same mask as 200 and 203
+    // May result in messages such 201 or 202 to pass through
+    can_mailbox_addMask(&mailbox2, UINT32_MAX);
+    can_mailbox_addMask(&mailbox2, 203);
     // Attach the mailbox to the can task
     can_attach(&CANBus1, &mailbox);
+    can_attach(&CANBus1, &mailbox2);
     // exit setup
-    // vPortExitCritical();
-    vTaskDelay(100);
+    vTaskDelay(1000);
     printf("Entering CAN1 rx task\n");
-    for(int i = 0; i < 10; i++){
+    for(;;){
         can_msg_t msg;
-        can_mailbox_read(&mailbox, &msg, portMAX_DELAY);
-        printf("CAN1 got msg with id: %d\n", msg.id);
-        // vTaskDelay(100);
+        if(can_mailbox_read(&mailbox, &msg, 100) == eCanOK)
+            printf("CAN1 Mailbox 1 got msg with id: %d\n", msg.id);
+        if(can_mailbox_read(&mailbox2, &msg, 100) == eCanOK)
+            printf("CAN1 Mailbox 2 got msg with id: %d\n", msg.id);
+        vTaskDelay(100);
     }
-    // vPortEnterCritical();
     can_detach(&CANBus1, &mailbox);
-    // vPortExitCritical();
     printf("Mailbox detatched\n");
     // EXIT Gracefully (Scheduler will halt if this is not present)
-    vTaskSuspend(NULL);
+   vTaskSuspend(NULL);
+// vTaskDelay(portMAX_DELAY);
 }
 
 // Initialize all system Interfaces
 void Init(void){
+    // Initialize UART
     serial_init(&Serial2, 9600, PIN_USART2_RX, PIN_USART2_TX);
+    // Required for MockECU Board
     gpio_set_mode(PIN('A', 10), GPIO_MODE_OUTPUT);
     gpio_write(PIN('A', 10), false);
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
+    // Initialize CAN
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
-    NVIC_EnableIRQ(USART2_IRQn);
-    NVIC_SetPriority(USART2_IRQn, NVIC_Priority_MIN);
-    // NVIC_EnableIRQ(CAN1_RX0_IRQn);
-    // NVIC_SetPriority(CAN1_RX0_IRQn, NVIC_Priority_MIN);
-    // Serial2.setup(9600, PIN('A', 3), PIN('A', 2));
 }
 
 
@@ -112,6 +115,7 @@ int main(void){
 
     Init();
     
+    // THESE SHOULD BE STATIC
     xTaskCreate(vTestTask, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
     xTaskCreate(vUART_FeedBack, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
     xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);

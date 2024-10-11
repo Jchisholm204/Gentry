@@ -103,10 +103,11 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,-L./ld
     # Printf floats can be removed in production code
     -Wl,-u_printf_float
-    -Wl,-Map=${PROJECT_NAME}.map
+    -Wl,-Map=firmware.map
     -Wl,--print-memory-usage
     )
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> firmware.elf
     COMMAND ${CMAKE_OBJCOPY} -O ihex $<TARGET_FILE:${EXECUTABLE}> firmware.hex
     COMMAND ${CMAKE_OBJCOPY} -O binary $<TARGET_FILE:${EXECUTABLE}> firmware.bin)

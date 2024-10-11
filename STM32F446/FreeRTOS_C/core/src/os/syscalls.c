@@ -102,9 +102,13 @@ int _write(int fd, char *ptr, int len) {
     //     hal_uart_write_buf(port_uart2.port, callerID, strlen(callerID));
     //     hal_uart_write_buf(port_uart2.port, ": ", 3);
     //   }
-      hal_uart_write_buf(Serial2.UART, ptr, (size_t) len);
+      // hal_uart_write_buf(Serial2.UART, ptr, (size_t) len);
+      eSerialError e = serial_write(&Serial2, ptr, len, 100);
+      // if(e != eSerialOK)
+      //   hal_uart_write_buf(USART2, "FAIL\n", 5);
       // xSemaphoreGive(Serial2.semphr_hndl);
     // }
+    return 0;
   } //hal_uart_write_buf(UART_DEBUG, ptr, (size_t) len);
   return -1;
 }
