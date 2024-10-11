@@ -35,7 +35,8 @@ enum eCanError {
     // Mailbox is empty
     eCanEmpty,
     eCanFatal,
-    eCanMailboxNotFound
+    eCanMailboxNotFound,
+    eCanReadFail,
 };
 
 typedef enum eCanError eCanError;

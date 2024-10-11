@@ -19,6 +19,7 @@
 #include "os/hal/hal_clock.h"
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
+#include "os/drivers/canbus.h"
 
 #define debug_led PIN('D', 12)
 
@@ -27,6 +28,7 @@ void vTestTask(void * pvParams){
     (void)pvParams;
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
+    can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // hal_uart_init(USART2, 9600, PIN('A', 2), PIN('A', 3));
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));

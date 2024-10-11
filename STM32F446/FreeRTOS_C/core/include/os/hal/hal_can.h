@@ -13,7 +13,6 @@
 #pragma once
 
 #include "stm32f4xx.h"
-#include "errors.h"
 #include "hal_gpio.h"
 
 #define HAL_CAN_OK 0
