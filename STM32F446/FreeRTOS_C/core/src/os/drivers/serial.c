@@ -31,7 +31,7 @@ void generic_handler(Serial_t *pHndl){
 
 #if (configUSE_SERIAL1 == 1)
 void USART1_IRQHandler(void){
-    generic_handler(&Serial1)
+    generic_handler(&Serial1);
 }
 Serial_t Serial1 = {
     USART1,
@@ -57,7 +57,7 @@ Serial_t Serial2 = {
 #endif
 #if (configUSE_SERIAL3 == 1)
 void USART3_IRQHandler(void){
-    generic_handler(&Serial3)
+    generic_handler(&Serial3);
 }
 Serial_t Serial3 = {
     USART3,
@@ -70,7 +70,7 @@ Serial_t Serial3 = {
 #endif
 #if (configUSE_SERIAL4 == 1)
 void UART4_IRQHandler(void){
-    generic_handler(&Serial4)
+    generic_handler(&Serial4);
 }
 Serial_t Serial4 = {
     UART4,
@@ -83,7 +83,7 @@ Serial_t Serial4 = {
 #endif
 #if (configUSE_SERIAL5 == 1)
 void UART5_IRQHandler(void){
-    generic_handler(&Serial5)
+    generic_handler(&Serial5);
 }
 Serial_t Serial5 = {
     UART5,
@@ -96,7 +96,7 @@ Serial_t Serial5 = {
 #endif
 #if (configUSE_SERIAL6 == 1)
 void USART6_IRQHandler(void){
-    generic_handler(&Serial6)
+    generic_handler(&Serial6);
 }
 Serial_t Serial6 = {
     USART6,

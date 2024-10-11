@@ -16,6 +16,12 @@
 #include "errors.h"
 #include "hal_gpio.h"
 
+#define HAL_CAN_OK 0
+#define HAL_CAN_FILTER_SELRNG_ERR 1
+#define HAL_CAN_MAILBOX_SELRNG_ERR 2
+#define HAL_CAN_MAILBOX_NONEMPTY 3
+#define HAL_CAN_INIT_ERR 4
+
 typedef struct {
     uint32_t id;
     uint8_t data[8];
@@ -101,7 +107,7 @@ static inline uint8_t hal_can_setFilter(uint8_t index, uint8_t scale, uint8_t mo
 
     SET_BIT(CAN1->FA1R, (0x1UL << index)); // Reactivate the filter
 
-    return SYS_OK;
+    return HAL_CAN_OK;
 }
 
 /**
@@ -150,8 +156,8 @@ static inline uint8_t hal_can_init(CAN_TypeDef * CAN, CAN_BITRATE bitrate, bool 
     uint8_t f2_status = hal_can_setFilter(14, 1, 0, 0, 0x0UL, 0x0UL);
     CLEAR_BIT(CAN1->FMR, CAN_FMR_FINIT);              // Deactivate initialization mode
 
-    if(f1_status != SYS_OK) return f1_status;
-    if(f2_status != SYS_OK) return f2_status;
+    if(f1_status != HAL_CAN_OK) return f1_status;
+    if(f2_status != HAL_CAN_OK) return f2_status;
 
     // Enable the bus
     // Request to leave initialization mode
@@ -160,7 +166,7 @@ static inline uint8_t hal_can_init(CAN_TypeDef * CAN, CAN_BITRATE bitrate, bool 
     for(uint32_t wait_ack = 0; wait_ack < timeout; wait_ack++){
         if((CAN->MSR & CAN_MSR_INAK) == 0){
             // Return: Success if CAN enables successfully
-            return SYS_OK;
+            return HAL_CAN_OK;
         }
         for(uint32_t spin = 0; spin < timeout; spin++);
     }
@@ -252,7 +258,7 @@ static inline uint8_t hal_can_send(CAN_TypeDef * CAN, can_msg_t * tx_msg, uint8_
     CAN->sTxMailBox[mailbox].TIR = (uint32_t)(sTxMailBox_TIR | CAN_TI0R_TXRQ);
     
     // Return read OK
-    return SYS_OK;
+    return HAL_CAN_OK;
 
 }
 

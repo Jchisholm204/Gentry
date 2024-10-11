@@ -41,6 +41,7 @@ void vTestTask(void * pvParams){
 
 void vUART_FeedBack(void * pvParams){
     (void)pvParams;
+    StreamBufferHandle_t hndl = xStreamBufferCreateStatic(100, 1, NULL, NULL);
     StreamBufferHandle_t rx_buf = xStreamBufferCreate(100, 5);
     // StreamBufferHandle_t xStreamBuffer = xStreamBufferCreate(100, 1);
     // Serial2.attach(xStreamBuffer);
