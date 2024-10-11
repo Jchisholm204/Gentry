@@ -13,18 +13,22 @@
 #include "semphr.h"
 #include "queue.h"
 #include "stdio.h"
+#include "os/config/pin_cfg.h"
 
 void vCAN_Hndl_tsk(void *pvParams);
 
 eCanError can_init(CAN_t *pHndl, CAN_BITRATE bitrate, pin_t pin_rx, pin_t pin_tx){
     if(pHndl == NULL)
         return eCanNull;
+    printf("Waiting on %s Hardware\n", pHndl->pcName);
     // Setup CAN hardware
     uint8_t can_status = hal_can_init(pHndl->CAN, bitrate, true, pin_tx, pin_rx);
     if(can_status != HAL_CAN_OK){
         pHndl->state = eCanHW;
         return eCanHW;
     }
+    
+    printf("Setting up %s Semaphores\n", pHndl->pcName);
     
     // Setup Semaphores
     pHndl->tx_semphr_hndl = xSemaphoreCreateCountingStatic(2, 0, &pHndl->static_tx_semphr);
@@ -50,11 +54,16 @@ eCanError can_init(CAN_t *pHndl, CAN_BITRATE bitrate, pin_t pin_rx, pin_t pin_tx
             pHndl->pcName, 
             configMINIMAL_STACK_SIZE, 
             (void *)pHndl, 
+            // Allow higher priority tasks, but make the CAN task higher than most
             configMAX_PRIORITIES-2, 
+            // 0,
             pHndl->tsk_stack,
             &pHndl->tsk_buf
     );
 
+    hal_can_enable_rxne(pHndl->CAN, true);
+
+    printf("%s Setup finished\n", pHndl->pcName);
     pHndl->state = eCanOK;
     return eCanOK;
 
@@ -85,6 +94,8 @@ eCanError can_attach(CAN_t *pHndl, CanMailbox_t *pMailbox){
     if(pHndl->state != eCanOK)
         return pHndl->state;
     CanMailbox_t *mailbox = pHndl->mailbox;
+    if(mailbox == NULL)
+        pHndl->mailbox = pMailbox;
     while(mailbox != NULL)
         mailbox = mailbox->next;
     mailbox->next = pMailbox;
@@ -104,6 +115,8 @@ eCanError can_detach(CAN_t *pHndl, CanMailbox_t *pMailbox){
         if(mailbox->id != pMailbox->id)
             return eCanMailboxNotFound;
         pHndl->mailbox = NULL;
+        pHndl->n_mailboxes--;
+        return eCanOK;
     }
     for(size_t i = 0; i < pHndl->n_mailboxes; i++){
         if(mailbox->next == NULL)
@@ -111,6 +124,7 @@ eCanError can_detach(CAN_t *pHndl, CanMailbox_t *pMailbox){
         // Check if the next mailbox is the one to remove
         if(mailbox->next->id == pMailbox->id){
             mailbox->next = mailbox->next->next;
+            pHndl->n_mailboxes--;
             return eCanOK;
         }
         // Advance to next mailbox
@@ -150,29 +164,39 @@ void vCAN_Hndl_tsk(void *pvParams){
     if(pvParams == NULL)
         return;
     CAN_t * pHndl = (CAN_t*)pvParams;
-    printf("CANRX task live for %s", pHndl->pcName);
+    printf("CANRX task live for %s\n", pHndl->pcName);
     for(;;){
         (void)pHndl;
         can_msg_t msg;
+        // printf("Waiting for Message\n");
         size_t rx_bytes = xStreamBufferReceive(pHndl->rx_hndl, &msg, sizeof(can_msg_t), portMAX_DELAY);
+        // printf("%s got message with id %d of length %d bytes\n", pHndl->pcName, msg.id, rx_bytes);
         // This should not happen
         if(rx_bytes < sizeof(can_msg_t))
             continue;
         CanMailbox_t *pMailbox = pHndl->mailbox;
         // if there are no mailboxes, discard the message and move on
-        if(pMailbox == NULL)
+        vPortEnterCritical();
+        if(pMailbox == NULL){
+            printf("%s no mailboxes to send to.. discarding message\n", pHndl->pcName);
+            vPortExitCritical();
             continue;
+        }
         // Dump the message in the matching mailboxes
         for(size_t i = 0; i < pHndl->n_mailboxes; i++){
             // Check that this mailbox is compatible with this message
-            if((msg.id & pMailbox->id) != 0)
+            // printf("attempting send to mailbox %d %d & %d\n", i, msg.id, pMailbox->id_msk);
+            if((msg.id & pMailbox->id_msk) != 0){
+                // printf("Sending message %d to mailbox %d\n", msg.id, pMailbox->id);
                 xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 10);
+            }
             // Advance to the next mailbox
             pMailbox = pMailbox->next;
             // Check that the next mailbox is not NULL
             if(pMailbox == NULL)
                 break;
         }
+        vPortExitCritical();
     }
 }
 
@@ -182,6 +206,7 @@ void default_handler(CAN_t *pHndl){
     can_msg_t msg;
     // Read from the CAN's HW Mailbox
     hal_can_read(pHndl->CAN, &msg);
+    gpio_write(PIN_LED2, !gpio_read_odr(PIN_LED2));
     // forward the message to the handler task
     xStreamBufferSendFromISR(pHndl->rx_hndl, &msg, sizeof(can_msg_t), &higher_woken);
     // Yeild to higher prioity tasks (likely CAN handler task)

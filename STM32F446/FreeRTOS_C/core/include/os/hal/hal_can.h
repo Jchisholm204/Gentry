@@ -173,6 +173,13 @@ static inline uint8_t hal_can_init(CAN_TypeDef * CAN, CAN_BITRATE bitrate, bool 
     return HAL_CAN_INIT_ERR;
 }
 
+static inline void hal_can_enable_rxne(CAN_TypeDef * CAN, bool enable){
+    if(enable)
+        SET_BIT(CAN->IER, CAN_IER_FMPIE0);
+    else
+        CLEAR_BIT(CAN->IER, CAN_IER_FMPIE0);
+}
+
 static inline void hal_can_read(CAN_TypeDef * CAN, can_msg_t * rx_msg){
     // Determine Message ID format (Identifier Extension)
     rx_msg->format = (CAN_RI0R_IDE & CAN->sFIFOMailBox[0].RIR);

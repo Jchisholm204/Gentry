@@ -115,7 +115,7 @@ eSerialError serial_init(Serial_t *pHndl, unsigned long baud, pin_t pin_rx, pin_
     if(pHndl->state == eSerialOK)
         return pHndl->state;
     hal_uart_init(pHndl->UART, baud, pin_tx, pin_rx);
-    pHndl->semphr_hndl = xSemaphoreCreateBinaryStatic(&pHndl->static_semphr);
+    pHndl->semphr_hndl = xSemaphoreCreateMutexStatic(&pHndl->static_semphr);
     if(pHndl->semphr_hndl == NULL)
         return eSerialInitFail;
     xSemaphoreGive(pHndl->semphr_hndl);
