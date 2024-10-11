@@ -96,15 +96,15 @@ int _write(int fd, char *ptr, int len) {
     // if(port_uart2.port == NULL)          return -1;
     // if(port_uart2.semaphore == NULL)     return -1;
     // // Take over the debug usart
-    if(xSemaphoreTake(Serial2.semphr_hndl, (TickType_t) 10) == pdTRUE){
+    // if(xSemaphoreTake(Serial2.semphr_hndl, (TickType_t) 10) == pdTRUE){
     //   // Write caller ID, followed by ": ", then the argument given to printf
     //   if(callerID != NULL){
     //     hal_uart_write_buf(port_uart2.port, callerID, strlen(callerID));
     //     hal_uart_write_buf(port_uart2.port, ": ", 3);
     //   }
       hal_uart_write_buf(Serial2.UART, ptr, (size_t) len);
-      xSemaphoreGive(Serial2.semphr_hndl);
-    }
+      // xSemaphoreGive(Serial2.semphr_hndl);
+    // }
   } //hal_uart_write_buf(UART_DEBUG, ptr, (size_t) len);
   return -1;
 }
