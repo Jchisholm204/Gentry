@@ -63,13 +63,13 @@ void vUART_FeedBack(void * pvParams){
 
 void vCanTask(void *pvParams){
     CanMailbox_t mailbox;
-    const uint8_t buf[100*sizeof(can_msg_t)];
+    static can_msg_t buf[100];
     vPortEnterCritical();
     printf("Starting CAN1 rx task\n");
-    // eCanError e = can_mailbox_init(&mailbox, &buffer, 100);
-    // mailbox.buf_hndl = xStreamBufferCreateStatic(sizeof(can_msg_t)*100, sizeof(can_msg_t), &buf, &mailbox.static_buf);
-    mailbox.buf_hndl = xStreamBufferCreate(sizeof(can_msg_t)*100, sizeof(can_msg_t));
-    printf("Mailbox Initialized %d\n", 0);
+    eCanError e = can_mailbox_init(&mailbox, buf, 100);
+    // mailbox.buf_hndl = xStreamBufferCreateStatic(sizeof(can_msg_t)*100, sizeof(can_msg_t), buf, &mailbox.static_buf);
+    // mailbox.buf_hndl = xStreamBufferCreate(sizeof(can_msg_t)*100, sizeof(can_msg_t));
+    printf("Mailbox Initialized %d\n", e);
     // Allow all can messages
     can_mailbox_addMask(&mailbox, UINT32_MAX);
     can_attach(&CANBus1, &mailbox);
@@ -77,7 +77,7 @@ void vCanTask(void *pvParams){
     vPortExitCritical();
     vTaskDelay(100);
     printf("Entering CAN1 rx task\n");
-    for(int i = 0; i < 10; i++){
+    for(int i = 0; i < 100; i++){
         can_msg_t msg;
         can_mailbox_read(&mailbox, &msg, portMAX_DELAY);
         printf("CAN1 got msg with id: %d\n", msg.id);

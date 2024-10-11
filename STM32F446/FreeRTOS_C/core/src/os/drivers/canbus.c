@@ -178,7 +178,7 @@ void vCAN_Hndl_tsk(void *pvParams){
         // if there are no mailboxes, discard the message and move on
         vPortEnterCritical();
         if(pMailbox == NULL){
-            printf("%s no mailboxes to send to.. discarding message\n", pHndl->pcName);
+            // printf("%s no mailboxes to send to.. discarding message\n", pHndl->pcName);
             vPortExitCritical();
             continue;
         }
