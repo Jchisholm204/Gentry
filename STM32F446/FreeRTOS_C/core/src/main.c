@@ -78,6 +78,7 @@ void vCanTask(void *pvParams){
     can_mailbox_addMask(&mailbox2, UINT32_MAX);
     can_mailbox_addMask(&mailbox2, 203);
     // Attach the mailbox to the can task
+    // vTaskSuspend(NULL);
     can_attach(&CANBus1, &mailbox);
     can_attach(&CANBus1, &mailbox2);
     // exit setup

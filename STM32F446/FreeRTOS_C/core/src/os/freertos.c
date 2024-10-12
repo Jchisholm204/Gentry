@@ -22,6 +22,8 @@
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */
 void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackType_t **ppxIdleTaskStackBuffer, uint32_t *pulIdleTaskStackSize );
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
+// uint32_t ulGetRunTimeCounterValue(void);
 
 /* USER CODE BEGIN GET_IDLE_TASK_MEMORY */
 static StaticTask_t xIdleTaskTCBBuffer;
@@ -35,3 +37,16 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer, StackTy
   /* place for user code */
 }
 /* USER CODE END GET_IDLE_TASK_MEMORY */
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    // You can add logging or a debugging breakpoint here
+    // Example: Print the task name that caused the overflow
+    printf("Stack overflow in task: %s\n", pcTaskName);
+    
+    // Optionally, halt the system or enter an infinite loop
+    while (1)
+    {
+        // Halt the system or take appropriate actions
+    }
+}

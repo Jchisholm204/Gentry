@@ -93,11 +93,14 @@ eCanError can_attach(CAN_t *pHndl, CanMailbox_t *pMailbox){
     if(pHndl->state != eCanOK)
         return pHndl->state;
     CanMailbox_t *mailbox = pHndl->mailbox;
-    if(mailbox == NULL)
+    if(mailbox == NULL){
         pHndl->mailbox = pMailbox;
-    while(mailbox->next != NULL)
-        mailbox = mailbox->next;
-    mailbox->next = pMailbox;
+    }
+    else{
+        while (mailbox->next != NULL)
+            mailbox = mailbox->next;
+        mailbox->next = pMailbox;
+    }
     pHndl->n_mailboxes++;
     pMailbox->id = pHndl->n_mailboxes;
     return eCanOK;
@@ -173,17 +176,24 @@ void vCAN_Hndl_tsk(void *pvParams){
             continue;
         CanMailbox_t *pMailbox = pHndl->mailbox;
         // if there are no mailboxes, discard the message and move on
-        vPortEnterCritical();
+        // vPortEnterCritical();
         if(pMailbox == NULL){
-            vPortExitCritical();
+            // vPortExitCritical();
             continue;
         }
         // Dump the message in the matching mailboxes
         for(size_t i = 0; i < pHndl->n_mailboxes; i++){
             // Check that this mailbox is compatible with this message
             if((msg.id & pMailbox->id_msk) != 0){
-                printf("Attempting to send to mailbox %d\n", i);
-                xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 0);
+                // printf("Attempting to send to mailbox %d\n", i);
+                size_t aval_bytes =  xStreamBufferSpacesAvailable(pMailbox->buf_hndl);
+                if(aval_bytes > sizeof(can_msg_t)){
+                    size_t tx_bytes = xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 10);
+                    if (tx_bytes != sizeof(can_msg_t))
+                    {
+                        pHndl->state = eCanMailboxWriteError;
+                    }
+                }
             }
             // Advance to the next mailbox
             pMailbox = pMailbox->next;
@@ -191,7 +201,7 @@ void vCAN_Hndl_tsk(void *pvParams){
             if(pMailbox == NULL)
                 break;
         }
-        vPortExitCritical();
+        // vPortExitCritical();
     }
 }
 

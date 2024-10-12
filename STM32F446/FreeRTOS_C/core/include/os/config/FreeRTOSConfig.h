@@ -28,6 +28,8 @@
  */
 /* USER CODE END Header */
 
+#include "stm32f4xx.h"
+
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
 
@@ -59,6 +61,7 @@
 #define configUSE_PREEMPTION                     1
 #define configSUPPORT_STATIC_ALLOCATION          1
 #define configSUPPORT_DYNAMIC_ALLOCATION         1
+#define configCHECK_FOR_STACK_OVERFLOW           2
 #define configUSE_COUNTING_SEMAPHORES            1
 #define configUSE_IDLE_HOOK                      0
 #define configUSE_TICK_HOOK                      0
@@ -72,6 +75,9 @@
 #define configUSE_MUTEXES                        1
 #define configQUEUE_REGISTRY_SIZE                8
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  1
+#define configUSE_TRACE_FACILITY                 1 // Enable trace facility
+#define configGENERATE_RUN_TIME_STATS            1 // Enable runtime stats
+#define configRECORD_STACK_HIGH_ADDRESS          1
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed
    if lengths will always be less than the number of bytes in a size_t. */
@@ -137,6 +143,11 @@ standard names. */
 
 /* USER CODE BEGIN Defines */
 /* Section where parameter definitions can be added (for instance, to override default ones in FreeRTOS.h) */
-/* USER CODE END Defines */
+
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()  /* No-op since SysTick is already configured */
+// #define portGET_RUN_TIME_COUNTER_VALUE() (SysTick->LOAD - SysTick->VAL)
+#define portGET_RUN_TIME_COUNTER_VALUE() ((uint32_t)(SysTick->LOAD - SysTick->VAL) / (configCPU_CLOCK_HZ / configTICK_RATE_HZ))
+
+
 
 #endif /* FREERTOS_CONFIG_H */
