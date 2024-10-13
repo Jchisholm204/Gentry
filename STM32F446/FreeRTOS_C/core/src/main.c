@@ -75,7 +75,7 @@ void vCanTask(void *pvParams){
     can_mailbox_addMask(&mailbox, UINT32_MAX);
     // Only allow messages with the same mask as 200 and 203
     // May result in messages such 201 or 202 to pass through
-    can_mailbox_addMask(&mailbox2, UINT32_MAX);
+    can_mailbox_addMask(&mailbox2, 200);
     can_mailbox_addMask(&mailbox2, 203);
     // Attach the mailbox to the can task
     // vTaskSuspend(NULL);
