@@ -47,7 +47,7 @@ void vUART_FeedBack(void * pvParams){
     StreamBufferHandle_t rx_buf = xStreamBufferCreate(100, 5);
     // StreamBufferHandle_t xStreamBuffer = xStreamBufferCreate(100, 1);
     // Serial2.attach(xStreamBuffer);
-    serial_attach(&Serial2, &rx_buf);
+    serial_attach(&Serial3, &rx_buf);
     // char * msg = "Serial 2 got: ";
     vTaskDelay(1000);
     printf("Uart Feedback online\n");
@@ -63,52 +63,52 @@ void vUART_FeedBack(void * pvParams){
     }
 }
 
-void vCanTask(void *pvParams){
-    CanMailbox_t mailbox, mailbox2;
-    // MUST be static
-    static can_msg_t buf[100], buf2[100];
-    // enter critical section for setup
-    printf("Starting CAN1 rx task\n");
-    can_mailbox_init(&mailbox, buf, 100);
-    can_mailbox_init(&mailbox2, buf2, 100);
-    // Allow all can messages
-    can_mailbox_addMask(&mailbox, UINT32_MAX);
-    // Only allow messages with the same mask as 200 and 203
-    // May result in messages such 201 or 202 to pass through
-    can_mailbox_addMask(&mailbox2, 200);
-    can_mailbox_addMask(&mailbox2, 203);
-    // Attach the mailbox to the can task
-    // vTaskSuspend(NULL);
-    can_attach(&CANBus1, &mailbox);
-    can_attach(&CANBus1, &mailbox2);
-    // exit setup
-    vTaskDelay(1000);
-    printf("Entering CAN1 rx task\n");
-    for(;;){
-        can_msg_t msg;
-        if(can_mailbox_read(&mailbox, &msg, 100) == eCanOK)
-            printf("CAN1 Mailbox 1 got msg with id: %d\n", msg.id);
-        if(can_mailbox_read(&mailbox2, &msg, 100) == eCanOK)
-            printf("CAN1 Mailbox 2 got msg with id: %d\n", msg.id);
-        vTaskDelay(100);
-    }
-    can_detach(&CANBus1, &mailbox);
-    printf("Mailbox detatched\n");
-    // EXIT Gracefully (Scheduler will halt if this is not present)
-   vTaskSuspend(NULL);
-// vTaskDelay(portMAX_DELAY);
-}
+// void vCanTask(void *pvParams){
+//     CanMailbox_t mailbox, mailbox2;
+//     // MUST be static
+//     static can_msg_t buf[100], buf2[100];
+//     // enter critical section for setup
+//     printf("Starting CAN1 rx task\n");
+//     can_mailbox_init(&mailbox, buf, 100);
+//     can_mailbox_init(&mailbox2, buf2, 100);
+//     // Allow all can messages
+//     can_mailbox_addMask(&mailbox, UINT32_MAX);
+//     // Only allow messages with the same mask as 200 and 203
+//     // May result in messages such 201 or 202 to pass through
+//     can_mailbox_addMask(&mailbox2, 200);
+//     can_mailbox_addMask(&mailbox2, 203);
+//     // Attach the mailbox to the can task
+//     // vTaskSuspend(NULL);
+//     can_attach(&CANBus1, &mailbox);
+//     can_attach(&CANBus1, &mailbox2);
+//     // exit setup
+//     vTaskDelay(1000);
+//     printf("Entering CAN1 rx task\n");
+//     for(;;){
+//         can_msg_t msg;
+//         if(can_mailbox_read(&mailbox, &msg, 100) == eCanOK)
+//             printf("CAN1 Mailbox 1 got msg with id: %d\n", msg.id);
+//         if(can_mailbox_read(&mailbox2, &msg, 100) == eCanOK)
+//             printf("CAN1 Mailbox 2 got msg with id: %d\n", msg.id);
+//         vTaskDelay(100);
+//     }
+//     can_detach(&CANBus1, &mailbox);
+//     printf("Mailbox detatched\n");
+//     // EXIT Gracefully (Scheduler will halt if this is not present)
+//    vTaskSuspend(NULL);
+// // vTaskDelay(portMAX_DELAY);
+// }
 
 // Initialize all system Interfaces
 void Init(void){
     // Initialize UART
-    serial_init(&Serial2, 9600, PIN_USART2_RX, PIN_USART2_TX);
+    serial_init(&Serial3, 9600, PIN_USART3_RX, PIN_USART3_TX);
     // Required for MockECU Board
-    gpio_set_mode(PIN('A', 10), GPIO_MODE_OUTPUT);
-    gpio_write(PIN('A', 10), false);
+    // gpio_set_mode(PIN('A', 10), GPIO_MODE_OUTPUT);
+    // gpio_write(PIN('A', 10), false);
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     // Initialize CAN
-    can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
+    // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
 }
 
 
@@ -119,7 +119,7 @@ int main(void){
     // THESE SHOULD BE STATIC
     xTaskCreate(vTestTask, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
     xTaskCreate(vUART_FeedBack, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-    xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
+    // xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
     // Start Scheduler
     vTaskStartScheduler();

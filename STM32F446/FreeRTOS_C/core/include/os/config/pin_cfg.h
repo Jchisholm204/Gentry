@@ -15,10 +15,13 @@
 #include "os/hal/hal_gpio.h"
 
 // Define the board to use
-#define BOARD_MOCKECU
+// #define BOARD_MOCKECU
+#define BOARD_NUCLEOZE
 
 #if defined(BOARD_MOCKECU)
     #include "os/config/boards/mockecu.h"
+#elif defined(BOARD_NUCLEOZE)
+    #include "os/config/boards/nucleoze.h"
 #else
     #include "os/config/boards/mockecu.h"
 #endif

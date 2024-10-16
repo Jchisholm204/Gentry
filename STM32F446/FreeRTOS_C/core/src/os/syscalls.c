@@ -7,6 +7,7 @@
 #include "task.h"
 #include "string.h"
 #include "os/drivers/serial.h"
+#include "os/config/pin_cfg.h"
 
 int _fstat(int fd, struct stat *st) {
   if (fd < 0) return -1;
@@ -103,7 +104,7 @@ int _write(int fd, char *ptr, int len) {
     //     hal_uart_write_buf(port_uart2.port, ": ", 3);
     //   }
       // hal_uart_write_buf(Serial2.UART, ptr, (size_t) len);
-      eSerialError e = serial_write(&Serial2, ptr, len, 10);
+      eSerialError e = serial_write(&cfgSerial, ptr, len, 10);
       // if(e != eSerialOK)
       //   hal_uart_write_buf(USART2, "FAIL\n", 5);
       // xSemaphoreGive(Serial2.semphr_hndl);
