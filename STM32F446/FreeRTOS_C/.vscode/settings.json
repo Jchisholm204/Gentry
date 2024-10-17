@@ -2,5 +2,6 @@
     "files.associations": {
         "*.b": "brainfuck",
         "hal_gpio.h": "c"
-    }
+    },
+    "cortex-debug.variableUseNaturalFormat": false
 }
