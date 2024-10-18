@@ -289,7 +289,7 @@ void init_usb_otg(void) {
 
     connect(true);  // Enable USB connection
     NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN - 2);
-    NVIC_EnableIRQ(OTG_FS_IRQn);
+    // NVIC_EnableIRQ(OTG_FS_IRQn);
 }
 
 void vUSB_tsk(void * pvParams){
