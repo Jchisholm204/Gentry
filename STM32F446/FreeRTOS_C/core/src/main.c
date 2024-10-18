@@ -126,7 +126,7 @@ void USB_Init_Core(void){
     // Global PHY Interrupt enable
     USB_OTG_FS->GAHBCFG |= USB_OTG_GAHBCFG_GINT;
     // Interrupt on Fully empty TX FIFO
-    // USB_OTG_FS->GAHBCFG &= ~USB_OTG_GAHBCFG_TXFELVL;
+    USB_OTG_FS->GAHBCFG &= ~USB_OTG_GAHBCFG_TXFELVL;
     // USB_OTG_FS->GINTSTS &= ~USB_OTG_GINTSTS_RXFLVL;
     USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_VBDEN;  // Enable VBUS sensing
     USB_OTG_FS->GCCFG |= USB_OTG_GCCFG_PWRDWN;  // Power up the USB core
@@ -148,12 +148,97 @@ void USB_Init_Core(void){
     
 }
 
+/* modify bitfield */
+#define _BMD(reg, msk, val)     (reg) = (((reg) & ~(msk)) | (val))
+/* set bitfield */
+#define _BST(reg, bits)         (reg) = ((reg) | (bits))
+/* clear bitfield */
+#define _BCL(reg, bits)         (reg) = ((reg) & ~(bits))
+/* wait until bitfield set */
+#define _WBS(reg, bits)         while(((reg) & (bits)) == 0)
+/* wait until bitfield clear */
+#define _WBC(reg, bits)         while(((reg) & (bits)) != 0)
+/* wait for bitfield value */
+#define _WVL(reg, msk, val)     while(((reg) & (msk)) != (val))
+/* bit value */
+#define _BV(bit)                (0x01 << (bit))
+#define MAX_EP          6
+#define MAX_RX_PACKET   128
+#define MAX_CONTROL_EP  1
+#define MAX_FIFO_SZ     320  /*in 32-bit chunks */
+
+#define RX_FIFO_SZ      ((4 * MAX_CONTROL_EP + 6) + ((MAX_RX_PACKET / 4) + 1) + (MAX_EP * 2) + 1)
+static USB_OTG_GlobalTypeDef * const OTG  = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_GLOBAL_BASE);
+static USB_OTG_DeviceTypeDef * const OTGD = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_DEVICE_BASE);
+static volatile uint32_t * const OTGPCTL  = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_PCGCCTL_BASE);
+
+#define USB_EP_IN(ep) ((USB_OTG_INEndpointTypeDef*)((uint32_t*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_IN_ENDPOINT_BASE + ((uint64_t)ep<<5))))
+#define USB_EP_OUT(ep) ((USB_OTG_OUTEndpointTypeDef*)((uint32_t*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_OUT_ENDPOINT_BASE + ((uint64_t)ep<<5))))
+#define USB_OTG_FIFO(epnum) (*(__IO uint32_t *)(USB_OTG_FIFO_BASE + (epnum) * 0x1000U))
+
+static void enable(bool enable) {
+    if (enable) {
+        /* enabling USB_OTG in RCC */
+        _BST(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+        _WBS(OTG->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL);
+        /* configure OTG as device */
+        OTG->GUSBCFG = USB_OTG_GUSBCFG_FDMOD | USB_OTG_GUSBCFG_PHYSEL |
+                       _VAL2FLD(USB_OTG_GUSBCFG_TRDT, 0x06);
+        /* configuring Vbus sense and powerup PHY */
+#if defined(USBD_VBUS_DETECT)
+        OTG->GCCFG |= USB_OTG_GCCFG_VBDEN | USB_OTG_GCCFG_PWRDWN;
+#else
+        OTG->GOTGCTL |= USB_OTG_GOTGCTL_BVALOEN | USB_OTG_GOTGCTL_BVALOVAL;
+        OTG->GCCFG = USB_OTG_GCCFG_PWRDWN;
+#endif
+        /* restart PHY*/
+        *OTGPCTL = 0;
+        /* soft disconnect device */
+        _BST(OTGD->DCTL, USB_OTG_DCTL_SDIS);
+        /* Setup USB FS speed and frame interval */
+        _BMD(OTGD->DCFG, USB_OTG_DCFG_PERSCHIVL | USB_OTG_DCFG_DSPD,
+             _VAL2FLD(USB_OTG_DCFG_PERSCHIVL, 0) | _VAL2FLD(USB_OTG_DCFG_DSPD, 0x03));
+        /* unmask EP interrupts */
+        OTGD->DIEPMSK = USB_OTG_DIEPMSK_XFRCM;
+        /* unmask core interrupts */
+        OTG->GINTMSK  = USB_OTG_GINTMSK_USBRST | USB_OTG_GINTMSK_ENUMDNEM |
+#if !defined(USBD_SOF_DISABLED)
+                        USB_OTG_GINTMSK_SOFM |
+#endif
+                        USB_OTG_GINTMSK_USBSUSPM | USB_OTG_GINTMSK_WUIM |
+                        USB_OTG_GINTMSK_IEPINT | USB_OTG_GINTMSK_RXFLVLM;
+        /* clear pending interrupts */
+        OTG->GINTSTS = 0xFFFFFFFF;
+        /* unmask global interrupt */
+        OTG->GAHBCFG = USB_OTG_GAHBCFG_GINT;
+        /* setting max RX FIFO size */
+        OTG->GRXFSIZ = RX_FIFO_SZ;
+        /* setting up EP0 TX FIFO SZ as 64 byte */
+        OTG->DIEPTXF[0] = RX_FIFO_SZ | (0x10 << 16);
+    } else {
+        if (RCC->AHB2ENR & RCC_AHB2ENR_OTGFSEN) {
+            _BST(RCC->AHB2RSTR, RCC_AHB2RSTR_OTGFSRST);
+            _BCL(RCC->AHB2RSTR, RCC_AHB2RSTR_OTGFSRST);
+            _BCL(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+        }
+    }
+}
+
+static void connect(bool connect) {
+    if (connect) {
+        _BCL(OTGD->DCTL, USB_OTG_DCTL_SDIS);
+    } else {
+        _BST(OTGD->DCTL, USB_OTG_DCTL_SDIS);
+    }
+}
+
 void USB_Init_Device(void){
     USB_OTG_DeviceTypeDef *usbdev = (USB_OTG_DeviceTypeDef*)USB_OTG_DEVICE_BASE;
     // Set Periodic Frame interval to 90% | Device Speed to Full Speed using FS PHY
     usbdev->DCFG |= USB_OTG_DCFG_PFIVL_1 | (0x3 << USB_OTG_DCFG_DSPD_Pos);
     // Send out packet to the application and send NACK packet to host
     usbdev->DCFG &= ~(USB_OTG_DCFG_NZLSOHSK);
+    *OTGPCTL = 0;
     // Clear Soft Disconnect Bit
     usbdev->DCTL &= ~(USB_OTG_DCTL_SDIS);
 
@@ -173,27 +258,66 @@ static inline void USB_RemoteWake(void){
 
 volatile bool reset_detected = false, reset_ended = false;
 
+void init_usb_otg(void) {
+    // Enable USB clock
+    enable(true);
+    USB_OTG_FS->GUSBCFG |= USB_OTG_GUSBCFG_FDMOD;  // Force Device Mode
+
+    // Setup NACK for all OUT endpoints
+    for (int ep = 0; ep < 6; ep++)
+        USB_EP_OUT(ep)->DOEPCTL |= USB_OTG_DOEPCTL_SNAK;
+
+    // Setup receive FIFO
+    OTG->GRXFSIZ = 0x00000200;  // Set receive FIFO size
+    OTG->DIEPTXF0_HNPTXFSIZ = 16;  // Non-periodic transmit FIFO size
+
+    // Enable interrupts
+    OTG->GINTSTS |= USB_OTG_GINTSTS_RXFLVL;
+    OTGD->DAINTMSK |= USB_OTG_DAINT_IEPINT;  // IN endpoint interrupt
+    OTGD->DAINTMSK |= USB_OTG_DAINT_OEPINT;  // OUT endpoint interrupt
+    OTGD->DOEPMSK |= USB_OTG_DOEPMSK_STUPM;  // Setup phase done interrupt
+    OTGD->DOEPMSK |= USB_OTG_DOEPMSK_XFRCM;  // Transfer complete interrupt
+    OTGD->DIEPMSK |= USB_OTG_DIEPMSK_XFRCM;  // IN endpoint transfer complete interrupt
+    USB_OTG_FS->GAHBCFG &= ~USB_OTG_GAHBCFG_TXFELVL;
+
+    // Prepare EP0 OUT to receive setup packet (3 SETUP packets max)
+    USB_EP_OUT(0)->DOEPTSIZ = (3 << USB_OTG_DOEPTSIZ_STUPCNT_Pos) | (1 << USB_OTG_DOEPTSIZ_PKTCNT_Pos) | (8 << USB_OTG_DOEPTSIZ_XFRSIZ_Pos);
+
+    // global NAK
+    OTGD->DCTL |= USB_OTG_DCTL_SGONAK;
+    // OTGD->DCTL |= USB_OTG_DCTL_SGINAK;
+
+    connect(true);  // Enable USB connection
+    NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN - 2);
+    NVIC_EnableIRQ(OTG_FS_IRQn);
+}
+
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
 
-    printf("Initializing USB Core\n");
-    USB_Init_Core();
-    printf("USB Core Initialized\n");
-    printf("Initializing USB Device\n");
-    USB_Init_Device();
-    printf("USB Device Initialized\n");
-    printf("Attempting to wake Host\n");
-    USB_RemoteWake();
+    // Setup USB GPIO
+    GPIOA->MODER &= ~(0x3U << (PINNO(PIN_USB_DM)*2));
+    GPIOA->MODER |= (0x2U << (PINNO(PIN_USB_DM)*2));
+    GPIOA->OSPEEDR |= (0x3U << (PINNO(PIN_USB_DM)*2));
+    GPIOA->AFR[1] &= ~(0x15U << ((PINNO(PIN_USB_DM) & 7)*4));
+    GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DM) & 7)*4));
+    GPIOA->MODER &= (uint32_t)~(uint32_t)((uint32_t)0x3UL << (uint32_t)(PINNO(PIN_USB_DP)*2UL));
+    GPIOA->MODER |= (0x2U << (PINNO(PIN_USB_DP)*2));
+    GPIOA->OSPEEDR |= (0x3U << (PINNO(PIN_USB_DP)*2));
+    GPIOA->AFR[1] &= ~(0x15U << ((PINNO(PIN_USB_DP) & 7)*4));
+    GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DP) & 7)*4));
 
-    for(;;){
-        if(reset_detected)
-            printf("USB reset detected\n");
-        else
-            USB_RemoteWake();
-        if(reset_ended)
-            printf("USB reset finished\n");
-        vTaskDelay(10);
-    }
+    init_usb_otg();
+
+    // for(;;){
+    //     // if(reset_detected)
+    //     //     printf("USB reset detected\n");
+    //     // else
+    //     //     USB_RemoteWake();
+    //     // if(reset_ended)
+    //     //     printf("USB reset finished\n");
+    //     vTaskDelay(10);
+    // }
     // Main USB task delay to allow for USB processing
     vTaskDelay(100);
     printf("Deleting USB task\n");
@@ -202,52 +326,57 @@ void vUSB_tsk(void * pvParams){
 
 
 // Interrupt handler for USB OTG FS
+// Interrupt handler for USB OTG FS
 void OTG_FS_IRQHandler(void) {
     uint32_t gintsts = USB_OTG_FS->GINTSTS;
 
     // Check for USB reset interrupt (used when the USB host resets the device)
     if (gintsts & USB_OTG_GINTSTS_USBRST) {
-        // printf("USB Reset Interrupt\n");
-        reset_detected = !reset_detected;
+        reset_detected = true;
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_USBRST;  // Clear interrupt flag
     }
 
     // Handle enumeration done (when device enumeration is complete)
     if (gintsts & USB_OTG_GINTSTS_ENUMDNE) {
-        // printf("USB Enumeration Done\n");
-        reset_ended = !reset_ended;
+        reset_ended = true;
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_ENUMDNE;  // Clear interrupt flag
     }
 
     // Handle RX FIFO level (data received on control endpoint)
     if (gintsts & USB_OTG_GINTSTS_RXFLVL) {
-        // printf("RX FIFO Level Interrupt (data received)\n");
         // Add RX FIFO processing code here...
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_RXFLVL;   // Clear interrupt flag
     }
 
+    if (gintsts & USB_OTG_GINTSTS_NPTXFE) {
+        // Add RX FIFO processing code here...
+        USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_NPTXFE;   // Clear interrupt flag
+    }
+
     // Start of Frame interrupt
     if (gintsts & USB_OTG_GINTSTS_SOF) {
-        // printf("Start of Frame\n");
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_SOF;      // Clear interrupt flag
     }
 
-    if(gintsts & USB_OTG_GINTSTS_GINAKEFF){
-        USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_GINAKEFF;      // Clear interrupt flag
+    // Handle Global IN NAK Effective interrupt
+    if (gintsts & USB_OTG_GINTSTS_GINAKEFF) {
+        USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_GINAKEFF; // Clear interrupt flag
     }
 
-    if(gintsts & 0x10){
-        USB_OTG_FS->GINTSTS = 0x10;      // Clear interrupt flag
+    // Handle other interrupt flag (unknown, 0x10)
+    if (gintsts & 0x10) {
+        USB_OTG_FS->GINTSTS = 0x10;                    // Clear interrupt flag
     }
 
-    if(gintsts & USB_OTG_GINTSTS_OTGINT){
-        uint32_t goint = USB_OTG_HS->GOTGINT;
-        USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_OTGINT;      // Clear interrupt flag
+    // Handle OTG interrupt
+    if (gintsts & USB_OTG_GINTSTS_OTGINT) {
+        uint32_t goint = USB_OTG_FS->GOTGINT;
+        USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_OTGINT;   // Clear interrupt flag
     }
-    // Handle any other interrupts you need to process
-    // Clear Everthing
-    // USB_OTG_FS->GINTSTS = gintsts;
+
+    // Clear other necessary interrupt flags if needed
 }
+
 
 // Initialize all system Interfaces
 void Init(void){
