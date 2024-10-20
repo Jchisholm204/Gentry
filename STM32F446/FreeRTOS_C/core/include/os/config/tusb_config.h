@@ -119,4 +119,12 @@
 // MSC Buffer size of Device Mass storage
 #define CFG_TUD_MSC_EP_BUFSIZE   512
 
+// Add these definitions to your project configuration (e.g., in a header file included early)
+#define FSDEV_REG_BASE            0x50000000  // Base address for USB device
+#define FSDEV_PMA_BASE           (FSDEV_REG_BASE + 0x1000)  // Modify as necessary
+
+// // Add this line to specify the specific IRQ number if not defined
+// #define FSDEV_IRQ_NUM            OTG_FS_IRQn // This may vary, check the datasheet
+
+
 #endif /* _TUSB_CONFIG_H_ */

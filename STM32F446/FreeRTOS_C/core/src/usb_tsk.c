@@ -25,13 +25,14 @@
 #include "tusb_option.h"
 #include "device/dcd.h"
 #include "portable/st/stm32_fsdev/fsdev_stm32.h"
+#include "device/usbd.h"
 #include "tusb.h"
 
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
     printf("USB Task Online\n");
     
-    tud_init(BOARD_TUD_RHPORT);
+    tud_init(0);
     // NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN-2);
     // NVIC_EnableIRQ(OTG_FS_IRQn);
 

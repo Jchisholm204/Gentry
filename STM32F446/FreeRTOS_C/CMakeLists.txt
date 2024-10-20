@@ -57,9 +57,12 @@ set(TINYUSB_SOURCES
     ${TUSB_DIR}/src/tusb.c
     ${TUSB_DIR}/src/device/usbd.c
     ${TUSB_DIR}/src/class/cdc/cdc_device.c  # CDC class for virtual COM port
-    ${TUSB_DIR}/src/class/vendor/vendor_device.c  # Vendor-specific class for custom data
+    # ${TUSB_DIR}/src/class/vendor/vendor_device.c  # Vendor-specific class for custom data
     ${TUSB_DIR}/src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c  # STM32 FS device driver
 )
+# file(GLOB_RECURSE TINYUSB_SOURCES FOLLOW_SYMLINKS
+#     ${TUSB_DIR}/*.c
+# )
 
 # Add these files to your target
 # add_library(TinyUSB STATIC ${TINYUSB_SOURCES})
@@ -79,8 +82,8 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
 add_executable(${EXECUTABLE}
     ${RTOS_DIR}/portable/GCC/ARM_CM4F/port.c
     ${RTOS_DIR}/portable/MemMang/heap_4.c
-    ${RTOS_SOURCES}
     ${TUSB_SOURCES}
+    ${RTOS_SOURCES}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
