@@ -21,10 +21,25 @@
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
 #include "os/drivers/canbus.h"
+#include "tusb_config.h"
+#include "tusb_option.h"
+#include "device/dcd.h"
+#include "portable/st/stm32_fsdev/fsdev_stm32.h"
+#include "tusb.h"
 
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
     printf("USB Task Online\n");
+    
+    tud_init(BOARD_TUD_RHPORT);
+    // NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN-2);
+    // NVIC_EnableIRQ(OTG_FS_IRQn);
+
+    for(;;){
+        // tud_task();
+        vTaskDelay(1);
+    }
+
     // Main USB task delay to allow for USB processing
     vTaskDelay(100);
     printf("Deleting USB task\n");
@@ -33,5 +48,5 @@ void vUSB_tsk(void * pvParams){
 
 
 void OTG_FS_IRQHandler(void) {
-    for(;;) __asm("nop");
+    // tud_int_handler(BOARD_TUD_RHPORT);
 }

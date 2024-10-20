@@ -1,0 +1,3 @@
+[submodule "STM32F446/FreeRTOS_C/tinyusb"]
+	path = STM32F446/FreeRTOS_C/tinyusb
+	url = https://github.com/hathach/tinyusb.git

@@ -21,6 +21,7 @@
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
 #include "os/drivers/canbus.h"
+#include "os/os_time.h"
 
 
 void vTestTask(void * pvParams){
@@ -31,7 +32,14 @@ void vTestTask(void * pvParams){
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
         // serial_write(&Serial2, str, strlen(str), 100);
-        printf("SysTime: %0.3f s\n", ((float)xTaskGetTickCount())/((float)configTICK_RATE_HZ));
+        // int ms = xTaskGetTickCount();
+        // int secs = ((ms+500)/1000);
+        // int mins = (secs / 60) % 60;
+        // ms = ms % 1000;
+        // printf("SysTime: %d:%d.%d\n", mins, secs, ms);
+        struct ctime time;
+        cTimeGet(xTaskGetTickCount(), &time);
+        printf(PRINT_CTIME(time));
         // hal_uart_write_buf(USART2, (char*)str, strlen(str));
         // Serial2.write((uint8_t*)str, strlen(str));
         // sleep for 1000 ms

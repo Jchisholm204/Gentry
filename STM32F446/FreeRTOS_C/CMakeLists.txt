@@ -7,6 +7,7 @@ include(./gcc-arm-none-eabi.cmake)
 project(Q24VCU)
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core)
 set(RTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS)
+set(TUSB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/tinyusb)
 
 set(MCU_FAMILY STM32F4xx)
 set(MCU_MODEL STM32F446xx)
@@ -44,11 +45,24 @@ set(INCLUDE_DIRECTORIES
     ${RTOS_DIR}/portable/GCC/ARM_CM4F
     ${PROJECT_DIR}/include/os/config
     ${RTOS_DIR}/include
-    
+    ${TUSB_DIR}/src
 )
 
+# FreeRTOS Sources
 file(GLOB RTOS_SOURCES
     ${RTOS_DIR}/*.c)
+
+# TinyUSB sources for CDC and custom classes
+set(TINYUSB_SOURCES
+    ${TUSB_DIR}/src/tusb.c
+    ${TUSB_DIR}/src/device/usbd.c
+    ${TUSB_DIR}/src/class/cdc/cdc_device.c  # CDC class for virtual COM port
+    ${TUSB_DIR}/src/class/vendor/vendor_device.c  # Vendor-specific class for custom data
+    ${TUSB_DIR}/src/portable/st/stm32_fsdev/dcd_stm32_fsdev.c  # STM32 FS device driver
+)
+
+# Add these files to your target
+# add_library(TinyUSB STATIC ${TINYUSB_SOURCES})
 
 set(GENERIC_COMPILE_OPTIONS
     -Wall
@@ -60,14 +74,13 @@ set(GENERIC_COMPILE_OPTIONS
 
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/src/*.c
-    ${PROJECT_DIR}/src/*.cpp
-    ${PROJECT_DIR}/src/*.cc
 )
 
 add_executable(${EXECUTABLE}
     ${RTOS_DIR}/portable/GCC/ARM_CM4F/port.c
     ${RTOS_DIR}/portable/MemMang/heap_4.c
     ${RTOS_SOURCES}
+    ${TUSB_SOURCES}
     ${PROJECT_SOURCES}
     ${STARTUP_SCRIPT})
 
@@ -92,6 +105,7 @@ target_compile_options(${EXECUTABLE} PRIVATE
     
     )
 
+
 target_link_options(${EXECUTABLE} PRIVATE
     -T${MCU_LINKER_SCRIPT}
     ${CPU_PARAMETERS}
@@ -105,7 +119,8 @@ target_link_options(${EXECUTABLE} PRIVATE
     -Wl,-u_printf_float
     -Wl,-Map=firmware.map
     -Wl,--print-memory-usage
-    )
+)
+
 
 add_custom_command(TARGET ${EXECUTABLE} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:${EXECUTABLE}> firmware.elf
