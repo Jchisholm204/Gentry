@@ -23,6 +23,8 @@
 #include "os/drivers/canbus.h"
 #include "os/hal/usb/hal_usbd_otgfs.h"
 
+volatile int iqr_encounters = 0;
+
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
 
@@ -39,7 +41,36 @@ void vUSB_tsk(void * pvParams){
     GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DP) & 7)*4));
 
     hal_usb_init(true);
+    hal_usb_IRQ(true);
+    SET_BIT(USBD->DIEPMSK, USB_OTG_DIEPMSK_XFRCM);
+    SET_BIT(USB->GINTMSK, USB_OTG_GINTMSK_USBRST | USB_OTG_GINTMSK_ENUMDNEM | USB_OTG_GINTMSK_SOFM | USB_OTG_GINTMSK_USBSUSPM | USB_OTG_GINTMSK_WUIM | USB_OTG_GINTMSK_IEPINT | USB_OTG_GINTMSK_RXFLVLM);
+    // Clear pending interrupts
+    USB->GINTSTS = 0xFFFFFFFFUL;
+    // Unmask Global Interrupt
+    SET_BIT(USB->GAHBCFG, USB_OTG_GAHBCFG_GINT);
+    NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN - 2);
+    NVIC_EnableIRQ(OTG_FS_IRQn);
+    // for(int i = 0; i < 6; i++){
+    //     SET_BIT(USB_EP_OUT(i)->DOEPCTL, USB_OTG_DOEPCTL_SNAK);
+    //     SET_BIT(USB_EP_IN(i)->DIEPCTL, USB_OTG_DIEPCTL_SNAK);
+    // }
+    uint32_t usb_buf[100] = {0};
+    uint16_t buf_addr = (uint16_t)usb_buf;
+
+    USB->DIEPTXF[0] = 100 << 16;
+    USB->DIEPTXF[0] |= buf_addr;
+    USB_EP_OUT(0)->DOEPTSIZ |= 0x3U << USB_OTG_DOEPTSIZ_STUPCNT_Pos;
+    gpio_set_mode(PIN_USB_GPIO_OUT, GPIO_MODE_OUTPUT);
+    gpio_write(PIN_USB_GPIO_OUT, 0);
     hal_usb_connect(true);
+    int vlast = 0;
+    for(;;){
+        if(vlast != iqr_encounters){
+            printf("ISR launched %d times\n", iqr_encounters);
+            vlast = iqr_encounters;
+        }
+        vTaskDelay(10);
+    }
 
     // for(;;){
     //     // if(reset_detected)
@@ -59,11 +90,17 @@ void vUSB_tsk(void * pvParams){
 
 // Interrupt handler for USB OTG FS
 void OTG_FS_IRQHandler(void) {
+    iqr_encounters++;
     uint32_t gintsts = USB_OTG_FS->GINTSTS;
 
     // Check for USB reset interrupt (used when the USB host resets the device)
     if (gintsts & USB_OTG_GINTSTS_USBRST) {
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_USBRST;  // Clear interrupt flag
+        for(int i = 0; i < 6; i++){
+            SET_BIT(USB_EP_OUT(i)->DOEPCTL, USB_OTG_DOEPCTL_SNAK);
+            SET_BIT(USB_EP_IN(i)->DIEPCTL, USB_OTG_DIEPCTL_SNAK);
+        }
+        // USB_EP_IN(0)->
     }
 
     // Handle enumeration done (when device enumeration is complete)
@@ -103,6 +140,5 @@ void OTG_FS_IRQHandler(void) {
         USB_OTG_FS->GINTSTS = USB_OTG_GINTSTS_OTGINT;   // Clear interrupt flag
     }
 
-    // Clear other necessary interrupt flags if needed
 }
 
