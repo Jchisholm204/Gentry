@@ -17,21 +17,21 @@
 // Interfaces
 
 // Serial (UART/USART)
-#define configUSE_SERIAL1 1
-#define configUSE_SERIAL2 1
+#define configUSE_SERIAL1 0
+#define configUSE_SERIAL2 0
 #define configUSE_SERIAL3 1
-#define configUSE_SERIAL4 1
-#define configUSE_SERIAL5 1
-#define configUSE_SERIAL6 1
+#define configUSE_SERIAL4 0
+#define configUSE_SERIAL5 0
+#define configUSE_SERIAL6 0
 
 // CAN Bus
-#define configUSE_CAN1 1
-#define configUSE_CAN2 1
+#define configUSE_CAN1 0
+#define configUSE_CAN2 0
 
 // Analog to Digital Converters
-#define configUSE_ADC1 1
-#define configUSE_ADC2 1
-#define configUSE_ADC3 1
+#define configUSE_ADC1 0
+#define configUSE_ADC2 0
+#define configUSE_ADC3 0
 
 
 #endif
