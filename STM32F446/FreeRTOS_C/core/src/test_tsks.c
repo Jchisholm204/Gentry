@@ -53,7 +53,7 @@ void vTestTask(void * pvParams){
         cTimeGet(xTaskGetTickCount(), &time);
         fprintf(Serial3.fp, PRINT_CTIME(time));
         // serial_write(&Serial2, str, strlen(str), 100);
-        // printf("Hello from Serial 2\n");
+        printf("Hello from Serial 2\n");
         // hal_uart_write_buf(USART2, (char*)str, strlen(str));
         // Serial2.write((uint8_t*)str, strlen(str));
         // sleep for 1000 ms
@@ -77,7 +77,7 @@ void vUART_FeedBack(void * pvParams){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
         // serial_write(&Serial2, msg, strlen(msg), 100);
         // serial_write(&Serial2, buffer, bytes, 100);
-        printf("Serial 2 RX: %s\n", buffer);
+        // printf("Serial 2 RX: %s\n", buffer);
         // printf("Serial 2 got: %s", buffer);
         // vTaskDelay(10);
     }

@@ -92,6 +92,8 @@ int _getpid(void) {
 int _write(int fd, char *ptr, int len) {
     eSerialError e = eSerialInitFail;
     switch(fd){
+        case 0:
+        case 1:
         case USART1_IRQn:
 #if (configUSE_SERIAL1 == 1)
             e = serial_write(&Serial1, ptr, (size_t)len, 10);
