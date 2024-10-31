@@ -88,16 +88,46 @@ int _getpid(void) {
   return -1;
 }
 
+// If undefined, use highest priority Serial Port
 int _write(int fd, char *ptr, int len) {
-    // (void) fd, (void) ptr, (void) len;
-    if (fd == 1 || fd == 2){
-        eSerialError e = serial_write(&Serial3, ptr, len, 10);
-        return 0;
+    eSerialError e = eSerialInitFail;
+    switch(fd){
+        case USART1_IRQn:
+#if (configUSE_SERIAL1 == 1)
+            e = serial_write(&Serial1, ptr, (size_t)len, 10);
+            break;
+#endif
+        case USART2_IRQn:
+#if (configUSE_SERIAL2 == 1)
+            e = serial_write(&Serial2, ptr, (size_t)len, 10);
+            break;
+#endif
+#if (configUSE_SERIAL3 == 1)
+        case USART3_IRQn:
+            e = serial_write(&Serial3, ptr, (size_t)len, 10);
+            break;
+#endif
+        case UART4_IRQn:
+#if (configUSE_SERIAL4 == 1)
+            e = serial_write(&Serial4, ptr, (size_t)len, 10);
+            break;
+#endif
+        case UART5_IRQn:
+#if (configUSE_SERIAL5 == 1)
+            e = serial_write(&Serial5, ptr, (size_t)len, 10);
+            break;
+#endif
+        case USART6_IRQn:
+#if (configUSE_SERIAL6 == 1)
+        case USART6_IRQn:
+            e = serial_write(&Serial6, ptr, (size_t)len, 10);
+            break;
+#endif
+        default:
+            break;
     }
-    if (fd == 3){
-        eSerialError e = serial_write(&Serial3, ptr, len, 10);
+    if(e == eSerialOK)
         return 0;
-    }
     return -1;
 }
 

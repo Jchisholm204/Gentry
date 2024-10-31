@@ -37,6 +37,7 @@ Serial_t Serial1 = {
     USART1,
     USART1_IRQn,
     NULL,
+    NULL,
     {0},
     NULL,
     eSerialNoInit
@@ -49,6 +50,7 @@ void USART2_IRQHandler(void){
 Serial_t Serial2 = {
     USART2,
     USART2_IRQn,
+    NULL,
     NULL,
     {0},
     NULL,
@@ -63,6 +65,7 @@ Serial_t Serial3 = {
     USART3,
     USART3_IRQn,
     NULL,
+    NULL,
     {0},
     NULL,
     eSerialNoInit
@@ -75,6 +78,7 @@ void UART4_IRQHandler(void){
 Serial_t Serial4 = {
     UART4,
     UART4_IRQn,
+    NULL,
     NULL,
     {0},
     NULL,
@@ -89,6 +93,7 @@ Serial_t Serial5 = {
     UART5,
     UART5_IRQn,
     NULL,
+    NULL,
     {0},
     NULL,
     eSerialNoInit
@@ -101,6 +106,7 @@ void USART6_IRQHandler(void){
 Serial_t Serial6 = {
     USART6,
     USART6_IRQn,
+    NULL,
     NULL,
     {0},
     NULL,
@@ -118,6 +124,7 @@ eSerialError serial_init(Serial_t *pHndl, unsigned long baud, pin_t pin_rx, pin_
     pHndl->tx_hndl = xSemaphoreCreateMutexStatic(&pHndl->static_tx_semphr);
     if(pHndl->tx_hndl == NULL)
         return eSerialInitFail;
+    pHndl->fp = fdopen(pHndl->IRQn, "w");
     xSemaphoreGive(pHndl->tx_hndl);
     pHndl->state = eSerialOK;
     return pHndl->state;

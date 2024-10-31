@@ -16,6 +16,7 @@
 #include "semphr.h"
 #include "stream_buffer.h"
 #include "os/config/sys_cfg.h"
+#include <stdio.h>
 
 enum eSerialError {
     eSerialOK,
@@ -36,6 +37,7 @@ typedef enum eSerialError eSerialError;
 typedef struct Serial {
     USART_TypeDef *UART;
     IRQn_Type IRQn;
+    FILE *fp;
     SemaphoreHandle_t tx_hndl;
     StaticSemaphore_t static_tx_semphr;
     StreamBufferHandle_t *rx_buf;
