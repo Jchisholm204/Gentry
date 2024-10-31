@@ -28,7 +28,10 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS ON)
 
 # Add additional include directories for standard libraries
-include_directories(SYSTEM ${CMAKE_C_COMPILER_INCLUDE_DIRS})
+include_directories(SYSTEM 
+    ${CMAKE_C_COMPILER_INCLUDE_DIRS}
+    /usr/arm-none-eabi/include
+)
 
 # Set additional compiler flags (e.g., include paths for standard libraries)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -isystem ${CMAKE_C_COMPILER_INCLUDE_DIRS}")
@@ -44,6 +47,7 @@ set(INCLUDE_DIRECTORIES
     ${RTOS_DIR}/portable/GCC/ARM_CM4F
     ${PROJECT_DIR}/include/os/config
     ${RTOS_DIR}/include
+    /usr/arm-none-eabi/include
     
 )
 

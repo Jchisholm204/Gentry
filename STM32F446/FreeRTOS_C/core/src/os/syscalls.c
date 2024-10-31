@@ -89,29 +89,16 @@ int _getpid(void) {
 }
 
 int _write(int fd, char *ptr, int len) {
-  (void) fd, (void) ptr, (void) len;
-  if (fd == 1 || fd == 2){
-    // char * callerID = NULL;
-    // // Get the name of the task calling printf - Only run if scheduler has been started
-    // if(xTaskGetSchedulerState() != taskSCHEDULER_NOT_STARTED) callerID = pcTaskGetName(NULL);
-    // if(port_uart2.port == NULL)          return -1;
-    // if(port_uart2.semaphore == NULL)     return -1;
-    // // Take over the debug usart
-    // if(xSemaphoreTake(Serial2.semphr_hndl, (TickType_t) 10) == pdTRUE){
-    //   // Write caller ID, followed by ": ", then the argument given to printf
-    //   if(callerID != NULL){
-    //     hal_uart_write_buf(port_uart2.port, callerID, strlen(callerID));
-    //     hal_uart_write_buf(port_uart2.port, ": ", 3);
-    //   }
-      // hal_uart_write_buf(Serial2.UART, ptr, (size_t) len);
-      eSerialError e = serial_write(&cfgSerial, ptr, len, 10);
-      // if(e != eSerialOK)
-      //   hal_uart_write_buf(USART2, "FAIL\n", 5);
-      // xSemaphoreGive(Serial2.semphr_hndl);
-    // }
-    return 0;
-  } //hal_uart_write_buf(UART_DEBUG, ptr, (size_t) len);
-  return -1;
+    // (void) fd, (void) ptr, (void) len;
+    if (fd == 1 || fd == 2){
+        eSerialError e = serial_write(&Serial3, ptr, len, 10);
+        return 0;
+    }
+    if (fd == 3){
+        eSerialError e = serial_write(&Serial3, ptr, len, 10);
+        return 0;
+    }
+    return -1;
 }
 
 int _read(int fd, char *ptr, int len) {

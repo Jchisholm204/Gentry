@@ -18,6 +18,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "FreeRTOS.h"
 #include "task.h"
+#include <stdio.h>
 #include "main.h"
 
 /* GetIdleTaskMemory prototype (linked to static allocation support) */

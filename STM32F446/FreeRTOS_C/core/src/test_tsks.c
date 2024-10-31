@@ -9,6 +9,7 @@
  * 
  */
 #include "main.h"
+// #include "/usr/arm-none-eabi/include/stdio.h"
 #include <stdio.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
@@ -20,6 +21,7 @@
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
 #include "os/drivers/canbus.h"
+#include "stddef.h"
 
 struct ctime {
     int hrs, mins, secs, msecs;
@@ -44,12 +46,13 @@ void vTestTask(void * pvParams){
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN('B', 0), GPIO_MODE_OUTPUT);
     vTaskDelay(100);
+    FILE * pSer3 = fdopen(3, "w");
     // hal_uart_init(USART2, 9600, PIN('A', 2), PIN('A', 3));
     for(;;){
         gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
         struct ctime time;
         cTimeGet(xTaskGetTickCount(), &time);
-        printf(PRINT_CTIME(time));
+        fprintf(pSer3, PRINT_CTIME(time));
         // serial_write(&Serial2, str, strlen(str), 100);
         // printf("Hello from Serial 2\n");
         // hal_uart_write_buf(USART2, (char*)str, strlen(str));
@@ -80,3 +83,4 @@ void vUART_FeedBack(void * pvParams){
         // vTaskDelay(10);
     }
 }
+
