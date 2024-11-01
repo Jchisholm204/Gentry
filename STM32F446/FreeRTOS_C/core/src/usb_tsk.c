@@ -22,12 +22,16 @@
 #include "os/config/pin_cfg.h"
 #include "os/drivers/canbus.h"
 #include "os/hal/usb/hal_usbd_otgfs.h"
+#include "os/hal/hal_gpio.h"
 
 volatile int iqr_encounters = 0;
 
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
 
+    // Enable GPIO Clocks for A and G Busses (Used for USB)
+    SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOGEN);
+    
     // Setup USB GPIO
     GPIOA->MODER &= ~(0x3U << (PINNO(PIN_USB_DM)*2));
     GPIOA->MODER |= (0x2U << (PINNO(PIN_USB_DM)*2));
@@ -39,6 +43,12 @@ void vUSB_tsk(void * pvParams){
     GPIOA->OSPEEDR |= (0x3U << (PINNO(PIN_USB_DP)*2));
     GPIOA->AFR[1] &= ~(0x15U << ((PINNO(PIN_USB_DP) & 7)*4));
     GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DP) & 7)*4));
+    
+    gpio_set_mode(PIN_USB_GPIO_OUT, GPIO_MODE_OUTPUT);
+    gpio_pull(PIN_USB_GPIO_OUT, GPIO_RESET);
+    gpio_set_speed(PIN_USB_GPIO_OUT, GPIO_SPEED_LS);
+    gpio_set_mode(PIN_USB_GPIO_IN, GPIO_MODE_INPUT);
+    gpio_pull(PIN_USB_GPIO_IN, GPIO_RESET);
 
     // hal_usb_init(true);
     // hal_usb_IRQ(true);
