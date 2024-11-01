@@ -12,13 +12,6 @@
 #include <stm32f4xx.h>
 #include <sys/stat.h>
 
-struct usb_header_descriptor{
-    uint8_t len, type;
-};
-
-struct usb_device_descriptor{
-
-}
 
 #endif
 

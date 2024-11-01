@@ -70,16 +70,17 @@ void vUART_FeedBack(void * pvParams){
     serial_attach(&Serial3, &rx_buf);
     // char * msg = "Serial 2 got: ";
     vTaskDelay(1000);
+    vTaskDelay(portMAX_DELAY);
     printf("Uart Feedback online\n");
     for(;;){
         char buffer[100] = {0};
         xStreamBufferReceive(rx_buf, (void*)buffer, 100, portMAX_DELAY);
-        gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
+        // gpio_write(PIN('B', 0), !gpio_read_odr(PIN('B', 0)));
         // serial_write(&Serial2, msg, strlen(msg), 100);
         // serial_write(&Serial2, buffer, bytes, 100);
         // printf("Serial 2 RX: %s\n", buffer);
         // printf("Serial 2 got: %s", buffer);
-        // vTaskDelay(10);
+        vTaskDelay(10000);
     }
 }
 
