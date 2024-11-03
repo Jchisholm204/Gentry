@@ -31,6 +31,7 @@ enum hal_usb_err {eHUSB_OK = 0, eHUSB_NULL, eHUSB_TIMEOUT};
 
 enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
 
+
 struct hal_usb_config {
     uint32_t dev_endpoints;
     bool     en_SOF;
@@ -40,6 +41,17 @@ struct hal_usb_config {
     enum hal_usb_phy phy_sel;
 };
 
+static inline enum hal_usb_err hal_usb_setDevMode(void){
+    // Force clear of USB Mode
+    CLEAR_BIT(USB->GUSBCFG, USB_OTG_GUSBCFG_FDMOD | USB_OTG_GUSBCFG_FHMOD);
+    // Force Device Mode
+    SET_BIT(USB->GUSBCFG ,USB_OTG_GUSBCFG_FDMOD);
+    for(unsigned int i = 0; i < 200000U; i++)
+        if(READ_BIT(USB->GINTSTS, USB_OTG_GINTSTS_CMOD) == 0)
+            return eHUSB_OK;
+    return eHUSB_TIMEOUT;
+}
+
 static inline enum hal_usb_err hal_usb_CoreReset(uint32_t timeout_ticks){
     __IO uint32_t count = 0U;
     // Wait for AHB to be Idle
@@ -48,11 +60,20 @@ static inline enum hal_usb_err hal_usb_CoreReset(uint32_t timeout_ticks){
         if(count > timeout_ticks)
             return eHUSB_TIMEOUT;
     } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL));
+    count = 0U;
+    SET_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_CSRST);
+    do {
+        count++;
+        if(count > timeout_ticks)
+            return eHUSB_TIMEOUT;
+    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_CSRST) == USB_OTG_GRSTCTL_CSRST);
+    return eHUSB_OK;
 
 }
 
 static inline enum hal_usb_err hal_usb_coreInit(struct hal_usb_config *pCfg){
     if(!pCfg) return eHUSB_NULL;
+    enum hal_usb_err e = eHUSB_OK;;
     if(pCfg->phy_sel == eHUSB_PHY_ULPI){
         // Disable the ULPI PHY
         CLEAR_BIT(USB->GCCFG, USB_OTG_GCCFG_PWRDWN);
@@ -67,14 +88,32 @@ static inline enum hal_usb_err hal_usb_coreInit(struct hal_usb_config *pCfg){
         if(pCfg->en_external_vbus){
             SET_BIT(USB->GUSBCFG, USB_OTG_GUSBCFG_ULPIEVBUSD);
         }
-
-
+        // Wait for Core Reset
+        e = hal_usb_CoreReset(200000U);
     }
+    else { // Embedded PHY
+        // Disable the FS PHY
+        SET_BIT(USB->GUSBCFG, USB_OTG_GUSBCFG_PHYSEL);
+        // Wait for Core Reset
+        e = hal_usb_CoreReset(200000U);
+        // Power down the internal core
+        CLEAR_BIT(USB->GCCFG, USB_OTG_GCCFG_PWRDWN);
+    }
+    return e;
 
 }
 
-static inline void hal_usb_init(bool vbus_detection){
-    (void)vbus_detection;
+static inline enum hal_usb_err hal_usb_devInit(struct hal_usb_config *pCfg){
+
+}
+
+static inline enum hal_usb_err hal_usb_init(struct hal_usb_config *pCfg){
+    // GPIO Init
+    // Core Init
+    hal_usb_coreInit(pCfg);
+    // Force the USB PHY into device mode
+    hal_usb_setDevMode();
+
 }
 
 static inline void hal_usb_IRQ(bool enable){
