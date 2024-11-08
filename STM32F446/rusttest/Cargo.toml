@@ -1,0 +1,27 @@
+[package]
+name = "rusttest"
+version = "0.1.0"
+authors = ["Jacob Chisholm <Jacobchisholm1010@gmail.com>"]
+edition = "2021"
+
+[dependencies]
+cortex-m = "0.7"
+cortex-m-rt = "0.7"
+panic-probe = { version = "0.3.1", features = ["defmt"] }
+cortex-m-rtic = "1.1"
+heapless = "0.7"
+
+[dependencies.stm32f4xx-hal]
+version = "0.20.0"
+features = ["stm32f446", "rtic1", "defmt", ]
+
+# Set the default for dependencies.
+[profile.dev.package."*"]
+opt-level = "s"
+
+[profile.release]
+codegen-units = 1
+incremental = false
+debug = true
+lto = true
+opt-level = "s"
