@@ -31,6 +31,13 @@ enum hal_usb_err {eHUSB_OK = 0, eHUSB_NULL, eHUSB_TIMEOUT};
 
 enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
 
+enum USBD_DCFG_FRAME_INTERVAL {
+    USBD_DCFG_FRAME_INTERVAL_80 = 0U,
+    USBD_DCFG_FRAME_INTERVAL_85 = 1U,
+    USBD_DCFG_FRAME_INTERVAL_90 = 2U,
+    USBD_DCFG_FRAME_INTERVAL_95 = 3U
+};
+
 
 struct hal_usb_config {
     uint32_t dev_endpoints;
@@ -71,6 +78,48 @@ static inline enum hal_usb_err hal_usb_CoreReset(uint32_t timeout_ticks){
 
 }
 
+static inline enum hal_usb_err hal_usb_flushTxFifo(uint32_t num){
+    __IO uint32_t count = 0U;
+    // Wait for AHB to be Idle
+    do {
+        count++;
+        if(count > 200000U)
+            return eHUSB_TIMEOUT;
+    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL));
+
+    count = 0U;
+    SET_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_TXFFLSH | (num << USB_OTG_GRSTCTL_TXFNUM_Pos));
+
+    do {
+        count++;
+        if(count > 200000U)
+            return eHUSB_TIMEOUT;
+    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_TXFFLSH) == USB_OTG_GRSTCTL_TXFFLSH);
+
+    return eHUSB_OK;
+}
+
+static inline enum hal_usb_err hal_usb_flushRxFifo(void){
+    __IO uint32_t count = 0U;
+    // Wait for AHB to be Idle
+    do {
+        count++;
+        if(count > 200000U)
+            return eHUSB_TIMEOUT;
+    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL));
+    count = 0U;
+    USB->GRSTCTL = USB_OTG_GRSTCTL_RXFFLSH;
+
+    do {
+        count++;
+        if(count > 200000U)
+            return eHUSB_TIMEOUT;
+    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_RXFFLSH) == USB_OTG_GRSTCTL_RXFFLSH);
+
+    return eHUSB_OK;
+}
+
+
 static inline enum hal_usb_err hal_usb_coreInit(struct hal_usb_config *pCfg){
     if(!pCfg) return eHUSB_NULL;
     enum hal_usb_err e = eHUSB_OK;;
@@ -104,6 +153,55 @@ static inline enum hal_usb_err hal_usb_coreInit(struct hal_usb_config *pCfg){
 }
 
 static inline enum hal_usb_err hal_usb_devInit(struct hal_usb_config *pCfg){
+    enum hal_usb_err e = eHUSB_OK;
+    for(unsigned int i = 0; i < 15U; i++)
+        USB->DIEPTXF[i] = 0U;
+    if(pCfg->en_vbus_sensing == false){
+        // Ensure the USB device is disconnected
+        SET_BIT(USBD->DCTL, USB_OTG_DCTL_SDIS);
+        // Deactivate VBUS sensing
+        CLEAR_BIT(USB->GCCFG, USB_OTG_GCCFG_VBDEN);
+        // Enable Valid Session Override
+        SET_BIT(USB->GOTGCTL, USB_OTG_GOTGCTL_VBVALOEN | USB_OTG_GOTGCTL_BVALOVAL);
+    }
+    else {
+        // Enable VBUS sensing
+        SET_BIT(USB->GCCFG, USB_OTG_GCCFG_VBDEN);
+    }
+
+    // Restart the PHY Clock
+    *USB_PCGCCTL = 0U;
+
+    // Device mode Configuration
+    SET_BIT(USBD->DCFG, USBD_DCFG_FRAME_INTERVAL_80);
+    if(pCfg->phy_sel == eHUSB_PHY_ULPI)
+        MODIFY_REG(USBD->DCFG, USB_OTG_DCFG_DSPD, 1U);
+    else
+        MODIFY_REG(USBD->DCFG, USB_OTG_DCFG_DSPD, 3U);
+
+    // Reset all USB FIFOs
+    if((e = hal_usb_flushTxFifo(0x10U)) != eHUSB_OK) return e;
+    if((e = hal_usb_flushRxFifo()) != eHUSB_OK) return e;
+
+    // Clear all pending device interrupts
+    USBD->DIEPMSK = 0U;
+    USBD->DOEPMSK = 0U;
+    USBD->DAINTMSK = 0U;
+
+    // Configure Device Endpoints
+    for(unsigned int i = 0U; i < pCfg->dev_endpoints; i++){
+        if(READ_BIT(USB_EP_IN(i)->DIEPCTL, USB_OTG_DIEPCTL_EPENA) == USB_OTG_DIEPCTL_EPENA){
+            if(i == 0U){
+                USB_EP_IN(i)->DIEPCTL = USB_OTG_DIEPCTL_SNAK;
+            }
+            else {
+                USB_EP_IN(i)->DIEPCTL = USB_OTG_DIEPCTL_SNAK | USB_OTG_DIEPCTL_EPDIS;
+            }
+        }
+        else {
+            USB_EP_IN(i)->DIEPCTL = 0U;
+        }
+    }
 
 }
 
