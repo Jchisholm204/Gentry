@@ -445,6 +445,7 @@ dependencies = [
  "cortex-m",
  "cortex-m-rt",
  "cortex-m-rtic",
+ "heapless",
  "panic-probe",
  "stm32f4xx-hal",
 ]
