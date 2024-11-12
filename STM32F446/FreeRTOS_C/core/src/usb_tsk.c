@@ -499,6 +499,25 @@ void usb_cdc_init_rcc(void){
     #endif
 }
 
+
+struct ctime {
+    int hrs, mins, secs, msecs;
+};
+
+static inline void cTimeGet(TickType_t ticks, struct ctime *t){
+    if (!t)
+        return;
+    float tms = ((float)ticks) / ((float)configTICK_RATE_HZ) * 1000.0;
+    t->msecs = ((int)tms) % 1000;
+    int secs = ((int)(tms + 500) / 1000);
+    t->secs = secs % 60;
+    int mins = (secs / 60);
+    t->mins = mins % 60;
+    t->hrs = (mins / 60);
+}
+
+#define PRINT_CTIME(ct) "%02d:%02d:%02d.%03d\n", ct.hrs, ct.mins, ct.secs, ct.msecs
+
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
     usb_cdc_init_rcc();
@@ -506,15 +525,20 @@ void vUSB_tsk(void * pvParams){
     NVIC_EnableIRQ(OTG_FS_IRQn);
     usbd_enable(&udev, 1);
     usbd_connect(&udev, 1);
-    const char msg[] = "Hello, World!\n";
+    // const char msg[] = "Hello, World!\n";
+    const char msg[256] ={0};
     char rx_buf[64];
     for(;;){
         printf("Writing to USB\n");
-        usbd_ep_write(&udev, CDC_TXD_EP, msg, sizeof(msg));
+        struct ctime time;
+        cTimeGet(xTaskGetTickCount(), &time);
+        int strsize = sprintf(msg, PRINT_CTIME(time));
+        // usbd_ep_unstall(&udev, CDC_TXD_EP);
+        usbd_ep_write(&udev, CDC_TXD_EP, msg, strsize);
         int32_t rx_len = usbd_ep_read(&udev, CDC_RXD_EP, rx_buf, sizeof(rx_buf));
         if(rx_len > 0){
             usbd_ep_write(&udev, CDC_TXD_EP, rx_buf, rx_len);
-            // printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
+            printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
         }
         vTaskDelay(1000);
     }
