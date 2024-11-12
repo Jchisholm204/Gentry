@@ -14,6 +14,14 @@
 #ifndef _SYS_CFG_H
 #define _SYS_CFG_H
 
+// STM32 Chip Family
+#ifndef STM32F4xx
+#define STM32F4xx
+#endif
+#ifndef STM32F446xx
+#define STM32F446xx
+#endif
+
 // Interfaces
 
 // Serial (UART/USART)
