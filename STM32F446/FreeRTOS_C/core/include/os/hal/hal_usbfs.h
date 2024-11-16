@@ -12,6 +12,12 @@
 #include <stm32f4xx.h>
 #include <stdbool.h>
 
+#define MAX_EP          6
+#define MAX_RX_PACKET   128
+#define MAX_CONTROL_EP  1
+#define MAX_FIFO_SZ     320  /*in 32-bit chunks */
+
+#define RX_FIFO_SZ      ((4 * MAX_CONTROL_EP + 6) + ((MAX_RX_PACKET / 4) + 1) + (MAX_EP * 2) + 1)
 
 // Create a reference to the USB OTG Periphrial
 #ifndef USB
@@ -40,12 +46,19 @@
 #define USB_EP_OUT(ep) ((USB_OTG_OUTEndpointTypeDef*)(USB_OTG_FS_PERIPH_BASE+USB_OTG_OUT_ENDPOINT_BASE+(ep*sizeof(USB_OTG_OUTEndpointTypeDef))))
 #endif
 
-enum hal_usb_err {
+enum hal_usb_ep {
+    eHUSB_EP_IN =  0x80,
+    eHUSB_EP_OUT = 0x00,
+};
+
+// HAL USB Status
+enum hal_usb_sts {
     eHUSB_OK = 0,
     eHUSB_NULL,
     eHUSB_TIMEOUT,
     eHUSB_NOCLK,
     eHUSB_DISCONNECT,
+    eHUSB_EP_STALL,
 };
 
 enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
@@ -57,7 +70,7 @@ enum hal_usb_DCFG_frame_interval {
     USBD_DCFG_FRAME_INTERVAL_95 = 3U
 };
 
-static inline enum hal_usb_err hal_usb_flushTxFifo(uint32_t num){
+static inline enum hal_usb_sts hal_usb_ahbIdl(void){
     __IO uint32_t count = 0U;
     // Wait for AHB to be Idle
     do {
@@ -65,8 +78,14 @@ static inline enum hal_usb_err hal_usb_flushTxFifo(uint32_t num){
         if(count > 200000U)
             return eHUSB_TIMEOUT;
     } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL));
+    return eHUSB_OK;
+}
 
-    count = 0U;
+static inline enum hal_usb_sts hal_usb_flushTxFifo(uint32_t num){
+    __IO uint32_t count = 0U;
+    // Wait for AHB to be Idle
+    hal_usb_ahbIdl();
+    // Flush the TX Fifo corrisponding to the right EP
     SET_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_TXFFLSH | (num << USB_OTG_GRSTCTL_TXFNUM_Pos));
 
     do {
@@ -78,15 +97,11 @@ static inline enum hal_usb_err hal_usb_flushTxFifo(uint32_t num){
     return eHUSB_OK;
 }
 
-static inline enum hal_usb_err hal_usb_flushRxFifo(void){
+static inline enum hal_usb_sts hal_usb_flushRxFifo(void){
     __IO uint32_t count = 0U;
     // Wait for AHB to be Idle
-    do {
-        count++;
-        if(count > 200000U)
-            return eHUSB_TIMEOUT;
-    } while(READ_BIT(USB->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL));
-    count = 0U;
+    hal_usb_ahbIdl();
+    // Flush the RX Fifo corrisponding to the right EP
     USB->GRSTCTL = USB_OTG_GRSTCTL_RXFFLSH;
 
     do {
@@ -98,16 +113,111 @@ static inline enum hal_usb_err hal_usb_flushRxFifo(void){
     return eHUSB_OK;
 }
 
-static inline enum hal_usb_err hal_usb_getInfo(void){
+static inline enum hal_usb_sts hal_usb_getInfo(void){
     if(!READ_BIT(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN)) return eHUSB_NOCLK;
     if(READ_BIT(USBD->DCFG, USB_OTG_DCTL_SDIS)) return eHUSB_DISCONNECT;
     return eHUSB_OK;
 }
 
-static inline enum hal_usb_err hal_usb_EP_setStall(uint8_t ep, bool stall){
 
+static inline enum hal_usb_sts hal_usb_EP_setStall(uint8_t ep, bool stall){
+    if((ep & eHUSB_EP_IN) == eHUSB_EP_IN){
+        ep &= (eHUSB_EP_IN-1);
+        uint32_t ep_ctl = USB_EP_IN(ep)->DIEPCTL;
+        if((ep_ctl & USB_OTG_DIEPCTL_USBAEP) == USB_OTG_DIEPCTL_USBAEP){
+            if(stall)
+                // Set the Stall Bit
+                SET_BIT(ep_ctl, USB_OTG_DIEPCTL_STALL);
+            else {
+                // Clear the Stall Bit and the NAK bit
+                CLEAR_BIT(ep_ctl, USB_OTG_DIEPCTL_STALL);
+                SET_BIT(ep_ctl, USB_OTG_DIEPCTL_SD0PID_SEVNFRM | USB_OTG_DIEPCTL_CNAK);
+            }
+            USB_EP_IN(ep)->DIEPCTL = ep_ctl;
+        }
+    }
+    else {
+        uint32_t ep_ctl = USB_EP_OUT(ep)->DOEPCTL;
+        if((ep_ctl & USB_OTG_DIEPCTL_USBAEP) == USB_OTG_DIEPCTL_USBAEP){
+            if(stall)
+                // Set the Stall Bit
+                SET_BIT(ep_ctl, USB_OTG_DIEPCTL_STALL);
+            else {
+                // Clear the Stall Bit and the NAK bit
+                CLEAR_BIT(ep_ctl, USB_OTG_DIEPCTL_STALL);
+                SET_BIT(ep_ctl, USB_OTG_DIEPCTL_SD0PID_SEVNFRM | USB_OTG_DIEPCTL_CNAK);
+            }
+            USB_EP_OUT(ep)->DOEPCTL = ep_ctl;
+        }
+
+    }
 }
 
+static inline enum hal_usb_sts hal_usb_EP_isStalled(uint8_t ep){
+    if((ep & eHUSB_EP_IN) == eHUSB_EP_IN){
+        ep &= (eHUSB_EP_IN-1);
+        return (READ_BIT(USB_EP_IN(ep)->DIEPCTL, USB_OTG_DIEPCTL_STALL) ? eHUSB_EP_STALL : eHUSB_OK);
+    }
+    return (READ_BIT(USB_EP_OUT(ep)->DOEPCTL, USB_OTG_DIEPCTL_STALL) ? eHUSB_EP_STALL : eHUSB_OK);
+}
+
+static inline enum hal_usb_sts hal_usb_init(bool vbus_detect){
+    // Enable the USB CLock
+    SET_BIT(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN);
+    if(hal_usb_ahbIdl() != eHUSB_OK) return eHUSB_TIMEOUT;
+    // Force device mode, Ensure use of internal PHY
+    SET_BIT(USB->GRSTCTL, USB_OTG_GUSBCFG_FDMOD | USB_OTG_GUSBCFG_PHYSEL);
+    // Set Turnaround time to reflect higest frequency used on AHB bus
+    MODIFY_REG(USB->GRSTCTL, USB_OTG_GUSBCFG_TRDT, 0x6 << USB_OTG_GUSBCFG_TRDT_Pos);
+    if(vbus_detect){
+        // Enable VBUS detection and enable the USB FS PHY
+        SET_BIT(USB->GCCFG, USB_OTG_GCCFG_VBDEN | USB_OTG_GCCFG_PWRDWN);
+    }
+    else {
+        // Enable VBUS Override and Set the BValid to 1
+        SET_BIT(USB->GOTGCTL, USB_OTG_GOTGCTL_BVALOEN | USB_OTG_GOTGCTL_BVALOVAL);
+        // Enable the USB FS PHY
+        SET_BIT(USB->GCCFG, USB_OTG_GCCFG_PWRDWN);
+    }
+    // Restart the USB PHY
+    *USB_PCGCCTL = 0;
+    // Soft Disconnect Device
+    SET_BIT(USBD->DCTL, USB_OTG_DCTL_SDIS);
+    // Setup Periodic Schedule Interval (25%)
+    CLEAR_BIT(USBD->DCFG, USB_OTG_DCFG_PERSCHIVL);
+    // Set USBD to use internal FS PHY 
+    MODIFY_REG(USBD->DCFG, USB_OTG_DCFG_DSPD, USB_OTG_DCFG_DSPD);
+
+    // Setup Interrupts
+    // Unmask EP Interrupts
+    SET_BIT(USBD->DIEPMSK, USB_OTG_DIEPMSK_XFRCM);
+    // Unmask Core Interrupts
+    SET_BIT(USB->GINTMSK,
+            // Reset Events
+            USB_OTG_GINTMSK_USBRST   |
+            // USB Enumeration Done Event
+            USB_OTG_GINTMSK_ENUMDNEM |
+            // Start of frame
+            USB_OTG_GINTMSK_SOFM     |
+            // Bus suspended
+            USB_OTG_GINTMSK_USBSUSPM |
+            // Remote wakeup events
+            USB_OTG_GINTMSK_WUIM     |
+            // Enable IN endpoint interrupts
+            USB_OTG_GINTMSK_IEPINT   |
+            // RX Fifo non empty
+            USB_OTG_GINTMSK_RXFLVLM
+            );
+    // Clear all pending interrupts
+    USB->GINTSTS = 0xFFFFFFFF;
+    // Unmask global interrupt bit
+    USB->GAHBCFG = USB_OTG_GAHBCFG_GINT;
+    // Set max RX FIFO size
+    USB->GRXFSIZ = RX_FIFO_SZ;
+    // setting up EP0 TX FIFO SZ as 64 byte
+    USB->DIEPTXF0_HNPTXFSIZ = RX_FIFO_SZ | (0x10 << USB_OTG_DIEPTXF_INEPTXFD_Pos);
+    return eHUSB_OK;
+}
 
 #endif
 
