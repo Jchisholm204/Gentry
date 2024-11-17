@@ -304,7 +304,7 @@ struct usb_debug_descriptor {
     uint8_t  bDebugOutEndpoint;     /**<\brief Endpoint number of the Debug Data OUTendpoint.*/
 } __attribute__((packed));
 
-typedef void (*hal_usb_evt_callback)(void *vpdev, enum hal_usb_event evt, uint8_t ep);
+typedef void (*hal_usb_evt_callback)(void *vpdev, enum hal_usb_event evt, uint8_t epn);
 
 static inline enum hal_usb_sts hal_usb_ahbIdl(void){
     __IO uint32_t count = 0U;
