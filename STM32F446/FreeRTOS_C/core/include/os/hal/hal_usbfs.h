@@ -71,6 +71,24 @@ enum hal_usb_sts {
     eHUSB_EP_NENA,
 };
 
+enum hal_usb_event {
+    eHUSB_EVT_RESET,
+    // Start of Frame
+    eHUSB_EVT_SOF,
+    // Suspend
+    eHUSB_EVT_SUSP,
+    // Wakeup
+    eHUSB_EVT_WKUP,
+    // USB Packet Transmitted
+    eHUSB_EVT_EPTX,
+    // USB Packet Recieved
+    eHUSB_EVT_EPRX,
+    // USB Setup Packet Recieved
+    eHUSB_EVT_EPSETUP,
+    eHUSB_EVT_ERR,
+    eHUSB_EVTn,
+};
+
 enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
 
 enum hal_usb_DCFG_frame_interval {
@@ -285,6 +303,8 @@ struct usb_debug_descriptor {
     uint8_t  bDebugInEndpoint;      /**<\brief Endpoint number of the Debug Data IN endpoint.*/
     uint8_t  bDebugOutEndpoint;     /**<\brief Endpoint number of the Debug Data OUTendpoint.*/
 } __attribute__((packed));
+
+typedef void (*hal_usb_evt_callback)(void *vpdev, enum hal_usb_event evt, uint8_t ep);
 
 static inline enum hal_usb_sts hal_usb_ahbIdl(void){
     __IO uint32_t count = 0U;
@@ -716,6 +736,79 @@ static inline void hal_usb_serialNo(struct usb_string_descriptor *dsc){
     }
     dsc->bDescriptorType = eHUSB_DTYPE_STRING;
     dsc->bLength = 18;
+}
+
+static inline void hal_usb_evt_reset(enum hal_usb_event *evt, uint8_t *epn){
+    (void)evt; (void)epn;
+    USB->GINTSTS = USB_OTG_GINTSTS_USBRST;
+    for(uint8_t i = 0; i < MAX_EP; i++)
+        (void)hal_usb_EP_deconfig(i);
+    (void)hal_usb_flushRxFifo();
+}
+
+static inline void hal_usb_evt_iepint(enum hal_usb_event *evt, uint8_t *epn){
+    for(*epn = 0;; (*epn)++){
+        __IO USB_OTG_INEndpointTypeDef *epi = USB_EP_IN((*epn));
+        if(*epn > MAX_EP) return;
+        if (epi->DIEPINT & USB_OTG_DIEPINT_XFRC) {
+            epi->DIEPINT = USB_OTG_DIEPINT_XFRC;
+            *evt = eHUSB_EVT_EPTX;
+            *epn |= 0x80;
+            break;
+        }
+    }
+}
+
+static inline void hal_usb_evt_rxflvl(enum hal_usb_event *evt, uint8_t *epn){
+    uint32_t GRXSTSR = USB->GRXSTSR;
+    *epn = GRXSTSR & USB_OTG_GRXSTSP_EPNUM;
+    switch ((GRXSTSR & USB_OTG_GRXSTSP_PKTSTS) >> USB_OTG_GRXSTSP_PKTSTS_Pos) {
+        case 0x02:
+            *evt = eHUSB_EVT_EPRX;
+            break;
+        case 0x06:
+            *evt = eHUSB_EVT_EPSETUP;
+            break;
+        default:
+            USB->GRXSTSP;
+    }
+}
+
+
+static void hal_usb_irq(void *pvdev, hal_usb_evt_callback callback){
+    enum hal_usb_event evt;
+    uint8_t epn = 0;
+    for(;;){
+        uint32_t GINTSTS = USB->GINTSTS;
+        if(GINTSTS & USB_OTG_GINTSTS_USBRST)
+            hal_usb_evt_reset(&evt, &epn);
+        else if(GINTSTS & USB_OTG_GINTSTS_ENUMDNE){
+            USB->GINTSTS = USB_OTG_GINTSTS_ENUMDNE;
+            evt = eHUSB_EVT_RESET;
+        }
+        else if(GINTSTS & USB_OTG_GINTSTS_IEPINT)
+            hal_usb_evt_iepint(&evt, &epn);
+        else if(GINTSTS & USB_OTG_GINTSTS_RXFLVL)
+            hal_usb_evt_rxflvl(&evt, &epn);
+        else if(GINTSTS & USB_OTG_GINTSTS_SOF){
+            USB->GINTSTS = USB_OTG_GINTSTS_SOF;
+            evt = eHUSB_EVT_SOF;
+        }
+        else if(GINTSTS & USB_OTG_GINTSTS_SOF){
+            USB->GINTSTS = USB_OTG_GINTSTS_SOF;
+            evt = eHUSB_EVT_SOF;
+        }
+        else if(GINTSTS & USB_OTG_GINTSTS_USBSUSP){
+            USB->GINTSTS = USB_OTG_GINTSTS_USBSUSP;
+            evt = eHUSB_EVT_SUSP;
+        }
+        else if(GINTSTS & USB_OTG_GINTSTS_WKUINT){
+            USB->GINTSTS = USB_OTG_GINTSTS_WKUINT;
+            evt = eHUSB_EVT_WKUP;
+        }
+        else return;
+        callback(pvdev, evt, epn);
+    }
 }
 
 #endif
