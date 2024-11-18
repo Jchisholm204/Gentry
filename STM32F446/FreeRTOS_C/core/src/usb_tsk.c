@@ -42,7 +42,7 @@
 #define HID_RIN_SZ      0x10
 
 #define CDC_LOOPBACK
-#define ENABLE_HID_COMBO
+// #define ENABLE_HID_COMBO
 
 #define CDC_PROTOCOL USB_PROTO_NONE
 

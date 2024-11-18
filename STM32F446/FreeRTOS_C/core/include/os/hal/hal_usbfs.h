@@ -9,7 +9,6 @@
 
 #ifndef _HAL_USBFS_H_
 #define _HAL_USBFS_H_
-#include "stm32f446xx.h"
 #include <stm32f4xx.h>
 #include <stdbool.h>
 
@@ -47,6 +46,33 @@
 #define USB_EP_OUT(ep) ((__IO USB_OTG_OUTEndpointTypeDef*)(USB_OTG_FS_PERIPH_BASE+USB_OTG_OUT_ENDPOINT_BASE+(ep*sizeof(USB_OTG_OUTEndpointTypeDef))))
 #endif
 
+enum hal_usb_event {
+    eHUSB_EVT_RESET,
+    // Start of Frame
+    eHUSB_EVT_SOF,
+    // Suspend
+    eHUSB_EVT_SUSP,
+    // Wakeup
+    eHUSB_EVT_WKUP,
+    // USB Packet Transmitted
+    eHUSB_EVT_EPTX,
+    // USB Packet Recieved
+    eHUSB_EVT_EPRX,
+    // USB Setup Packet Recieved
+    eHUSB_EVT_EPSETUP,
+    eHUSB_EVT_ERR,
+    eHUSB_EVTn,
+};
+
+
+enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
+
+enum hal_usb_DCFG_frame_interval {
+    USBD_DCFG_FRAME_INTERVAL_80 = 0U,
+    USBD_DCFG_FRAME_INTERVAL_85 = 1U,
+    USBD_DCFG_FRAME_INTERVAL_90 = 2U,
+    USBD_DCFG_FRAME_INTERVAL_95 = 3U
+};
 enum hal_usb_ep {
     eHUSB_EP_IN  = 0x80,
     eHUSB_EP_OUT = 0x00,
@@ -71,240 +97,8 @@ enum hal_usb_sts {
     eHUSB_EP_NENA,
 };
 
-enum hal_usb_event {
-    eHUSB_EVT_RESET,
-    // Start of Frame
-    eHUSB_EVT_SOF,
-    // Suspend
-    eHUSB_EVT_SUSP,
-    // Wakeup
-    eHUSB_EVT_WKUP,
-    // USB Packet Transmitted
-    eHUSB_EVT_EPTX,
-    // USB Packet Recieved
-    eHUSB_EVT_EPRX,
-    // USB Setup Packet Recieved
-    eHUSB_EVT_EPSETUP,
-    eHUSB_EVT_ERR,
-    eHUSB_EVTn,
-};
-
-enum hal_usb_phy {eHUSB_PHY_ULPI, eHUSB_PHY_EMBEDDED};
-
-enum hal_usb_DCFG_frame_interval {
-    USBD_DCFG_FRAME_INTERVAL_80 = 0U,
-    USBD_DCFG_FRAME_INTERVAL_85 = 1U,
-    USBD_DCFG_FRAME_INTERVAL_90 = 2U,
-    USBD_DCFG_FRAME_INTERVAL_95 = 3U
-};
-
-// USB Standard Descriptor Types
-enum hal_usb_dtype {
-    eHUSB_DTYPE_DEVICE         = 0x01,
-    eHUSB_DTYPE_CONFIGURATION  = 0x02,
-    eHUSB_DTYPE_STRING         = 0x03,
-    eHUSB_DTYPE_INTERFACE      = 0x04,
-    eHUSB_DTYPE_ENDPOINT       = 0x05,
-    eHUSB_DTYPE_QUALIFIER      = 0x06,
-    eHUSB_DTYPE_OTHER          = 0x07,
-    eHUSB_DTYPE_INTERFACEPOWER = 0x08,
-    eHUSB_DTYPE_OTG            = 0x09,
-    eHUSB_DTYPE_DEBUG          = 0x0A,
-    eHUSB_DTYPE_INTERFACEASSOC = 0x0B,
-    eHUSB_DTYPE_CS_INTERFACE   = 0x24,
-    eHUSB_DTYPE_CS_ENDPOINT    = 0x25,
-};
-
-enum hal_usb_dclass {
-    // Class defined on interface level
-    eHUSB_LASS_PER_INTERFACE = 0x00,
-    // No subclass defined
-    eHUSB_SUBCLASS_NONE       = 0x00,
-    // No protocol defined
-    eHUSB_PROTO_NONE          = 0x00,
-    // Audio Device Class
-    eHUSB_LASS_AUDIO         = 0x01,
-    // Communications Device Class
-    eHUSB_LASS_CDC           = 0x02,
-    // Human Input Device
-    eHUSB_LASS_HID           = 0x03,
-    // Physical Device Class
-    eHUSB_LASS_PHYSICAL      = 0x05,
-    // Still Imaging Device
-    eHUSB_LASS_STILL_IMAGE   = 0x06,
-    // Printer Device
-    eHUSB_LASS_PRINTER       = 0x07,
-    // Mass Storage Device
-    eHUSB_LASS_MASS_STORAGE  = 0x08,
-    // USB Hub Class
-    eHUSB_LASS_HUB           = 0x09,
-    // Smart Card Device Class
-    eHUSB_LASS_CSCID         = 0x0B,
-    // Content Security Device Class
-    eHUSB_LASS_CONTENT_SEC   = 0x0D,
-    // Video Device Class
-    eHUSB_LASS_VIDEO         = 0x0E,
-    // Personal Healthcare Device Class
-    eHUSB_LASS_HEALTHCARE    = 0x0F,
-    // Audio Video Device Class
-    eHUSB_LASS_AV            = 0x10,
-    // Billboard Device Class
-    eHUSB_LASS_BILLBOARD     = 0x11,
-    // USB A to C Bridge Class
-    eHUSB_LASS_CBRIDGE       = 0x12,
-    // Diagnostic Device Class
-    eHUSB_LASS_DIAGNOSTIC    = 0xDC,
-    // Wireless Controller Device Class
-    eHUSB_LASS_WIRELESS      = 0xE0,
-    // MISC Device Class
-    eHUSB_LASS_MISC          = 0xEF,
-    // Application Specific Device Class
-    eHUSB_LASS_APP_SPEC      = 0xFE,
-    // Vendor Specific Device Class
-    eHUSB_LASS_VENDOR        = 0xFF,
-    // Vendor Specific Device Subclass
-    eHUSB_SUBCLASS_VENDOR     = 0xFF,
-    // Vendor Specific Protocol Device Subclass
-    eHUSB_PROTO_VENDOR        = 0xFF,
-};
-
-/**\brief common USB descriptor header */
-struct usb_header_descriptor {
-    uint8_t bLength;                /**<\brief Size of the descriptor, in bytes. */
-    uint8_t bDescriptorType;        /**<\brief Type of the descriptor. */
-} __attribute__((packed));
-
-/**\brief Represents a USB device descriptor
- * \details A device descriptor describes general information about a USB device. It includes
- * information that applies globally to the device and all of the device’s configurations. A USB
- * device has only one device descriptor. A high-speed capable device that has different device
- * information for full-speed and high-speed must also  have a \ref usb_qualifier_descriptor.*/
-struct usb_device_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t  bDescriptorType;       /**<\brief \ref USB_DTYPE_DEVICE Device descriptor.*/
-    uint16_t bcdUSB;                /**<\brief BCD of the supported USB specification.*/
-    uint8_t  bDeviceClass;          /**<\brief USB device class.*/
-    uint8_t  bDeviceSubClass;       /**<\brief USB device subclass.*/
-    uint8_t  bDeviceProtocol;       /**<\brief USB device protocol.*/
-    uint8_t  bMaxPacketSize0;       /**<\brief Size of the control endpoint's bank in bytes.*/
-    uint16_t idVendor;              /**<\brief Vendor ID for the USB product.*/
-    uint16_t idProduct;             /**<\brief Unique product ID for the USB product.*/
-    uint16_t bcdDevice;             /**<\brief Product release (version) number.*/
-    uint8_t  iManufacturer;         /**<\brief String index for the manufacturer's name.*/
-    uint8_t  iProduct;              /**<\brief String index for the product name/details.*/
-    uint8_t  iSerialNumber;         /**<\brief String index for the product serial number.*/
-    uint8_t  bNumConfigurations;    /**<\brief Total number of configurations supported by the device.*/
-} __attribute__((packed));
-
-/**\brief USB device qualifier descriptor
- * \details The device_qualifier descriptor describes information about a high-speed capable device
- * that would change if the device were operating at the other speed. For example, if the device is
- * currently operating at full-speed, the device qualifier returns information about how it would
- * operate at high-speed and vice-versa.*/
-struct usb_qualifier_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t  bDescriptorType;       /**<\brief Qualifier descriptor.*/
-    uint16_t bcdUSB;                /**<\brief BCD of the supported USB specification.*/
-    uint8_t  bDeviceClass;          /**<\brief USB device class.*/
-    uint8_t  bDeviceSubClass;       /**<\brief USB device subclass.*/
-    uint8_t  bDeviceProtocol;       /**<\brief USB device protocol.*/
-    uint8_t  bMaxPacketSize0;       /**<\brief Size of the control endpoint's bank in bytes.*/
-    uint8_t  bNumConfigurations;    /**<\brief Total number of configurations supported by the device.*/
-    uint8_t  bReserved;             /**<\brief Reserved for future use, must be 0.*/
-} __attribute__((packed));
-
-/**\brief USB device configuration descriptor
- * \details The configuration descriptor describes information about a specific device configuration.
- * The descriptor contains a bConfigurationValue field with a value that, when used as a parameter
- * to the SetConfiguration() request, causes the device to assume the described configuration.*/
-struct usb_config_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t  bDescriptorType;       /**<\brief Configuration descriptor.*/
-    uint16_t wTotalLength;          /**<\brief Size of the configuration descriptor header, and all
-                                     * sub descriptors inside the configuration. */
-    uint8_t  bNumInterfaces;        /**<\brief Total number of interfaces in the configuration.*/
-    uint8_t  bConfigurationValue;   /**<\brief Configuration index of the current configuration.*/
-    uint8_t  iConfiguration;        /**<\brief Index of a string descriptor describing the configuration.*/
-    uint8_t  bmAttributes;          /**<\brief Configuration attributes.
-                                     * \details Comprised of a mask of \c eHUSB_ONFIG_ATTR_ masks. On
-                                     * all devices, this should include eHUSB_ONFIG_ATTR_RESERVED at
-                                     * a minimum. */
-    uint8_t  bMaxPower;             /**<\brief Maximum power consumption of the device.
-                                     * \ref eHUSB_FG_POWER_MA() macro.*/
-} __attribute__((packed));
-
-/**\brief USB interface descriptor
- * \details The interface descriptor describes a specific interface within a configuration. A
- *configuration provides one or more interfaces, each with zero or more endpoint descriptors
- * describing a unique set of endpoints within the configuration.*/
-struct usb_interface_descriptor {
-    uint8_t bLength;                /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t bDescriptorType;        /**<\brief Interface descriptor.*/
-    uint8_t bInterfaceNumber;       /**<\brief Index of the interface in the current configuration.*/
-    uint8_t bAlternateSetting;      /**<\brief Alternate setting for the interface number.*/
-    uint8_t bNumEndpoints;          /**<\brief Total number of endpoints in the interface.*/
-    uint8_t bInterfaceClass;        /**<\brief Interface class ID.*/
-    uint8_t bInterfaceSubClass;     /**<\brief Interface subclass ID.*/
-    uint8_t bInterfaceProtocol;     /**<\brief Interface protocol ID. */
-    uint8_t iInterface;             /**<\brief Index of the string descriptor describing the interface. */
-} __attribute__((packed));
-
-/**\brief USB interface association descriptor
- * \details USB interface association descriptor (IAD) allows the device to group interfaces that
- * belong to a function.*/
-struct usb_iad_descriptor {
-    uint8_t bLength;                /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t bDescriptorType;        /**<\brief IAD descriptor */
-    uint8_t bFirstInterface;        /**<\brief Index of the first associated interface. */
-    uint8_t bInterfaceCount;        /**<\brief Total number of associated interfaces. */
-    uint8_t bFunctionClass;         /**<\brief Function class ID. */
-    uint8_t bFunctionSubClass;      /**<\brief Function subclass ID. */
-    uint8_t bFunctionProtocol;      /**<\brief Function protocol ID. */
-    uint8_t iFunction;              /**<\brief Index of the string descriptor describing the
-                                     * interface association. */
-} __attribute__((packed));
-
-/**\brief USB endpoint descriptor
- * \details This descriptor contains the information required by the host to determine the bandwidth
- * requirements of each endpoint.*/
-struct usb_endpoint_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes. */
-    uint8_t  bDescriptorType;       /**<\brief Endpoint descriptor.*/
-    uint8_t  bEndpointAddress;      /**<\brief Logical address of the endpoint within the device for
-                                     * the current configuration, including direction mask. */
-    uint8_t  bmAttributes;          /**<\brief Endpoint attributes, \ref USB_ENDPOINT_DEF. */
-    uint16_t wMaxPacketSize;        /**<\brief Size of the endpoint bank, in bytes. This indicates the
-                                     * maximum packet size that the endpoint can receive at a time. */
-    uint8_t  bInterval;             /**<\brief Polling interval in milliseconds for the endpoint if
-                                     * it is an INTERRUPT or ISOCHRONOUS type.*/
-} __attribute__((packed));
-
-/**\brief USB string descriptor
- * \details String descriptors are referenced by their one-based index number. A string descriptor
- * contains one or more not NULL-terminated Unicode strings.
- * \note String descriptors are optional. if a device does not support string descriptors, all
- * references to string descriptors within device, configuration, and interface descriptors must be
- * reset to zero.*/
-struct usb_string_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t  bDescriptorType;       /**<\brief String descriptor type.*/
-    uint16_t wString[126];             /**<\brief String data, as unicode characters or array of
-                                     * \ref USB_STD_LANGID codes. */
-} __attribute__((packed, aligned(2)));
-
-/**\brief USB debug descriptor
- * \details This descriptor is used to describe certain characteristics of the device that the host
- * debug port driver needs to know to communicate with the device. Specifically, the debug descriptor
- * lists the addresses of the endpoints that comprise the Debug Pipe. The endpoints are identified by
- * endpoint number.*/
-struct usb_debug_descriptor {
-    uint8_t  bLength;               /**<\brief Size of the descriptor, in bytes.*/
-    uint8_t  bDescriptorType;       /**<\brief Debug descriptor type.*/
-    uint8_t  bDebugInEndpoint;      /**<\brief Endpoint number of the Debug Data IN endpoint.*/
-    uint8_t  bDebugOutEndpoint;     /**<\brief Endpoint number of the Debug Data OUTendpoint.*/
-} __attribute__((packed));
-
 typedef void (*hal_usb_evt_callback)(void *vpdev, enum hal_usb_event evt, uint8_t epn);
+
 
 static inline enum hal_usb_sts hal_usb_ahbIdl(void){
     __IO uint32_t count = 0U;
@@ -714,29 +508,6 @@ static inline uint16_t hal_usb_getFrame(void){
     return (USBD->DSTS & USB_OTG_DSTS_FNSOF) >> USB_OTG_DSTS_FNSOF_Pos;
 }
 
-static uint32_t fnv1a32_turn (uint32_t fnv, uint32_t data ) {
-    for (int i = 0; i < 4 ; i++) {
-        fnv ^= (data & 0xFF);
-        fnv *= 16777619;
-        data >>= 8;
-    }
-    return fnv;
-}
-
-static inline void hal_usb_serialNo(struct usb_string_descriptor *dsc){
-    uint16_t *str = dsc->wString;
-    uint32_t fnv = 2166136261;
-    fnv = fnv1a32_turn(fnv, *(uint32_t*)(UID_BASE + 0x00));
-    fnv = fnv1a32_turn(fnv, *(uint32_t*)(UID_BASE + 0x04));
-    fnv = fnv1a32_turn(fnv, *(uint32_t*)(UID_BASE + 0x08));
-    for (int i = 28; i >= 0; i -= 4 ) {
-        uint16_t c = (fnv >> i) & 0x0F;
-        c += (c < 10) ? '0' : ('A' - 10);
-        *str++ = c;
-    }
-    dsc->bDescriptorType = eHUSB_DTYPE_STRING;
-    dsc->bLength = 18;
-}
 
 static inline void hal_usb_evt_reset(enum hal_usb_event *evt, uint8_t *epn){
     (void)evt; (void)epn;

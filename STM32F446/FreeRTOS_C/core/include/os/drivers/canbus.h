@@ -19,7 +19,6 @@
 #include "os/config/sys_cfg.h"
 
 
-
 enum eCanError {
     eCanOK,
     // Hardware Error
