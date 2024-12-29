@@ -47,8 +47,7 @@ set(INCLUDE_DIRECTORIES
     ${RTOS_DIR}/portable/GCC/ARM_CM4F
     ${PROJECT_DIR}/include/os/config
     ${RTOS_DIR}/include
-    /usr/arm-none-eabi/include
-    
+    SYSTEM
 )
 
 file(GLOB RTOS_SOURCES
@@ -73,7 +72,9 @@ add_executable(${EXECUTABLE}
     ${RTOS_DIR}/portable/MemMang/heap_4.c
     ${RTOS_SOURCES}
     ${PROJECT_SOURCES}
-    ${STARTUP_SCRIPT})
+    ${STARTUP_SCRIPT}
+    /usr/arm-none-eabi/include
+)
 
 target_include_directories(${EXECUTABLE} PRIVATE
     ${INCLUDE_DIRECTORIES})
