@@ -6,25 +6,9 @@ project(CM3_TEMPLATE)
 include(./libopencm3.cmake)
 
 
-set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/source)
-set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-set(RTOS_DIR ${LIB_DIR}/FreeRTOS)
-# set(CM3_DIR ${LIB_DIR}/libopencm3)
+set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(LD_DIR ${CMAKE_CURRENT_SOURCE_DIR}/ld)
 
-set(MCU_FAMILY STM32F4)
-set(MCU_MODEL STM32F446xx)
-
-set(CPU_PARAMETERS
-    -D${MCU_FAMILY}
-    -mcpu=cortex-m4
-    -mthumb
-    # FPU enable code must be written before it can be used
-    -mfpu=fpv4-sp-d16
-    -mfloat-abi=hard
-    )
-
-# set(STARTUP_SCRIPT ${LD_DIR}/startup_stm32f446retx.s)
 set(MCU_LINKER_SCRIPT ${LD_DIR}/STM32F446RETX_FLASH.ld)
 
 set(EXECUTABLE ${CMAKE_PROJECT_NAME})
@@ -48,18 +32,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(INCLUDE_DIRECTORIES
     ${PROJECT_DIR}/include
-    # ${RTOS_DIR}/portable/GCC/ARM_CM4F
-    # ${PROJECT_DIR}/include/os/config
-    # ${RTOS_DIR}/include
-    # ${CM3_DIR}/include
     SYSTEM
 )
-
-file(GLOB RTOS_SOURCES
-    ${RTOS_DIR}/*.c)
-
-# file(GLOB_RECURSE CM3_SOURCES
-#     ${CM3_DIR}/lib/*.c)
 
 set(GENERIC_COMPILE_OPTIONS
     -Wall
@@ -75,19 +49,8 @@ file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/src/*.cc
 )
 
-# add_custom_target(libopencm3
-#     COMMAND make targets=stm32/f4
-#     WORKING_DIRECTORY ${CM3_DIR}
-# )
-
 add_executable(${EXECUTABLE}
-    # ${RTOS_DIR}/portable/GCC/ARM_CM4F/port.c
-    # ${RTOS_DIR}/portable/MemMang/heap_4.c
-    # ${RTOS_SOURCES}
-    # ${CM3_SOURCES}
     ${PROJECT_SOURCES}
-    # ${STARTUP_SCRIPT}
-    /usr/arm-none-eabi/include
 )
 
 # add_dependencies(${EXECUTABLE} libopencm3)
