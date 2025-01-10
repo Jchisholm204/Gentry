@@ -32,6 +32,24 @@
 #include "os/hal/stusb/hid_usage_desktop.h"
 #include "os/hal/stusb/hid_usage_button.h"
 
+struct ctime {
+    int hrs, mins, secs, msecs;
+};
+
+static inline void cTimeGet(TickType_t ticks, struct ctime *t){
+    if (!t)
+        return;
+    float tms = ((float)ticks) / ((float)configTICK_RATE_HZ) * 1000.0;
+    t->msecs = ((int)tms) % 1000;
+    int secs = ((int)(tms + 500) / 1000);
+    t->secs = secs % 60;
+    int mins = (secs / 60);
+    t->mins = mins % 60;
+    t->hrs = (mins / 60);
+}
+
+#define PRINT_CTIME(ct) "%02d:%02d:%02d.%03d\n", ct.hrs, ct.mins, ct.secs, ct.msecs
+
 #define CDC_EP0_SIZE    0x08
 #define CDC_RXD_EP      0x01
 #define CDC_TXD_EP      0x81
@@ -41,7 +59,7 @@
 #define HID_RIN_EP      0x83
 #define HID_RIN_SZ      0x10
 
-#define CDC_LOOPBACK
+// #define CDC_LOOPBACK
 // #define ENABLE_HID_COMBO
 
 #define CDC_PROTOCOL USB_PROTO_NONE
@@ -183,7 +201,7 @@ static const struct cdc_config config_desc = {
         .bEndpointAddress       = CDC_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
         .wMaxPacketSize         = CDC_NTF_SZ,
-        .bInterval              = 0xFF,
+        .bInterval              = 0x01,
     },
     .data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
@@ -360,24 +378,30 @@ static void cdc_rxonly (usbd_device *dev, uint8_t event, uint8_t ep) {
 }
 
 static void cdc_txonly(usbd_device *dev, uint8_t event, uint8_t ep) {
-    static uint8_t psize = 0x00U;
-    static uint8_t remained = 0x00U;
-    static uint8_t lastsym = 0x00U;
+    // static uint8_t psize = 0x00U;
+    // static uint8_t remained = 0x00U;
+    // static uint8_t lastsym = 0x00U;
 
-    uint8_t _t = (remained < CDC_DATA_SZ) ? remained : CDC_DATA_SZ;
-    // fill buffer by sequental data
-    for (size_t i = 0; i < _t; ++i) {
-        fifo[i] = lastsym++;
-    }
-    usbd_ep_write(dev, ep, fifo, _t);
+    // uint8_t _t = (remained < CDC_DATA_SZ) ? remained : CDC_DATA_SZ;
+    // // fill buffer by sequental data
+    // for (size_t i = 0; i < _t; ++i) {
+    //     fifo[i] = lastsym++;
+    // }
+    // usbd_ep_write(dev, ep, fifo, _t);
 
-    if (remained < CDC_DATA_SZ) {
-        // bulk xfer completed. increase bulk size
-        remained = ++psize;
-    } else {
-        // continue to send remained data or ZLP
-        remained -= _t;
-    }
+    // if (remained < CDC_DATA_SZ) {
+    //     // bulk xfer completed. increase bulk size
+    //     remained = ++psize;
+    // } else {
+    //     // continue to send remained data or ZLP
+    //     remained -= _t;
+    // }
+    char msg[0xFF];
+    struct ctime time;
+    cTimeGet(xTaskGetTickCount(), &time);
+    int strsize = sprintf(msg, PRINT_CTIME(time));
+    // usbd_ep_unstall(&udev, CDC_TXD_EP);
+    usbd_ep_write(&udev, ep, msg, strsize);
 }
 
 static void cdc_rxtx(usbd_device *dev, uint8_t event, uint8_t ep) {
@@ -458,8 +482,8 @@ static usbd_respond cdc_setconf (usbd_device *dev, uint8_t cfg) {
         usbd_ep_config(dev, CDC_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, CDC_DATA_SZ);
         usbd_ep_config(dev, CDC_NTF_EP, USB_EPTYPE_INTERRUPT, CDC_NTF_SZ);
 #if defined(CDC_LOOPBACK)
-        usbd_reg_endpoint(dev, CDC_RXD_EP, cdc_loopback);
-        usbd_reg_endpoint(dev, CDC_TXD_EP, cdc_loopback);
+        // usbd_reg_endpoint(dev, CDC_RXD_EP, cdc_loopback);
+        // usbd_reg_endpoint(dev, CDC_TXD_EP, cdc_loopback);
 #elif ((CDC_TXD_EP & 0x7F) == (CDC_RXD_EP & 0x7F))
         usbd_reg_endpoint(dev, CDC_RXD_EP, cdc_rxtx);
         usbd_reg_endpoint(dev, CDC_TXD_EP, cdc_rxtx);
@@ -500,23 +524,6 @@ void usb_cdc_init_rcc(void){
 }
 
 
-struct ctime {
-    int hrs, mins, secs, msecs;
-};
-
-static inline void cTimeGet(TickType_t ticks, struct ctime *t){
-    if (!t)
-        return;
-    float tms = ((float)ticks) / ((float)configTICK_RATE_HZ) * 1000.0;
-    t->msecs = ((int)tms) % 1000;
-    int secs = ((int)(tms + 500) / 1000);
-    t->secs = secs % 60;
-    int mins = (secs / 60);
-    t->mins = mins % 60;
-    t->hrs = (mins / 60);
-}
-
-#define PRINT_CTIME(ct) "%02d:%02d:%02d.%03d\n", ct.hrs, ct.mins, ct.secs, ct.msecs
 
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
@@ -529,22 +536,22 @@ void vUSB_tsk(void * pvParams){
     const char msg[256] ={0};
     char rx_buf[64];
     for(;;){
-        printf("Writing to USB\n");
-        struct ctime time;
-        cTimeGet(xTaskGetTickCount(), &time);
-        int strsize = sprintf(msg, PRINT_CTIME(time));
-        // usbd_ep_unstall(&udev, CDC_TXD_EP);
-        usbd_ep_write(&udev, CDC_TXD_EP, msg, strsize);
-        int32_t rx_len = usbd_ep_read(&udev, CDC_RXD_EP, rx_buf, sizeof(rx_buf));
-        if(rx_len > 0){
-            if(usbd_ep_write(&udev, CDC_TXD_EP, rx_buf, rx_len) != 0){
-                printf("USB ERR\n");
-                usbd_connect(&udev, 0);
-                vTaskDelay(10);
-                usbd_connect(&udev, 1);
-            }
-            printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
-        }
+        // printf("Writing to USB\n");
+        // struct ctime time;
+        // cTimeGet(xTaskGetTickCount(), &time);
+        // int strsize = sprintf(msg, PRINT_CTIME(time));
+        // // usbd_ep_unstall(&udev, CDC_TXD_EP);
+        // usbd_ep_write(&udev, CDC_TXD_EP, msg, strsize);
+        // int32_t rx_len = usbd_ep_read(&udev, CDC_RXD_EP, rx_buf, sizeof(rx_buf));
+        // if(rx_len > 0){
+        //     if(usbd_ep_write(&udev, CDC_TXD_EP, rx_buf, rx_len) != 0){
+        //         printf("USB ERR\n");
+        //         usbd_connect(&udev, 0);
+        //         vTaskDelay(10);
+        //         usbd_connect(&udev, 1);
+        //     }
+        //     printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
+        // }
         vTaskDelay(1000);
     }
 }
