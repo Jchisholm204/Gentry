@@ -26,7 +26,7 @@
 // Initialize all system Interfaces
 void Init(void){
     // Initialize UART
-    serial_init(&Serial3, 9600, PIN_USART3_RX, PIN_USART3_TX);
+    serial_init(&Serial3, 250000, PIN_USART3_RX, PIN_USART3_TX);
     // Required for MockECU Board
     // gpio_set_mode(PIN('A', 10), GPIO_MODE_OUTPUT);
     // gpio_write(PIN('A', 10), false);

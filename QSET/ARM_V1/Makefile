@@ -44,6 +44,7 @@ BlackMagic-flash:
 
 st-flash-win: build/firmware.bin
 	./Tools/ST-LINK_CLI.exe -P build/firmware.bin 0x08000000 -V -RST
+	./Tools/ST-LINK_CLI.exe -RST
 
 st-flash-lin: build/firmware.bin
 	st-flash --reset write build/firmware.bin 0x08000000

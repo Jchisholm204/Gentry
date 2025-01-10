@@ -17,7 +17,7 @@
 // LED Pins
 #define PIN_LED1      PIN('C', 8)
 #define PIN_LED2      PIN('C', 9)
-#define PIN_LED3      PIN('A', 9)
+#define PIN_LED3      PIN('A', 8)
 
 // USART/UART Pins
 #define PIN_USART3_TX PIN('C', 10)

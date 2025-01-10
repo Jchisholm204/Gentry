@@ -49,12 +49,14 @@ void vTestTask(void * pvParams){
     uint8_t leds = 1U;
     vTaskDelay(100);
     for(;;){
-        leds += 1U;
+        // leds = leds << 1U;
+        // if(leds == 8) leds = 1;
+        leds += 1;
         leds &= 0x7U;
-        gpio_write(PIN_LED1, leds & 0x1);
-        gpio_write(PIN_LED2, leds & 0x2);
-        gpio_write(PIN_LED3, leds & 0x4);
-        printf("Hello ");
+        gpio_write(PIN_LED1, leds & 0x1U);
+        gpio_write(PIN_LED2, leds & 0x2U);
+        gpio_write(PIN_LED3, leds & 0x4U);
+        fprintf(Serial3.fp, "Hello ");
         struct ctime time;
         cTimeGet(xTaskGetTickCount(), &time);
         fprintf(Serial3.fp, PRINT_CTIME(time));
