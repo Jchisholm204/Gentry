@@ -20,9 +20,17 @@
 #include "os/hal/hal_clock.h"
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
+#include "os/drivers/canbus.h"
+#include "os/hal/usb/hal_usbd_otgfs.h"
+#include "os/hal/hal_gpio.h"
+
+#include "os/hal/stusb/stm32_compat.h"
 #include "os/hal/stusb/stm32_compat.h"
 #include "os/hal/stusb/usb.h"
 #include "os/hal/stusb/usb_cdc.h"
+#include "os/hal/stusb/usb_hid.h"
+#include "os/hal/stusb/hid_usage_desktop.h"
+#include "os/hal/stusb/hid_usage_button.h"
 
 #define CDC_EP0_SIZE    0x08
 #define CDC_RXD_EP      0x01
@@ -32,6 +40,11 @@
 #define CDC_NTF_SZ      0x08
 #define HID_RIN_EP      0x83
 #define HID_RIN_SZ      0x10
+
+#define CDC_LOOPBACK
+// #define ENABLE_HID_COMBO
+
+#define CDC_PROTOCOL USB_PROTO_NONE
 
 /* Declaration of the report descriptor */
 struct cdc_config {
@@ -53,6 +66,34 @@ struct cdc_config {
 #endif //ENABLE_HID_COMBO
 } __attribute__((packed));
 
+/* HID mouse report desscriptor. 2 axis 5 buttons */
+static const uint8_t hid_report_desc[] = {
+    HID_USAGE_PAGE(HID_PAGE_DESKTOP),
+    HID_USAGE(HID_DESKTOP_MOUSE),
+    HID_COLLECTION(HID_APPLICATION_COLLECTION),
+        HID_USAGE(HID_DESKTOP_POINTER),
+        HID_COLLECTION(HID_PHYSICAL_COLLECTION),
+            HID_USAGE(HID_DESKTOP_X),
+            HID_USAGE(HID_DESKTOP_Y),
+            HID_LOGICAL_MINIMUM(-127),
+            HID_LOGICAL_MAXIMUM(127),
+            HID_REPORT_SIZE(8),
+            HID_REPORT_COUNT(2),
+            HID_INPUT(HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_RELATIVE ),
+            HID_USAGE_PAGE(HID_PAGE_BUTTON),
+            HID_USAGE_MINIMUM(1),
+            HID_USAGE_MAXIMUM(5),
+            HID_LOGICAL_MINIMUM(0),
+            HID_LOGICAL_MAXIMUM(1),
+            HID_REPORT_SIZE(1),
+            HID_REPORT_COUNT(5),
+            HID_INPUT(HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE ),
+            HID_REPORT_SIZE(1),
+            HID_REPORT_COUNT(3),
+            HID_INPUT(HID_IOF_CONSTANT),
+        HID_END_COLLECTION,
+    HID_END_COLLECTION,
+};
 
 /* Device descriptor */
 static const struct usb_device_descriptor device_desc = {
@@ -95,7 +136,7 @@ static const struct cdc_config config_desc = {
         .bInterfaceCount        = 2,
         .bFunctionClass         = USB_CLASS_CDC,
         .bFunctionSubClass      = USB_CDC_SUBCLASS_ACM,
-        .bFunctionProtocol      = USB_CDC_PROTO_V25TER,
+        .bFunctionProtocol      = CDC_PROTOCOL,
         .iFunction              = NO_DESCRIPTOR,
     },
     .comm = {
@@ -106,7 +147,7 @@ static const struct cdc_config config_desc = {
         .bNumEndpoints          = 1,
         .bInterfaceClass        = USB_CLASS_CDC,
         .bInterfaceSubClass     = USB_CDC_SUBCLASS_ACM,
-        .bInterfaceProtocol     = USB_CDC_PROTO_V25TER,
+        .bInterfaceProtocol     = CDC_PROTOCOL,
         .iInterface             = NO_DESCRIPTOR,
     },
     .cdc_hdr = {
@@ -152,7 +193,7 @@ static const struct cdc_config config_desc = {
         .bNumEndpoints          = 2,
         .bInterfaceClass        = USB_CLASS_CDC_DATA,
         .bInterfaceSubClass     = USB_SUBCLASS_NONE,
-        .bInterfaceProtocol     = USB_CDC_PROTO_V25TER,
+        .bInterfaceProtocol     = USB_PROTO_NONE,
         .iInterface             = NO_DESCRIPTOR,
     },
     .data_eprx = {
@@ -171,6 +212,36 @@ static const struct cdc_config config_desc = {
         .wMaxPacketSize         = CDC_DATA_SZ,
         .bInterval              = 0x01,
     },
+#ifdef ENABLE_HID_COMBO
+    .hid = {
+        .bLength                = sizeof(struct usb_interface_descriptor),
+        .bDescriptorType        = USB_DTYPE_INTERFACE,
+        .bInterfaceNumber       = 2,
+        .bAlternateSetting      = 0,
+        .bNumEndpoints          = 1,
+        .bInterfaceClass        = USB_CLASS_HID,
+        .bInterfaceSubClass     = USB_HID_SUBCLASS_NONBOOT,
+        .bInterfaceProtocol     = USB_HID_PROTO_NONBOOT,
+        .iInterface             = NO_DESCRIPTOR,
+    },
+    .hid_desc = {
+        .bLength                = sizeof(struct usb_hid_descriptor),
+        .bDescriptorType        = USB_DTYPE_HID,
+        .bcdHID                 = VERSION_BCD(1,0,0),
+        .bCountryCode           = USB_HID_COUNTRY_NONE,
+        .bNumDescriptors        = 1,
+        .bDescriptorType0       = USB_DTYPE_HID_REPORT,
+        .wDescriptorLength0     = sizeof(hid_report_desc),
+    },
+    .hid_ep = {
+        .bLength                = sizeof(struct usb_endpoint_descriptor),
+        .bDescriptorType        = USB_DTYPE_ENDPOINT,
+        .bEndpointAddress       = HID_RIN_EP,
+        .bmAttributes           = USB_EPTYPE_INTERRUPT,
+        .wMaxPacketSize         = HID_RIN_SZ,
+        .bInterval              = 50,
+    },
+#endif // ENABLE_HID_COMBO
 };
 
 static const struct usb_string_descriptor lang_desc     = USB_ARRAY_DESC(USB_LANGID_ENG_US);
@@ -249,6 +320,37 @@ static usbd_respond cdc_control(usbd_device *dev, usbd_ctlreq *req, usbd_rqc_cal
             return usbd_fail;
         }
     }
+#ifdef ENABLE_HID_COMBO
+    if (((USB_REQ_RECIPIENT | USB_REQ_TYPE) & req->bmRequestType) == (USB_REQ_INTERFACE | USB_REQ_CLASS)
+        && req->wIndex == 2 ) {
+        switch (req->bRequest) {
+        case USB_HID_SETIDLE:
+            return usbd_ack;
+        case USB_HID_GETREPORT:
+            dev->status.data_ptr = &hid_report_data;
+            dev->status.data_count = sizeof(hid_report_data);
+            return usbd_ack;
+        default:
+            return usbd_fail;
+        }
+    }
+    if (((USB_REQ_RECIPIENT | USB_REQ_TYPE) & req->bmRequestType) == (USB_REQ_INTERFACE | USB_REQ_STANDARD)
+        && req->wIndex == 2
+        && req->bRequest == USB_STD_GET_DESCRIPTOR) {
+        switch (req->wValue >> 8) {
+        case USB_DTYPE_HID:
+            dev->status.data_ptr = (uint8_t*)&(config_desc.hid_desc);
+            dev->status.data_count = sizeof(config_desc.hid_desc);
+            return usbd_ack;
+        case USB_DTYPE_HID_REPORT:
+            dev->status.data_ptr = (uint8_t*)hid_report_desc;
+            dev->status.data_count = sizeof(hid_report_desc);
+            return usbd_ack;
+        default:
+            return usbd_fail;
+        }
+    }
+#endif // ENABLE_HID_COMBO
     return usbd_fail;
 }
 
@@ -286,6 +388,37 @@ static void cdc_rxtx(usbd_device *dev, uint8_t event, uint8_t ep) {
     }
 }
 
+/* HID mouse IN endpoint callback */
+static void hid_mouse_move(usbd_device *dev, uint8_t event, uint8_t ep) {
+    static uint8_t t = 0;
+    if (t < 0x10) {
+        hid_report_data.x = 1;
+        hid_report_data.y = 0;
+    } else if (t < 0x20) {
+        hid_report_data.x = 1;
+        hid_report_data.y = 1;
+    } else if (t < 0x30) {
+        hid_report_data.x = 0;
+        hid_report_data.y = 1;
+    } else if (t < 0x40) {
+        hid_report_data.x = -1;
+        hid_report_data.y = 1;
+    } else if (t < 0x50) {
+        hid_report_data.x = -1;
+        hid_report_data.y = 0;
+    } else if (t < 0x60) {
+        hid_report_data.x = -1;
+        hid_report_data.y = -1;
+    } else if (t < 0x70) {
+        hid_report_data.x = 0;
+        hid_report_data.y = -1;
+    } else  {
+        hid_report_data.x = 1;
+        hid_report_data.y = -1;
+    }
+    t = (t + 1) & 0x7F;
+    usbd_ep_write(dev, ep, &hid_report_data, sizeof(hid_report_data));
+}
 
 /* CDC loop callback. Both for the Data IN and Data OUT endpoint */
 static void cdc_loopback(usbd_device *dev, uint8_t event, uint8_t ep) {
@@ -348,45 +481,72 @@ static usbd_respond cdc_setconf (usbd_device *dev, uint8_t cfg) {
 
 static void cdc_init_usbd(void) {
     usbd_init(&udev, &usbd_hw, CDC_EP0_SIZE, ubuf, sizeof(ubuf));
-    // SET_BIT(USB->GUSBCFG, USB_OTG_GUSBCFG_ULPIEVBUSD);
     usbd_reg_config(&udev, cdc_setconf);
     usbd_reg_control(&udev, cdc_control);
     usbd_reg_descr(&udev, cdc_getdesc);
 }
 
+void usb_cdc_init_rcc(void){
+    /* enabling GPIOA and setting PA11 and PA12 to AF10 (USB_FS) */
+    #if defined(USBD_PRIMARY_OTGHS)
+    _BST(RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN);
+    _BST(GPIOB->AFR[1], (0x0C << 24) | (0x0C << 28));
+    _BMD(GPIOB->MODER, (0x03 << 28) | (0x03 << 30), (0x02 << 28) | (0x02 << 30));
+    #else
+    _BST(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN);
+    _BST(GPIOA->AFR[1], (0x0A << 12) | (0x0A << 16));
+    _BMD(GPIOA->MODER, (0x03 << 22) | (0x03 << 24), (0x02 << 22) | (0x02 << 24));
+    #endif
+}
+
+
+struct ctime {
+    int hrs, mins, secs, msecs;
+};
+
+static inline void cTimeGet(TickType_t ticks, struct ctime *t){
+    if (!t)
+        return;
+    float tms = ((float)ticks) / ((float)configTICK_RATE_HZ) * 1000.0;
+    t->msecs = ((int)tms) % 1000;
+    int secs = ((int)(tms + 500) / 1000);
+    t->secs = secs % 60;
+    int mins = (secs / 60);
+    t->mins = mins % 60;
+    t->hrs = (mins / 60);
+}
+
+#define PRINT_CTIME(ct) "%02d:%02d:%02d.%03d\n", ct.hrs, ct.mins, ct.secs, ct.msecs
+
 void vUSB_tsk(void * pvParams){
     (void)pvParams;
-
-    // Enable GPIO Clocks for A and G Busses (Used for USB)
-    SET_BIT(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN | RCC_AHB1ENR_GPIOGEN);
-    
-    // Setup USB GPIO
-    GPIOA->MODER &= ~(0x3U << (PINNO(PIN_USB_DM)*2));
-    GPIOA->MODER |= (0x2U << (PINNO(PIN_USB_DM)*2));
-    GPIOA->OSPEEDR |= (0x3U << (PINNO(PIN_USB_DM)*2));
-    GPIOA->AFR[1] &= ~(0x15U << ((PINNO(PIN_USB_DM) & 7)*4));
-    GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DM) & 7)*4));
-    GPIOA->MODER &= (uint32_t)~(uint32_t)((uint32_t)0x3UL << (uint32_t)(PINNO(PIN_USB_DP)*2UL));
-    GPIOA->MODER |= (0x2U << (PINNO(PIN_USB_DP)*2));
-    GPIOA->OSPEEDR |= (0x3U << (PINNO(PIN_USB_DP)*2));
-    GPIOA->AFR[1] &= ~(0x15U << ((PINNO(PIN_USB_DP) & 7)*4));
-    GPIOA->AFR[1] |= (0xAU << ((PINNO(PIN_USB_DP) & 7)*4));
-    
+    usb_cdc_init_rcc();
     cdc_init_usbd();
-    NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN);
     NVIC_EnableIRQ(OTG_FS_IRQn);
     usbd_enable(&udev, 1);
     usbd_connect(&udev, 1);
-    char msg[] = "Hello From USB\n\0";
+    // const char msg[] = "Hello, World!\n";
+    const char msg[256] ={0};
+    char rx_buf[64];
     for(;;){
         printf("Writing to USB\n");
-        usbd_ep_write(&udev,  CDC_TXD_EP, msg, 17);
+        struct ctime time;
+        cTimeGet(xTaskGetTickCount(), &time);
+        int strsize = sprintf(msg, PRINT_CTIME(time));
+        // usbd_ep_unstall(&udev, CDC_TXD_EP);
+        usbd_ep_write(&udev, CDC_TXD_EP, msg, strsize);
+        int32_t rx_len = usbd_ep_read(&udev, CDC_RXD_EP, rx_buf, sizeof(rx_buf));
+        if(rx_len > 0){
+            if(usbd_ep_write(&udev, CDC_TXD_EP, rx_buf, rx_len) != 0){
+                printf("USB ERR\n");
+                usbd_connect(&udev, 0);
+                vTaskDelay(10);
+                usbd_connect(&udev, 1);
+            }
+            printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
+        }
         vTaskDelay(1000);
     }
-
-    vTaskDelay(100);
-    printf("Deleting USB task\n");
-    vTaskDelete(NULL);
 }
 
 
@@ -394,4 +554,3 @@ void vUSB_tsk(void * pvParams){
 void OTG_FS_IRQHandler(void) {
     usbd_poll(&udev);
 }
-
