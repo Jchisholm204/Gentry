@@ -15,11 +15,12 @@ ${BUILD_DIR}/Makefile:
 		-DCMAKE_BUILD_TYPE=${BUILD_TYPE} \
 		-DCMAKE_TOOLCHAIN_FILE=gcc-arm-none-eabi.cmake \
 		-DCMAKE_EXPORT_COMPILE_COMMANDS=ON \
+		-j4 \
 
 cmake: ${BUILD_DIR}/Makefile
 
 build: cmake
-	$(MAKE) -C ${BUILD_DIR} --no-print-directory
+	$(MAKE) -C ${BUILD_DIR} --no-print-directory -j4
 
 SRCS := $(shell find . -name '*.[ch]' -or -name '*.[ch]pp')
 %.format: %
