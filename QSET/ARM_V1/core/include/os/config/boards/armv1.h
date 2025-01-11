@@ -14,6 +14,7 @@
 #include "os/hal/pin.h"
 #define _BOARD_CONFIG_
 
+
 // LED Pins
 #define PIN_LED1      PIN('C', 8)
 #define PIN_LED2      PIN('C', 9)
@@ -35,6 +36,9 @@
 
 // USB Pins
 #define PIN_USB_VBUS  PIN('A', 9)
+#ifndef USBD_VBUS_DETECT
+#define USBD_VBUS_DETECT
+#endif
 #define PIN_USB_DM    PIN('A', 11)
 #define PIN_USB_DP    PIN('A', 12)
 

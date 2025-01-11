@@ -313,6 +313,7 @@ static void cdc_rxonly (usbd_device *dev, uint8_t event, uint8_t ep) {
    usbd_ep_read(dev, ep, fifo, CDC_DATA_SZ);
 }
 
+volatile struct ctime t_last;
 static void cdc_txonly(usbd_device *dev, uint8_t event, uint8_t ep) {
     // static uint8_t psize = 0x00U;
     // static uint8_t remained = 0x00U;
@@ -333,12 +334,21 @@ static void cdc_txonly(usbd_device *dev, uint8_t event, uint8_t ep) {
     //     remained -= _t;
     // }
     char msg[0xFF];
+    // Send the time out every 1 s
     if(ep == CDC_STIME_TXEP){
         struct ctime time;
         cTimeGet(xTaskGetTickCount(), &time);
-        int strsize = sprintf(msg, PRINT_CTIME(time));
-        // usbd_ep_unstall(&udev, CDC_TXD_EP);
-        usbd_ep_write(&udev, ep, msg, strsize);
+        // If a new second has elapsed, send the time
+        if(t_last.secs != time.secs){
+            int strsize = sprintf(msg, PRINT_CTIME(time));
+            // usbd_ep_unstall(&udev, CDC_TXD_EP);
+            usbd_ep_write(&udev, ep, msg, strsize);
+        }
+        // NAK if a second has not elapsed
+        else{
+            usbd_ep_write(&udev, ep, NULL, 0);
+        }
+        t_last.secs = time.secs;
     }
     else{
         int strsize = sprintf(msg, "EP: %d", ep & 0x0F);
