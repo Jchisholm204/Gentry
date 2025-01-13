@@ -293,7 +293,7 @@ static void cdc_txonly(usbd_device *dev, uint8_t event, uint8_t ep) {
     if(ep == CDC_STIME_TXEP){
         struct systime time;
         // cTimeGet(xTaskGetTickCount(), &time);
-        systime_fromTicks(xTaskGetTickCount(), &time);
+        systime_fromTicks(xTaskGetTickCountFromISR(), &time);
         // If a new second has elapsed, send the time
         if(t_last.secs != time.secs){
             // int strsize = sprintf(msg, PRINT_CTIME(time));
@@ -407,6 +407,7 @@ void vUSB_tsk(void * pvParams){
     (void)pvParams;
     usb_cdc_init_rcc();
     cdc_init_usbd();
+    NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN);
     NVIC_EnableIRQ(OTG_FS_IRQn);
     usbd_enable(&udev, 1);
     usbd_connect(&udev, 1);

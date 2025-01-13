@@ -45,7 +45,7 @@ static inline size_t systime_getStr(struct systime *pT){
     s[8] = '.';
     int msecs = pT->msecs;
     for(int i = 0; i < 3 && msecs > 0; i++){
-        s[9+i] = (char)(msecs % 10) + '0';
+        s[11-i] = (char)(msecs % 10) + '0';
         msecs /= 10;
     }
     s[12] = '\n';
