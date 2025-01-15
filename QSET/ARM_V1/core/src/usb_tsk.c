@@ -30,7 +30,7 @@ static const struct usb_device_descriptor device_desc = {
     .bDeviceSubClass    = USB_SUBCLASS_IAD,
     .bDeviceProtocol    = USB_PROTO_IAD,
     .bMaxPacketSize0    = CDC_EP0_SIZE,
-    .idVendor           = 0xFFFE,
+    .idVendor           = 0xFFFF,
     .idProduct          = 0x1234,
     .bcdDevice          = VERSION_BCD(1,0,0),
     .iManufacturer      = 1,
@@ -45,7 +45,7 @@ static const struct udev_config config_desc = {
         .bLength                = sizeof(struct usb_config_descriptor),
         .bDescriptorType        = USB_DTYPE_CONFIGURATION,
         .wTotalLength           = sizeof(struct udev_config),
-        .bNumInterfaces         = 4,
+        .bNumInterfaces         = UDEV_INTERFACES,
         .bConfigurationValue    = 1,
         .iConfiguration         = NO_DESCRIPTOR,
         .bmAttributes           = USB_CFG_ATTR_RESERVED | USB_CFG_ATTR_SELFPOWERED,
@@ -65,7 +65,7 @@ static const struct udev_config config_desc = {
     .vcom = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = 0,
+        .bInterfaceNumber       = VCOM_NTF_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 1,
         .bInterfaceClass        = USB_CLASS_CDC,
@@ -111,7 +111,7 @@ static const struct udev_config config_desc = {
     .vcom_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = 1,
+        .bInterfaceNumber       = VCOM_DATA_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 2,
         .bInterfaceClass        = USB_CLASS_CDC_DATA,
@@ -139,7 +139,7 @@ static const struct udev_config config_desc = {
     .ctrl_iad = {
         .bLength = sizeof(struct usb_iad_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFASEASSOC,
-        .bFirstInterface        = 0,
+        .bFirstInterface        = CTRL_NTF_INUM,
         .bInterfaceCount        = 2,
         .bFunctionClass         = USB_CLASS_CDC,
         .bFunctionSubClass      = USB_CDC_SUBCLASS_ACM,
@@ -149,7 +149,7 @@ static const struct udev_config config_desc = {
     .ctrl = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = 2,
+        .bInterfaceNumber       = CTRL_NTF_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 1,
         .bInterfaceClass        = USB_CLASS_CDC,
@@ -168,7 +168,7 @@ static const struct udev_config config_desc = {
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_CALL_MANAGEMENT,
         .bmCapabilities         = 0,
-        .bDataInterface         = 3,
+        .bDataInterface         = CTRL_DATA_INUM,
 
     },
     .ctrl_acm = {
@@ -181,8 +181,8 @@ static const struct udev_config config_desc = {
         .bFunctionLength        = sizeof(struct usb_cdc_union_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_UNION,
-        .bMasterInterface0      = 2,
-        .bSlaveInterface0       = 3,
+        .bMasterInterface0      = CTRL_NTF_INUM,
+        .bSlaveInterface0       = CTRL_DATA_INUM,
     },
     .ctrl_ep = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
@@ -195,7 +195,7 @@ static const struct udev_config config_desc = {
     .ctrl_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = 3,
+        .bInterfaceNumber       = CTRL_DATA_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 2,
         .bInterfaceClass        = USB_CLASS_CDC_DATA,
@@ -304,25 +304,25 @@ struct systime t_last;
 static void cdc_txonly(usbd_device *dev, uint8_t event, uint8_t ep) {
     char msg[0xFF];
     // Send the time out every 1 s
-    if(ep == VCOM_TXD_EP){
+    // if(ep == VCOM_TXD_EP){
         struct systime time;
         // cTimeGet(xTaskGetTickCount(), &time);
         systime_fromTicks(xTaskGetTickCountFromISR(), &time);
         // If a new second has elapsed, send the time
-        if(t_last.secs != time.secs){
-            // int strsize = sprintf(msg, PRINT_CTIME(time));
+        // if(t_last.secs != time.secs){
+            int strsize = sprintf(msg, "EP %d: %s", ep &0x0F, time.str);
             // usbd_ep_unstall(&udev, CDC_TXD_EP);
-            usbd_ep_write(&udev, ep, time.str, SYSTIME_STR_LEN);
-        }
+            usbd_ep_write(&udev, ep, msg, strsize);
+        // }
         // NAK if a second has not elapsed
-        else{
-            usbd_ep_write(&udev, ep, NULL, 0);
-        }
-        t_last.secs = time.secs;
-    }
-    else{
-        usbd_ep_write(&udev, ep, read_fifo, VCOM_DATA_SZ);
-    }
+        // else{
+        //     usbd_ep_write(&udev, ep, NULL, 0);
+        // }
+        // t_last.secs = time.secs;
+    // }
+    // else{
+    //     usbd_ep_write(&udev, ep, read_fifo, VCOM_DATA_SZ);
+    // }
 }
 
 static void cdc_rxtx(usbd_device *dev, uint8_t event, uint8_t ep) {

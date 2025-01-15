@@ -28,12 +28,16 @@
 // Do not change (Control EP0 Size)
 #define CDC_EP0_SIZE    0x08
 
+#define UDEV_INTERFACES  0x04
+
 // Virtual Com Port
 #define VCOM_RXD_EP      0x01
 #define VCOM_TXD_EP      0x81
 #define VCOM_DATA_SZ     0x40
 #define VCOM_NTF_EP      0x82
 #define VCOM_NTF_SZ      0x08
+#define VCOM_NTF_INUM    0x00
+#define VCOM_DATA_INUM   0x01
 
 // Device Control
 #define CTRL_RXD_EP      0x03
@@ -41,6 +45,9 @@
 #define CTRL_DATA_SZ     0x40
 #define CTRL_NTF_EP      0x84
 #define CTRL_NTF_SZ      0x08
+#define CTRL_NTF_INUM    0x02
+#define CTRL_DATA_INUM   0x03
+
 
 /* Declaration of the report descriptor */
 struct udev_config {
