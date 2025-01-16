@@ -333,6 +333,22 @@ static void cdc_rxtx(usbd_device *dev, uint8_t event, uint8_t ep) {
     }
 }
 
+struct arm_control ctrl_rx = {0}, ctrl_tx = {
+    .control_type = 47U,
+    .status = 0,
+    .ctrl_tool = 0,
+    .limit_sw = 55U,
+    {0},
+    {0},
+};
+static void ctrl_rxtx(usbd_device *dev, uint8_t event, uint8_t ep){
+    if(event == usbd_evt_eprx){
+        usbd_ep_read(dev, ep, &ctrl_rx, sizeof(struct arm_control));
+    }
+    else{
+        usbd_ep_write(dev, ep, &ctrl_tx, sizeof(struct arm_control));
+    }
+}
 
 static usbd_respond cdc_setconf (usbd_device *dev, uint8_t cfg) {
     switch (cfg) {
@@ -360,8 +376,8 @@ static usbd_respond cdc_setconf (usbd_device *dev, uint8_t cfg) {
 
         usbd_reg_endpoint(dev, VCOM_RXD_EP, cdc_rxtx);
         usbd_reg_endpoint(dev, VCOM_TXD_EP, cdc_rxtx);
-        usbd_reg_endpoint(dev, CTRL_RXD_EP, cdc_rxtx);
-        usbd_reg_endpoint(dev, CTRL_TXD_EP, cdc_rxtx);
+        usbd_reg_endpoint(dev, CTRL_RXD_EP, ctrl_rxtx);
+        usbd_reg_endpoint(dev, CTRL_TXD_EP, ctrl_rxtx);
 
         usbd_ep_write(dev, VCOM_TXD_EP, 0, 0);
         usbd_ep_write(dev, CTRL_TXD_EP, 0, 0);

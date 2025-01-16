@@ -77,7 +77,14 @@ struct udev_config {
     struct usb_endpoint_descriptor      ctrl_eptx;
 } __attribute__((packed));
 
-
+struct arm_control {
+    uint8_t control_type;
+    uint8_t status;
+    uint8_t ctrl_tool;
+    uint8_t limit_sw;
+    uint8_t ctrl_servo[4];
+    uint16_t motor_pos[6];
+} __attribute__((packed));
 
 
 #endif
