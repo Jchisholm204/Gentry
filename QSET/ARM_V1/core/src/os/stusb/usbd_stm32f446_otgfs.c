@@ -15,8 +15,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "os/hal/stusb/stm32_compat.h"
-#include "os/hal/stusb/usb.h"
+#include "os/stusb/stm32_compat.h"
+#include "os/stusb/usb.h"
 
 #if defined(USBD_STM32F446FS)
 
