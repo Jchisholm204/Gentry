@@ -14,13 +14,14 @@
 #include <memory.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
+#include "task.h"
 #include "os/stusb/stm32_compat.h"
 #include "os/stusb/stm32_compat.h"
 #include "os/stusb/usb.h"
 #include "os/stusb/usb_cdc.h"
 #include "usb_tsk.h"
 #include "systime.h"
-#include "usbd/descriptor.h"
+#include "usbd/usb_desc.h"
 
 usbd_device udev;
 

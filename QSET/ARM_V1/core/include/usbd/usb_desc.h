@@ -1,5 +1,5 @@
 /**
- * @file descriptor.h
+ * @file usb_desc.h
  * @author Jacob Chisholm (jchisholm204.github.io)
  * @brief QSET Arm Control USB Device Descriptor
  * @version 0.1

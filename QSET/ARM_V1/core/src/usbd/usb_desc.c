@@ -1,5 +1,5 @@
 /**
- * @file descriptor.c
+ * @file usb_desc.c
  * @author Jacob Chisholm (jchisholm204.github.io)
  * @brief QSET Arm Control USB Device Descriptor
  * @version 0.1
@@ -10,7 +10,7 @@
  *
  */
 #include <memory.h>
-#include "usbd/descriptor.h"
+#include "usbd/usb_desc.h"
 
 
 static usbd_respond udev_getdesc (usbd_ctlreq *req, void **address, uint16_t *length) {
