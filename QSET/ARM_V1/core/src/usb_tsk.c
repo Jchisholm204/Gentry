@@ -17,8 +17,9 @@
 #include "task.h"
 #include "usbd/usb_device.h"
 #include "systime.h"
+#include <stdio.h>
 
-
+char buf[100] = {0};
 void vUSB_tsk(void * pvParams){
     udev_init();
     (void)pvParams;
@@ -26,16 +27,12 @@ void vUSB_tsk(void * pvParams){
     for(;;){
         // printf("Writing to USB\n");
         struct systime t;
+        // char msg[] = "Hello ";
+        // udev_write(msg, sizeof(msg));
         systime_fromTicks(xTaskGetTickCount(), &t);
-        udev_write(t.str, SYSTIME_STR_LEN);
-        // int strsize = sprintf(msg, PRINT_CTIME(time));
-        // // usbd_ep_unstall(&udev, CDC_TXD_EP);
-        // usbd_ep_write(&udev, CDC_TXD_EP, msg, strsize);
-        // int32_t rx_len = usbd_ep_read(&udev, CDC_RXD_EP, rx_buf, sizeof(rx_buf));
-        // if(rx_len > 0){
-        //     usbd_ep_write(&udev, CDC_TXD_EP, rx_buf, rx_len);
-        //     printf("USBRX %d bytes: %s\n", rx_len, rx_buf);
-        // }
+        // int slen = sprintf(buf, "%s", t.str);
+        udev_write(t.str, 8);
+        udev_write("\n", 1);
         vTaskDelay(1000);
     }
 }

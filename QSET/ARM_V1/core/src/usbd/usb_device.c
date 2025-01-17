@@ -114,6 +114,7 @@ static void vcom_rxtx(usbd_device *dev, uint8_t event, uint8_t ep){
     }
     else{
         usbd_ep_write(dev, ep, &vcom_tx_buf, (uint16_t)vcom_tx_n);
+        vcom_tx_n = 0;
     }
 }
 

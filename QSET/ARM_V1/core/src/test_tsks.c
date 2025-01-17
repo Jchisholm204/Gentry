@@ -21,6 +21,7 @@
 #include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
 #include "os/drivers/canbus.h"
+#include "systime.h"
 
 struct ctime {
     int hrs, mins, secs, msecs;
@@ -57,9 +58,12 @@ void vTestTask(void * pvParams){
         gpio_write(PIN_LED2, leds & 0x2U);
         gpio_write(PIN_LED3, leds & 0x4U);
         fprintf(Serial3.fp, "Hello ");
-        struct ctime time;
-        cTimeGet(xTaskGetTickCount(), &time);
-        fprintf(Serial3.fp, PRINT_CTIME(time));
+        // struct ctime time;
+        // cTimeGet(xTaskGetTickCount(), &time);
+        // fprintf(Serial3.fp, PRINT_CTIME(time));
+        struct systime t;
+        systime_fromTicks(xTaskGetTickCount(), &t);
+        fprintf(Serial3.fp, "%s\n", t.str);
         // sleep for 1000 ms
         vTaskDelay(1000);
     }
