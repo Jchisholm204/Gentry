@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
-#include "os/drivers/canbus.h"
+#include "drivers/canbus.h"
 
 typedef struct {
     uint32_t can_id;

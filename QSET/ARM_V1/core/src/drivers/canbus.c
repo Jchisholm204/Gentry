@@ -9,8 +9,8 @@
  * 
  */
 
-#include "os/drivers/canbus.h"
-#include "os/config/nvic.h"
+#include "drivers/canbus.h"
+#include "config/nvic.h"
 #include <stdio.h>
 #include "semphr.h"
 #include "queue.h"

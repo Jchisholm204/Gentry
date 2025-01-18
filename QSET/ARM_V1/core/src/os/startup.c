@@ -10,7 +10,7 @@
  */
 
 #include "main.h"
-#include "os/hal/hal_clock.h"
+#include "hal/hal_clock.h"
 
 /**
  * @brief Initializes the CPU

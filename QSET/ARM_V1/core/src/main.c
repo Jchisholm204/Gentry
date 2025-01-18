@@ -12,11 +12,11 @@
 #include <stdio.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
-#include "os/config/FreeRTOSConfig.h"
+#include "config/FreeRTOSConfig.h"
 #include "task.h"
-#include "os/drivers/serial.h"
+#include "drivers/serial.h"
 #include "string.h"
-#include "os/config/pin_cfg.h"
+#include "config/pin_cfg.h"
 
 #include "tsk_mtr_ctrl.h"
 #include "tsk_testing.h"

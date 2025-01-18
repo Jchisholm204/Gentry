@@ -11,7 +11,7 @@
 
 #ifndef _PINS_NUCLEOZE_H_
 #define _PINS_NUCLEOZE_H_
-#include "os/hal/pin.h"
+#include "hal/pin.h"
 #define _BOARD_CONFIG_
 
 

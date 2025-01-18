@@ -12,7 +12,7 @@
 #ifndef _TSK_MTR_CTRL_H_
 #define _TSK_MTR_CTRL_H_
 
-#include "ak7010.h"
+#include "drivers/ak7010.h"
 
 static AK7010_t J1 = {
     .can_id = 0,

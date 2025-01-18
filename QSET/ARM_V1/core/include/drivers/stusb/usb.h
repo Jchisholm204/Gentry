@@ -19,7 +19,7 @@
     extern "C" {
 #endif
 
-#include "os/config/sys_cfg.h"
+#include "config/sys_cfg.h"
 #include "usbd_core.h"
 #if !defined(__ASSEMBLER__)
 #include "usb_std.h"

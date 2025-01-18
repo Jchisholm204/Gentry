@@ -2,8 +2,8 @@
 #define _STM32_COMPAT_H_
 
 
-#include "os/config/sys_cfg.h"
-#include "os/config/pin_cfg.h"
+#include "config/sys_cfg.h"
+#include "config/pin_cfg.h"
 
 /* modify bitfield */
 #define _BMD(reg, msk, val)     (reg) = (((reg) & ~(msk)) | (val))

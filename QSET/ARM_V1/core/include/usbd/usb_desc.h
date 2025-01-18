@@ -13,9 +13,9 @@
 #ifndef _USB_DESCRIPTOR_H_
 #define _USB_DESCRIPTOR_H_
 
-#include "os/stusb/stm32_compat.h"
-#include "os/stusb/usb.h"
-#include "os/stusb/usb_cdc.h"
+#include "drivers/stusb/stm32_compat.h"
+#include "drivers/stusb/usb.h"
+#include "drivers/stusb/usb_cdc.h"
 
 // USB CDC Protocol to use
 #define CDC_PROTOCOL USB_PROTO_IAD

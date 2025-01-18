@@ -6,8 +6,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "string.h"
-#include "os/drivers/serial.h"
-#include "os/config/pin_cfg.h"
+#include "drivers/serial.h"
+#include "config/pin_cfg.h"
 
 int _fstat(int fd, struct stat *st) {
   if (fd < 0) return -1;

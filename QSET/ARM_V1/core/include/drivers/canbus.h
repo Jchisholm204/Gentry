@@ -12,11 +12,11 @@
 #ifndef _CANBUS_H_
 #define _CANBUS_H_
 
-#include "os/hal/hal_can.h"
+#include "hal/hal_can.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "stream_buffer.h"
-#include "os/config/sys_cfg.h"
+#include "config/sys_cfg.h"
 
 #define MAX_MAILBOXES 20
 

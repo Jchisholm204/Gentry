@@ -10,16 +10,16 @@
  */
 
 #include <memory.h>
-#include "os/stusb/stm32_compat.h"
-#include "os/stusb/usb_cdc.h"
-#include "os/stusb/usb.h"
+#include "drivers/stusb/stm32_compat.h"
+#include "drivers/stusb/usb_cdc.h"
+#include "drivers/stusb/usb.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 
 #include "usbd/usb_device.h"
 #include "usbd/usb_desc.h"
 
-#include "os/config/nvic.h"
+#include "config/nvic.h"
 
 // libusb_stm32 device handle
 usbd_device udev;

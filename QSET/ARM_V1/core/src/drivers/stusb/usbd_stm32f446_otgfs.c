@@ -15,35 +15,35 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "os/stusb/stm32_compat.h"
-#include "os/stusb/usb.h"
+#include "drivers/stusb/stm32_compat.h"
+#include "drivers/stusb/usb.h"
 
-#if defined(USBD_STM32F446HS)
+#if defined(USBD_STM32F446FS)
 
-#define MAX_EP          9
+#define MAX_EP          6
 #define MAX_RX_PACKET   128
 #define MAX_CONTROL_EP  1
-#define MAX_FIFO_SZ     1024  /*in 32-bit chunks */
+#define MAX_FIFO_SZ     320  /*in 32-bit chunks */
 
 #define RX_FIFO_SZ      ((4 * MAX_CONTROL_EP + 6) + ((MAX_RX_PACKET / 4) + 1) + (MAX_EP * 2) + 1)
 
 #define STATUS_VAL(x)   (USBD_HW_ADDRFST | (x))
 
-static USB_OTG_GlobalTypeDef * const OTG  = (void*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_GLOBAL_BASE);
-static USB_OTG_DeviceTypeDef * const OTGD = (void*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_DEVICE_BASE);
-static volatile uint32_t * const OTGPCTL  = (void*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_PCGCCTL_BASE);
+static USB_OTG_GlobalTypeDef * const OTG  = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_GLOBAL_BASE);
+static USB_OTG_DeviceTypeDef * const OTGD = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_DEVICE_BASE);
+static volatile uint32_t * const OTGPCTL  = (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_PCGCCTL_BASE);
 
 
 inline static uint32_t* EPFIFO(uint32_t ep) {
-    return (uint32_t*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_FIFO_BASE + (ep << 12));
+    return (uint32_t*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_FIFO_BASE + (ep << 12));
 }
 
 inline static USB_OTG_INEndpointTypeDef* EPIN(uint32_t ep) {
-    return (void*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_IN_ENDPOINT_BASE + (ep << 5));
+    return (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_IN_ENDPOINT_BASE + (ep << 5));
 }
 
 inline static USB_OTG_OUTEndpointTypeDef* EPOUT(uint32_t ep) {
-    return (void*)(USB_OTG_HS_PERIPH_BASE + USB_OTG_OUT_ENDPOINT_BASE + (ep << 5));
+    return (void*)(USB_OTG_FS_PERIPH_BASE + USB_OTG_OUT_ENDPOINT_BASE + (ep << 5));
 }
 
 inline static void Flush_RX(void) {
@@ -102,7 +102,7 @@ static bool ep_isstalled(uint8_t ep) {
 static void enable(bool enable) {
     if (enable) {
         /* enabling USB_OTG in RCC */
-        _BST(RCC->AHB1ENR, RCC_AHB1ENR_OTGHSEN);
+        _BST(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN);
         _WBS(OTG->GRSTCTL, USB_OTG_GRSTCTL_AHBIDL);
         /* configure OTG as device */
         OTG->GUSBCFG = USB_OTG_GUSBCFG_FDMOD | USB_OTG_GUSBCFG_PHYSEL |
@@ -121,10 +121,6 @@ static void enable(bool enable) {
         /* Setup USB FS speed and frame interval */
         _BMD(OTGD->DCFG, USB_OTG_DCFG_PERSCHIVL | USB_OTG_DCFG_DSPD,
              _VAL2FLD(USB_OTG_DCFG_PERSCHIVL, 0) | _VAL2FLD(USB_OTG_DCFG_DSPD, 0x03));
-        /* setting max RX FIFO size */
-        OTG->GRXFSIZ = RX_FIFO_SZ;
-        /* setting up EP0 TX FIFO SZ as 64 byte */
-        OTG->DIEPTXF0_HNPTXFSIZ = RX_FIFO_SZ | (0x10 << 16);
         /* unmask EP interrupts */
         OTGD->DIEPMSK = USB_OTG_DIEPMSK_XFRCM;
         /* unmask core interrupts */
@@ -138,11 +134,15 @@ static void enable(bool enable) {
         OTG->GINTSTS = 0xFFFFFFFF;
         /* unmask global interrupt */
         OTG->GAHBCFG = USB_OTG_GAHBCFG_GINT;
+        /* setting max RX FIFO size */
+        OTG->GRXFSIZ = RX_FIFO_SZ;
+        /* setting up EP0 TX FIFO SZ as 64 byte */
+        OTG->DIEPTXF0_HNPTXFSIZ = RX_FIFO_SZ | (0x10 << 16);
     } else {
-        if (RCC->AHB1ENR & RCC_AHB1ENR_OTGHSEN) {
-            _BST(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST);
-            _BCL(RCC->AHB1RSTR, RCC_AHB1RSTR_OTGHRST);
-            _BCL(RCC->AHB1ENR, RCC_AHB1ENR_OTGHSEN);
+        if (RCC->AHB2ENR & RCC_AHB2ENR_OTGFSEN) {
+            _BST(RCC->AHB2RSTR, RCC_AHB2RSTR_OTGFSRST);
+            _BCL(RCC->AHB2RSTR, RCC_AHB2RSTR_OTGFSRST);
+            _BCL(RCC->AHB2ENR, RCC_AHB2ENR_OTGFSEN);
         }
     }
 }
@@ -345,7 +345,7 @@ static int32_t ep_write(uint8_t ep, const void *buf, uint16_t blen) {
     }
     epi->DIEPTSIZ = 0;
     epi->DIEPTSIZ = (1 << 19) + blen;
-    _BMD(epi->DIEPCTL, USB_OTG_DIEPCTL_STALL, USB_OTG_DOEPCTL_EPENA | USB_OTG_DOEPCTL_CNAK);
+    _BMD(epi->DIEPCTL, USB_OTG_DIEPCTL_STALL, USB_OTG_DIEPCTL_EPENA | USB_OTG_DIEPCTL_CNAK);
     /* push data to FIFO */
     tmp = 0;
     for (int idx = 0; idx < blen; idx++) {
@@ -448,7 +448,7 @@ static uint16_t get_serialno_desc(void *buffer) {
     return 18;
 }
 
- __attribute__((externally_visible)) const struct usbd_driver usbd_otghs = {
+ __attribute__((externally_visible)) const struct usbd_driver usbd_otgfs = {
     getinfo,
     enable,
     connect,

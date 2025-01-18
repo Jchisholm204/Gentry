@@ -11,11 +11,11 @@
 
 #ifndef _SERIAL_H_
 #define _SERIAL_H_
-#include "os/hal/hal_uart.h"
+#include "hal/hal_uart.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "stream_buffer.h"
-#include "os/config/sys_cfg.h"
+#include "config/sys_cfg.h"
 #include <stdio.h>
 
 enum eSerialError {

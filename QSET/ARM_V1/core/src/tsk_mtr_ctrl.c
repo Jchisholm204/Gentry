@@ -10,7 +10,7 @@
  */
 
 #include "main.h"
-#include "ak7010.h"
+#include "drivers/ak7010.h"
 #include "usbd/usb_device.h"
 
 #define MAILBOX_SIZE 1

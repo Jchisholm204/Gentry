@@ -9,8 +9,8 @@
  * 
  */
 
-#include "os/drivers/serial.h"
-#include "os/config/nvic.h"
+#include "drivers/serial.h"
+#include "config/nvic.h"
 
 
 void generic_handler(Serial_t *pHndl){

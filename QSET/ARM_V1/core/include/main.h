@@ -13,7 +13,7 @@
 #define _MAIN_HPP_
 
 #include <stm32f4xx.h>
-#include "os/config/nvic.h"
+#include "config/nvic.h"
 
 extern void SystemInit(void);
 

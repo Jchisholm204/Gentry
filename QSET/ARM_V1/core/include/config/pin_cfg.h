@@ -21,11 +21,11 @@
 #define BOARD_ARMV1
 
 #if defined(BOARD_MOCKECU)
-    #include "os/config/boards/mockecu.h"
+    #include "config/boards/mockecu.h"
 #elif defined(BOARD_NUCLEOZE)
-    #include "os/config/boards/nucleoze.h"
+    #include "config/boards/nucleoze.h"
 #elif defined(BOARD_ARMV1)
-    #include "os/config/boards/armv1.h"
+    #include "config/boards/armv1.h"
 #endif
 
 #ifndef _BOARD_CONFIG_

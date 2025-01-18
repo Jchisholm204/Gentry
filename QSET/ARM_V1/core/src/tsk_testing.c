@@ -13,14 +13,14 @@
 #include <stdio.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
-#include "os/config/FreeRTOSConfig.h"
+#include "config/FreeRTOSConfig.h"
 #include "task.h"
-#include "os/drivers/serial.h"
+#include "drivers/serial.h"
 #include "string.h"
-#include "os/hal/hal_clock.h"
-#include "os/hal/hal_gpio.h"
-#include "os/config/pin_cfg.h"
-#include "os/drivers/canbus.h"
+#include "hal/hal_clock.h"
+#include "hal/hal_gpio.h"
+#include "config/pin_cfg.h"
+#include "drivers/canbus.h"
 #include "systime.h"
 
 void vTsk_testOnline(void * pvParams){
