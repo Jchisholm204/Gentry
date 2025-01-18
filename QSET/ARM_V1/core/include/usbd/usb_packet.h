@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <assert.h>
 
-#define UDEV_N_MOTORS 6
+#define UDEV_N_MOTORS 4
 #define UDEV_N_SERVOS 4
 
 // USB Status

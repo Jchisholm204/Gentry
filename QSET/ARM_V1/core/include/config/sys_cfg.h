@@ -32,7 +32,7 @@
 #define configUSE_SERIAL6 0
 
 // CAN Bus
-#define configUSE_CAN1 0
+#define configUSE_CAN1 1
 #define configUSE_CAN2 0
 
 // Analog to Digital Converters

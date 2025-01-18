@@ -37,7 +37,7 @@ static uint32_t ak7010_toInt(float x, float x_min, float x_max, int bits){
         x = x_min;
     else if (x > x_max)
         x = x_max;
-    return (int)((x - x_min) * ((float)((1 << bits) / span)));
+    return (uint32_t)((x - x_min) * ((float)((float)((uint32_t)(1UL << bits)) / span)));
 
 }
 
@@ -65,32 +65,28 @@ static inline void ak7010_pack(AK7010_t *mtr, can_msg_t *msg){
     /// pack ints into the can buffer ///
     msg->id = mtr->can_id;
     msg->len = 8;
-    msg->data[0] = p_int >> 8;    // Position 8 higher
-    msg->data[1] = p_int & 0xFF;  // Position 8 lower
-    msg->data[2] = v_int >> 4;    // Speed 8 higher
-    msg->data[3] =
-        ((v_int & 0xF) << 4) | (kp_int >> 8);  // Speed 4 bit lower KP 4bit higher
-    msg->data[4] = kp_int & 0xFF;          // KP 8 bit lower
-    msg->data[5] = kd_int >> 4;            // Kd 8 bit higher
-    msg->data[6] = ((kd_int & 0xF) << 4) |
-        (t_int >> 8);  // KP 4 bit lower torque 4 bit higher;
-    msg->data[7] = t_int & 0xff;  // torque 4 bit lower
+    msg->data[0] = (uint8_t)(p_int >> 8U);    // Position 8 higher
+    msg->data[1] = (uint8_t)(p_int & 0xFF);  // Position 8 lower
+    msg->data[2] = (uint8_t)(v_int >> 4);    // Speed 8 higher
+    msg->data[3] = (uint8_t)((v_int & 0xF) << 4) | (uint8_t)(kp_int >> 8);  // Speed 4 bit lower KP 4bit higher
+    msg->data[4] = (uint8_t)(kp_int & 0xFF); // KP 8 bit lower
+    msg->data[5] = (uint8_t)(kd_int >> 4);            // Kd 8 bit higher
+    msg->data[6] = (uint8_t)((kd_int & 0xF) << 4) | (uint8_t)(t_int >> 8);  // KP 4 bit lower torque 4 bit higher;
+    msg->data[7] = (uint8_t)(t_int & 0xFF);  // torque 4 bit lower
 }
 
 static inline void ak7010_unpack(AK7010_t *mtr, can_msg_t *msg){
     /// unpack ints from can buffer ///
-    // outGoing.id = msg.data[0];                          // CAN ID of driver?
-    uint32_t p_int = (msg->data[1] << 8) | msg->data[2];  // Motor position data
-    uint32_t v_int = (msg->data[3] << 4) | (msg->data[4] >> 4);  // Motor speed data
-    uint32_t i_int =
-        ((msg->data[4] & 0xF) << 8) | msg->data[5];  // Motor current data
+    uint32_t p_int = (uint32_t)(msg->data[1] << 8) | msg->data[2];  // Motor position data
+    uint32_t v_int = (uint32_t)(msg->data[3] << 4) | (msg->data[4] >> 4);  // Motor speed data
+    uint32_t i_int = (uint32_t)((msg->data[4] & 0xF) << 8) | msg->data[5];  // Motor current data
     uint32_t T_int = msg->data[6];
 
     /// convert ints to floats ///
-    mtr->position = ak7010_toFlt(p_int, P_MIN, P_MAX, 16);
-    mtr->velocity = ak7010_toFlt(v_int, V_MIN, V_MAX, 12);
-    mtr->current = ak7010_toFlt(i_int, -I_MAX, I_MAX, 12);
-    mtr->temp = ak7010_toFlt(T_int, Temp_MIN, Temp_MAX, 8);
+    mtr->position = ak7010_toFlt(p_int, AK_P_MIN, AK_P_MAX, 16);
+    mtr->velocity = ak7010_toFlt(v_int, AK_V_MIN, AK_V_MAX, 12);
+    mtr->current = ak7010_toFlt(i_int, -AK_I_MAX, AK_I_MAX, 12);
+    mtr->temp = ak7010_toFlt(T_int, AK_Temp_MIN, AK_Temp_MAX, 8);
     mtr->error = msg->data[7];
 }
 

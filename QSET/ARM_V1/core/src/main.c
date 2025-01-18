@@ -29,14 +29,12 @@ void Init(void){
     serial_init(&Serial3, 250000, PIN_USART3_RX, PIN_USART3_TX);
     // Required for MockECU Board
     // gpio_set_mode(PIN('A', 10), GPIO_MODE_OUTPUT);
-    // gpio_write(PIN('A', 10), false);
-    // gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     // Initialize CAN
-    // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
+    can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
 
 }
 
-#define N_TSKS 3
+#define N_TSKS 4
 StackType_t puxTskStack[N_TSKS][configMINIMAL_STACK_SIZE<<1];
 StaticTask_t pxTsks[N_TSKS];
 
@@ -48,6 +46,7 @@ int main(void){
     xTaskCreateStatic(vTsk_testOnline, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, puxTskStack[0], &pxTsks[0]);
     xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, puxTskStack[1], &pxTsks[1]);
     xTaskCreateStatic(vTsk_usbTest, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 1, puxTskStack[2], &pxTsks[2]);
+    xTaskCreateStatic(vTsk_mtr_ctrl, "USB tst", configMINIMAL_STACK_SIZE<<1, J1, 1, puxTskStack[3], &pxTsks[3]);
     // xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
     // Start Scheduler
