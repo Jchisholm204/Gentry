@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
+#include "drivers/AK7010/ak7010_constants.h"
 #include "drivers/canbus.h"
 
 typedef struct {
@@ -27,46 +28,6 @@ typedef struct {
     bool enable;
     uint8_t error;
 } AK7010_t;
-
-/// @brief Minimum position value returned by the ak70-10 motors (rad)
-#define P_MIN -12.5
-
-/// @brief Maximum position value returned by the ak70-10 motors (rad)
-#define P_MAX 12.5
-
-/// @brief Minimum Velocity value returned by the ak70-10 motors (rad/s)
-#define V_MIN -50
-
-/// @brief Maximum Velocity value returned by the ak70-10 motors (rad/s)
-#define V_MAX 50
-
-/// @brief Minimum torque value accepted by the ak70-10 motors (Nm)
-#define T_MIN -25
-
-/// @brief Maximum torque value accepted by the ak70-10 motors (Nm)
-#define T_MAX 25
-
-/// @brief Minimum kp value accepted by ak70-10 motors
-#define KP_MIN 0
-
-/// @brief Maximum kp value accepted by ak70-10 motors
-#define KP_MAX 500
-
-/// @brief Minimum kd value accepted by ak70-10 motors
-#define KD_MIN 0
-
-/// @brief Maximum kd value accepted by ak70-10 motors
-#define KD_MAX 5
-
-/// @brief Max current draw of ak70-10 motors (Amps) (we have limited this to 20
-/// Amps in on the motor firmware)
-#define I_MAX 60
-
-/// @brief Minimum tempature value returned by ak70-10 motors (°C)
-#define Temp_MIN  -20
-
-/// @brief Maximum tempature value returned by ak70-10 motors (°C)
-#define Temp_MAX  127
 
 
 static uint32_t ak7010_toInt(float x, float x_min, float x_max, int bits){
@@ -88,18 +49,18 @@ static float ak7010_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
 }
 
 static inline void ak7010_pack(AK7010_t *mtr, can_msg_t *msg){
-    float p_des = fminf(fmaxf(P_MIN, mtr->position), P_MAX);
-    float v_des = fminf(fmaxf(V_MIN, mtr->velocity), V_MAX);
-    float kp = fminf(fmaxf(KP_MIN, mtr->kP), KP_MAX);
-    float kd = fminf(fmaxf(KD_MIN, mtr->kD), KD_MAX);
-    float t_ff = fminf(fmaxf(T_MIN, mtr->kF), T_MAX);
+    float p_des = fminf(fmaxf(AK_P_MIN, mtr->position), AK_P_MAX);
+    float v_des = fminf(fmaxf(AK_V_MIN, mtr->velocity), AK_V_MAX);
+    float kp = fminf(fmaxf(AK_KP_MIN, mtr->kP), AK_KP_MAX);
+    float kd = fminf(fmaxf(AK_KD_MIN, mtr->kD), AK_KD_MAX);
+    float t_ff = fminf(fmaxf(AK_T_MIN, mtr->kF), AK_T_MAX);
 
     /// convert floats to unsigned ints ///
-    uint32_t p_int = ak7010_toInt(p_des, P_MIN, P_MAX, 16);
-    uint32_t v_int = ak7010_toInt(v_des, V_MIN, V_MAX, 12);
-    uint32_t kp_int = ak7010_toInt(kp, KP_MIN, KP_MAX, 12);
-    uint32_t kd_int = ak7010_toInt(kd, KD_MIN, KD_MAX, 12);
-    uint32_t t_int = ak7010_toInt(t_ff, T_MIN, T_MAX, 12);
+    uint32_t p_int = ak7010_toInt(p_des, AK_P_MIN, AK_P_MAX, 16);
+    uint32_t v_int = ak7010_toInt(v_des, AK_V_MIN, AK_V_MAX, 12);
+    uint32_t kp_int = ak7010_toInt(kp, AK_KP_MIN, AK_KP_MAX, 12);
+    uint32_t kd_int = ak7010_toInt(kd, AK_KD_MIN, AK_KD_MAX, 12);
+    uint32_t t_int = ak7010_toInt(t_ff, AK_T_MIN, AK_T_MAX, 12);
 
     /// pack ints into the can buffer ///
     msg->id = mtr->can_id;
