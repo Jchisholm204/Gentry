@@ -45,9 +45,9 @@ int main(void){
     Init();
     
     // THESE SHOULD BE STATIC
-    xTaskCreateStatic(vTsk_testOnline, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, &puxTskStack[0], &pxTsks[0]);
-    xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, &puxTskStack[1], &pxTsks[1]);
-    xTaskCreateStatic(vTsk_usbTest, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 1, &puxTskStack[2], &pxTsks[2]);
+    xTaskCreateStatic(vTsk_testOnline, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, puxTskStack[0], &pxTsks[0]);
+    xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, puxTskStack[1], &pxTsks[1]);
+    xTaskCreateStatic(vTsk_usbTest, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 1, puxTskStack[2], &pxTsks[2]);
     // xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
     // Start Scheduler
