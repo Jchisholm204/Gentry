@@ -17,10 +17,10 @@
 #include "task.h"
 #include "usbd/usb_device.h"
 #include "systime.h"
-#include <stdio.h>
+#include "tsk_usbTest.h"
 
 char buf[100] = {0};
-void vUSB_tsk(void * pvParams){
+void vTsk_usbTest(void * pvParams){
     udev_init();
     (void)pvParams;
     // vTaskDelete(NULL);

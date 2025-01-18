@@ -16,11 +16,11 @@
 #include "task.h"
 #include "os/drivers/serial.h"
 #include "string.h"
-#include "os/hal/hal_clock.h"
-#include "os/hal/hal_gpio.h"
 #include "os/config/pin_cfg.h"
-#include "os/drivers/canbus.h"
-#include "os/hal/usb/hal_usbd_otgfs.h"
+
+#include "tsk_mtr_ctrl.h"
+#include "tsk_testing.h"
+#include "tsk_usbTest.h"
 
 
 // Initialize all system Interfaces
@@ -36,18 +36,18 @@ void Init(void){
 
 }
 
-void vTestTask(void * pvParams);
-void vUART_FeedBack(void * pvParams);
-void vUSB_tsk(void * pvParams);
+#define N_TSKS 3
+StackType_t puxTskStack[N_TSKS][configMINIMAL_STACK_SIZE<<1];
+StaticTask_t pxTsks[N_TSKS];
 
 int main(void){
 
     Init();
     
     // THESE SHOULD BE STATIC
-    xTaskCreate(vTestTask, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-    xTaskCreate(vUART_FeedBack, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, NULL);
-    xTaskCreate(vUSB_tsk, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 1, NULL);
+    xTaskCreateStatic(vTsk_testOnline, "TestTask", configMINIMAL_STACK_SIZE, NULL, 1, &puxTskStack[0], &pxTsks[0]);
+    xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL, 1, &puxTskStack[1], &pxTsks[1]);
+    xTaskCreateStatic(vTsk_usbTest, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 1, &puxTskStack[2], &pxTsks[2]);
     // xTaskCreate(vCanTask, "Can1RX", configMINIMAL_STACK_SIZE, NULL, 0, NULL);
 
     // Start Scheduler

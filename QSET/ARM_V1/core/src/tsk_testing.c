@@ -23,25 +23,7 @@
 #include "os/drivers/canbus.h"
 #include "systime.h"
 
-struct ctime {
-    int hrs, mins, secs, msecs;
-};
-
-static inline void cTimeGet(TickType_t ticks, struct ctime *t){
-    if (!t)
-        return;
-    float tms = (((float)ticks) / ((float)configTICK_RATE_HZ) * 1000);
-    t->msecs = ((int)tms) % 1000;
-    int secs = ((int)(tms + 500) / 1000);
-    t->secs = secs % 60;
-    int mins = (secs / 60);
-    t->mins = mins % 60;
-    t->hrs = (mins / 60);
-}
-
-#define PRINT_CTIME(ct) "%02d:%02d:%02d.%03d\n", ct.hrs, ct.mins, ct.secs, ct.msecs
-
-void vTestTask(void * pvParams){
+void vTsk_testOnline(void * pvParams){
     (void)pvParams;
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN_LED1, GPIO_MODE_OUTPUT);
@@ -69,7 +51,7 @@ void vTestTask(void * pvParams){
     }
 }
 
-void vUART_FeedBack(void * pvParams){
+void vTsk_testUART(void * pvParams){
     (void)pvParams;
     // StreamBufferHandle_t hndl = xStreamBufferCreateStatic(100, 1, NULL, NULL);
     StreamBufferHandle_t rx_buf = xStreamBufferCreate(100, 5);

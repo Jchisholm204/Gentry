@@ -9,8 +9,8 @@
  * 
  */
 
-#ifndef _ARM_CFG_H_
-#define _ARM_CFG_H_
+#ifndef _TSK_MTR_CTRL_H_
+#define _TSK_MTR_CTRL_H_
 
 #include "ak7010.h"
 
@@ -46,6 +46,6 @@ static AK7010_t J4 = {
     .kF = 0,
 };
 
-
+void vTsk_mtr_ctrl(void *pvParams);
 
 #endif
