@@ -30,7 +30,7 @@
 // Hardware Failure Detected
 #define UDEV_STS_HFAIL 0x10
 // AK Motor Failure
-#define UDEV_STS_HFAIL 0x20
+#define UDEV_STS_MFAIL 0x20
 
 // Bit mappings for the tool power
 #define UDEV_TOOL_A1   0x01
