@@ -15,6 +15,8 @@
 #include "semphr.h"
 #include "queue.h"
 #include "stdio.h"
+#include <memory.h>
+#include <limits.h>
 
 void vCAN_Hndl_tsk(void *pvParams);
 
@@ -39,7 +41,6 @@ eCanError can_init(CAN_t *pHndl, CAN_BITRATE bitrate, pin_t pin_rx, pin_t pin_tx
     xSemaphoreGive(pHndl->mailbox_semphr_hndl[2]);
 
     // Ensure that the mailboxes slot is empty
-    pHndl->mailbox = NULL;
     pHndl->n_mailboxes = 0;
 
 
@@ -87,78 +88,35 @@ eCanError can_write(CAN_t *pHndl, can_msg_t *pMsg, TickType_t timeout){
     return eCanSemphr;
 }
 
-eCanError can_attach(CAN_t *pHndl, CanMailbox_t *pMailbox){
+
+eCanError can_mailbox_init(CAN_t *pHndl, CanMailbox_t *pMailbox, uint32_t can_id){
     if(pMailbox == NULL || pHndl == NULL)
         return eCanNull;
-    if(pHndl->state != eCanOK)
-        return pHndl->state;
-    CanMailbox_t *mailbox = pHndl->mailbox;
-    if(mailbox == NULL){
-        pHndl->mailbox = pMailbox;
-    }
-    else{
-        while (mailbox->next != NULL)
-            mailbox = mailbox->next;
-        mailbox->next = pMailbox;
-    }
-    pHndl->n_mailboxes++;
-    pMailbox->id = pHndl->n_mailboxes;
+    pMailbox->pRxHndl = xTaskGetCurrentTaskHandle();
+    pMailbox->can_id = can_id;
+    pMailbox->msg = (can_msg_t){0, {0}, 0, 0, 0, 0};
+    if(pHndl->n_mailboxes >= (MAX_MAILBOXES-1))
+        return eCanMailboxFull;
+    pHndl->mailbox[pHndl->n_mailboxes++] = pMailbox;
     return eCanOK;
 }
 
-eCanError can_detach(CAN_t *pHndl, CanMailbox_t *pMailbox){
-    if(pMailbox == NULL || pHndl == NULL)
+eCanError can_mailbox_wait(CanMailbox_t *pMailbox, can_msg_t *pMsg, TickType_t wait_time){
+    if(pMailbox == NULL || pMsg == NULL)
         return eCanNull;
-    if(pHndl->state != eCanOK)
-        return pHndl->state;
-    CanMailbox_t *mailbox = pHndl->mailbox;
-    // Handle the case of only one mailbox
-    if(mailbox->next == NULL){
-        if(mailbox->id != pMailbox->id)
-            return eCanMailboxNotFound;
-        pHndl->mailbox = NULL;
-        pHndl->n_mailboxes--;
+    uint32_t ulNotify;
+    if(xTaskNotifyWait(pdFALSE, ULONG_MAX, &ulNotify, wait_time) == pdPASS){
+        (void)ulNotify;
+        memcpy(pMsg, &pMailbox->msg, sizeof(can_msg_t));
         return eCanOK;
     }
-    for(size_t i = 0; i < pHndl->n_mailboxes; i++){
-        if(mailbox->next == NULL)
-            return eCanMailboxNotFound;
-        // Check if the next mailbox is the one to remove
-        if(mailbox->next->id == pMailbox->id){
-            mailbox->next = mailbox->next->next;
-            pHndl->n_mailboxes--;
-            return eCanOK;
-        }
-        // Advance to next mailbox
-        mailbox = mailbox->next;
-    }
-    return eCanMailboxNotFound;
+    return eCanEmpty;
 }
 
-eCanError can_mailbox_init(CanMailbox_t *pMailbox, can_msg_t *const buffer, size_t len){
-    if(pMailbox == NULL || buffer == NULL)
+eCanError can_mailbox_read(CanMailbox_t *pMailbox, can_msg_t *pMsg){
+    if(pMailbox == NULL || pMsg == NULL)
         return eCanNull;
-    pMailbox->buf_hndl = xStreamBufferCreateStatic(len*sizeof(can_msg_t), sizeof(can_msg_t), (uint8_t*)buffer, &pMailbox->static_buf);
-    pMailbox->id = 0;
-    pMailbox->next = NULL;
-    return eCanOK;
-}
-
-eCanError can_mailbox_addMask(CanMailbox_t *pMailbox, uint32_t id){
-    if(pMailbox == NULL)
-        return eCanNull;
-    pMailbox->id_msk |= id;
-    return eCanOK;
-}
-
-eCanError can_mailbox_read(CanMailbox_t *pMailbox, can_msg_t *msg, TickType_t timeout){
-    if(pMailbox == NULL || msg == NULL)
-        return eCanNull;
-    if(pMailbox->buf_hndl == NULL)
-        return eCanNull;
-    size_t rx_bytes = xStreamBufferReceive(pMailbox->buf_hndl, msg, sizeof(can_msg_t), timeout);
-    if(rx_bytes < sizeof(can_msg_t))
-        return eCanReadFail;
+    memcpy(pMsg, &pMailbox->msg, sizeof(can_msg_t));
     return eCanOK;
 }
 
@@ -175,34 +133,15 @@ void vCAN_Hndl_tsk(void *pvParams){
         // This should not happen
         if(rx_bytes < sizeof(can_msg_t))
             continue;
-        CanMailbox_t *pMailbox = pHndl->mailbox;
-        // if there are no mailboxes, discard the message and move on
-        // vPortEnterCritical();
-        if(pMailbox == NULL){
-            // vPortExitCritical();
-            continue;
-        }
-        // Dump the message in the matching mailboxes
-        for(size_t i = 0; i < pHndl->n_mailboxes; i++){
-            // Check that this mailbox is compatible with this message
-            if((msg.id & pMailbox->id_msk) != 0){
-                // printf("Attempting to send to mailbox %d\n", i);
-                size_t aval_bytes =  xStreamBufferSpacesAvailable(pMailbox->buf_hndl);
-                if(aval_bytes > sizeof(can_msg_t)){
-                    size_t tx_bytes = xStreamBufferSend(pMailbox->buf_hndl, &msg, sizeof(can_msg_t), 10);
-                    if (tx_bytes != sizeof(can_msg_t))
-                    {
-                        pHndl->state = eCanMailboxWriteError;
-                    }
-                }
+        
+        for(size_t i = 0; i < pHndl->n_mailboxes && i < MAX_MAILBOXES; i++){
+            CanMailbox_t *pMailbox = pHndl->mailbox[i];
+            if(msg.id == pMailbox->can_id){
+                memcpy(&pMailbox->msg, &msg, sizeof(can_msg_t));
+                xTaskNotify(pMailbox->pRxHndl, 0, eSetBits);
             }
-            // Advance to the next mailbox
-            pMailbox = pMailbox->next;
-            // Check that the next mailbox is not NULL
-            if(pMailbox == NULL)
-                break;
         }
-        // vPortExitCritical();
+
     }
 }
 

@@ -18,7 +18,7 @@
 #include "stream_buffer.h"
 #include "os/config/sys_cfg.h"
 
-
+#define MAX_MAILBOXES 20
 
 enum eCanError {
     eCanOK,
@@ -34,21 +34,19 @@ enum eCanError {
     eCanNull,
     // Mailbox is empty
     eCanEmpty,
+    // The number of mailbox allocation slots has been exceeded
+    eCanMailboxFull,
     eCanFatal,
-    eCanMailboxNotFound,
     eCanReadFail,
-    eCanMailboxWriteError
 };
 
 typedef enum eCanError eCanError;
 
 
 typedef struct CanMailbox {
-    uint32_t id_msk;
-    StreamBufferHandle_t buf_hndl;
-    StaticStreamBuffer_t static_buf;
-    size_t id;
-    struct CanMailbox *next;
+    uint32_t can_id;
+    can_msg_t msg;
+    TaskHandle_t pRxHndl;
 } CanMailbox_t;
 
 typedef struct CAN {
@@ -59,7 +57,7 @@ typedef struct CAN {
     SemaphoreHandle_t mailbox_semphr_hndl[3];
     StaticSemaphore_t static_tx_semphr;
     StaticSemaphore_t static_mailbox_semphr[3];
-    CanMailbox_t *mailbox;
+    CanMailbox_t *mailbox[MAX_MAILBOXES];
     size_t n_mailboxes;
     TaskHandle_t tsk_hndl;
     StaticTask_t tsk_buf;
@@ -71,19 +69,55 @@ typedef struct CAN {
 } CAN_t;
 
 
+/**
+ * @brief Initialize a CAN Interface
+ *
+ * @param pHndl Handle of the CAN interface
+ * @param bitrate CAN bitrate to use
+ * @param pin_rx RX Pin
+ * @param pin_tx TX Pin
+ * @returns Ok or eCanError
+ */
 extern eCanError can_init(CAN_t *pHndl, CAN_BITRATE bitrate, pin_t pin_rx, pin_t pin_tx);
 
+/**
+ * @brief Send a CAN message
+ *
+ * @param pHndl Handle of the CAN interface to send to
+ * @param pMsg Pointer to the message to send
+ * @param timeout max time to wait for an avaliable mailbox
+ * @returns Ok or eCanError
+ */
 extern eCanError can_write(CAN_t *pHndl, can_msg_t *pMsg, TickType_t timeout);
 
-extern eCanError can_attach(CAN_t *pHndl, CanMailbox_t *pMailbox);
+/**
+ * @brief Initialize a CAN Mailbox
+ *
+ * @param pHndl Handle of the CAN interface to recieve from
+ * @param pMailbox Pointer to locally initialized mailbox
+ * @param can_id CAN ID to recieve messages from
+ * @returns Ok or eCanError
+ */
+extern eCanError can_mailbox_init(CAN_t *pHndl, CanMailbox_t *pMailbox, uint32_t can_id);
 
-extern eCanError can_detach(CAN_t *pHndl, CanMailbox_t *pMailbox);
+/**
+ * @brief Wait for a message recieve event
+ *
+ * @param pMailbox Mailbox to wait on
+ * @param pMsg Memory to recieve the message into
+ * @param wait_time
+ * @returns Ok or eCanError
+ */
+extern eCanError can_mailbox_wait(CanMailbox_t *pMailbox, can_msg_t *pMsg, TickType_t wait_time);
 
-extern eCanError can_mailbox_init(CanMailbox_t *pMailbox, can_msg_t *const buffer, size_t len);
-
-extern eCanError can_mailbox_addMask(CanMailbox_t *pMailbox, uint32_t id);
-
-extern eCanError can_mailbox_read(CanMailbox_t *pMailbox, can_msg_t *msg, TickType_t timeout);
+/**
+ * @brief Read from a CAN Mailbox (does not wait for new message)
+ * Gets the last message sent
+ * @param pMailbox 
+ * @param pMsg Memory to recieve the message into
+ * @returns Ok or eCanError
+ */
+extern eCanError can_mailbox_read(CanMailbox_t *pMailbox, can_msg_t *pMsg);
 
 #if (configUSE_CAN1 == 1)
 extern void CAN1_RX0_IRQHandler(void);
