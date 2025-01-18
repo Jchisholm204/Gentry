@@ -4,22 +4,15 @@
 #include <string.h>
 #include <unistd.h>
 
-#define VENDOR_ID 0xFFFF
-#define PRODUCT_ID 0x1234
+#include "usb_packet.h"
+
+#define VENDOR_ID 0xFFFE
+#define PRODUCT_ID 0x0A4D
 
 // Interface and Endpoint Definitions
 #define CTRL_DATA_INUM  0x03  // Interface number for data
 #define CTRL_RXD_EP     0x03  // Bulk OUT endpoint for sending data
 #define CTRL_TXD_EP     0x83  // Bulk IN endpoint for receiving data
-
-struct arm_control {
-    uint8_t control_type;
-    uint8_t status;
-    uint8_t ctrl_tool;
-    uint8_t limit_sw;
-    uint8_t ctrl_servo[4];
-    uint16_t motor_pos[6];
-} __attribute__((packed));
 
 int main() {
     libusb_context *ctx = NULL;
@@ -27,16 +20,9 @@ int main() {
     int transferred;
     int res;
 
-    struct arm_control data_out = {
-        .control_type = 1,
-        .status = 0,
-        .ctrl_tool = 2,
-        .limit_sw = 3,
-        .ctrl_servo = {10, 20, 30, 40},
-        .motor_pos = {100, 200, 300, 400, 500, 600}
-    };
+    struct udev_pkt_ctrl pkt_ctrl = {0};
 
-    struct arm_control data_in;
+    struct udev_pkt_status pkt_status = {0};
 
     // Initialize libusb
     res = libusb_init(&ctx);
@@ -76,21 +62,28 @@ int main() {
     while(1){
 
         // Send data
-        res = libusb_bulk_transfer(dev_handle, CTRL_RXD_EP, (unsigned char *)&data_out, sizeof(data_out), &transferred, 0);
+        res = libusb_bulk_transfer(dev_handle, CTRL_RXD_EP, (unsigned char *)&pkt_ctrl, sizeof(struct udev_pkt_ctrl), &transferred, 0);
         if (res != 0) {
             fprintf(stderr, "Failed to send data: %s\n", libusb_error_name(res));
         } else {
             printf("Sent %d bytes\n", transferred);
         }
+        pkt_ctrl.mtr[0].velocity += 10;
+        pkt_ctrl.mtr[0].position += 10;
+        if(pkt_ctrl.mtr[0].position > 100)
+            pkt_ctrl.mtr[0].position = 0;
+        if(pkt_ctrl.mtr[0].velocity > 100)
+            pkt_ctrl.mtr[0].velocity = 0;
 
         // Receive data
-        res = libusb_bulk_transfer(dev_handle, CTRL_TXD_EP, (unsigned char *)&data_in, sizeof(data_in), &transferred, 0);
+        res = libusb_bulk_transfer(dev_handle, CTRL_TXD_EP, (unsigned char *)&pkt_status, sizeof(struct udev_pkt_status), &transferred, 0);
         if (res != 0) {
             fprintf(stderr, "Failed to receive data: %s\n", libusb_error_name(res));
         } else {
-            printf("Received %d bytes\n", transferred);
-            printf("Data received: control_type=%d, status=%d, ctrl_tool=%d\n",
-                    data_in.control_type, data_in.status, data_in.ctrl_tool);
+            // printf("Received %d bytes\n", transferred);
+            printf("Motor 0 Temp = %d\n", pkt_status.mtr[0].temp);
+            printf("Motor 0 Vel  = %0.2f\n", pkt_status.mtr[0].velocity);
+            printf("Motor 0 Pos  = %0.2f\n", pkt_status.mtr[0].position);
         }
         
         sleep(1);
