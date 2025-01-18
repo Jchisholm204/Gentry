@@ -48,8 +48,21 @@ typedef const struct
 } CAN_bit_timing_config_t;
 
 // CAN bus timing configurations
+// Found at: http://www.bittiming.can-wiki.info/
+#if (APB1_FREQUENCY == 45000000)
 static CAN_bit_timing_config_t can_configs[6] = {{2, 12, 60}, {2, 12, 30}, {2, 12, 24}, {2, 12, 12}, {2, 12, 6}, {1, 7, 5}};
-
+#elif (APB1_FREQUENCY == 42000000)
+static uint32_t can_bit_timings[6] = {
+    0x001b0037UL,  // CAN_50KBPS
+    0x001b001bUL,  // CAN_100KBPS
+    0x001c0014UL,  // CAN_125KBPS
+    0x001a000bUL,  // CAN_250KBPS
+    0x001a0005UL,  // CAN_500KBPS
+    0x001a0002UL  // CAN_1000KBPS
+};
+#else
+#error "CAN Bit Timing Undefined"
+#endif
 
 /**
  * @brief Set a Filter
@@ -145,8 +158,14 @@ static inline uint8_t hal_can_init(CAN_TypeDef * CAN, CAN_BITRATE bitrate, bool 
     // Enable FIFO mode for tx registers
     SET_BIT(CAN->MCR, CAN_MCR_TXFP);
     // Setup bus bitrates
+#if (APB1_FREQUENCY == 45000000)
     CAN->BTR &= ~((0x03UL << 24) | (0x07UL << 20) | (0x0FUL << 16) | (0x1FFUL)); // Zero out the register
     CAN->BTR |=  (uint32_t)((((can_configs[bitrate].TS2-1) & 0x07) << 20) | (((can_configs[bitrate].TS1-1) & 0x0F) << 16) | ((can_configs[bitrate].BRP-1) & 0x1FF)); // Set up the bit timing
+#elif (APB1_FREQUENCY == 42000000)
+    CAN->BTR = can_bit_timings[bitrate];
+#else
+#error "CAN Bit Timing Undefined"
+#endif
     // Initialize the filter registers
     SET_BIT(CAN1->FMR, CAN_FMR_FINIT);           // Enter into initialization mode
     CLEAR_BIT(CAN1->FMR, CAN_FMR_CAN2SB);        // Clear the Filter Selection register

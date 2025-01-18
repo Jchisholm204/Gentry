@@ -23,6 +23,15 @@
 #include "drivers/canbus.h"
 #include "systime.h"
 
+can_msg_t msg = {
+    .id = 12,
+    .len = 1,
+    .data = {0},
+    .timestamp = 0,
+    .format = STANDARD_FORMAT,
+    .type = DATA_FRAME,
+};
+
 void vTsk_testOnline(void * pvParams){
     (void)pvParams;
     char* str = "Hello World from Serial 2\n";
@@ -30,16 +39,17 @@ void vTsk_testOnline(void * pvParams){
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN_LED3, GPIO_MODE_OUTPUT);
     uint8_t leds = 1U;
+    // hal_can_init(CAN1, CAN_1000KBPS, true, PIN_CAN1_TX, PIN_CAN1_RX);
+    // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;
     vTaskDelay(100);
     for(;;){
         // leds = leds << 1U;
         // if(leds == 8) leds = 1;
-        leds += 1;
-        leds &= 0x7U;
+        leds ^= 0x3U;
         gpio_write(PIN_LED1, leds & 0x1U);
         gpio_write(PIN_LED2, leds & 0x2U);
-        gpio_write(PIN_LED3, leds & 0x4U);
-        fprintf(Serial3.fp, "Hello ");
+        // gpio_write(PIN_LED3, leds & 0x4U);
+        // fprintf(Serial3.fp, "Hello ");
         // struct ctime time;
         // cTimeGet(xTaskGetTickCount(), &time);
         // fprintf(Serial3.fp, PRINT_CTIME(time));
@@ -47,6 +57,16 @@ void vTsk_testOnline(void * pvParams){
         systime_fromTicks(xTaskGetTickCount(), &t);
         fprintf(Serial3.fp, "%s\n", t.str);
         // sleep for 1000 ms
+        msg.data[0] = (uint8_t) t.secs;
+        can_write(&CANBus1, &msg, 100);
+        // while(hal_can_send_ready(CAN1, 0) == 0);
+        // hal_can_send(CAN1, &msg, 0);
+        // if(hal_can_read_ready(CAN1)){
+        //     can_msg_t rx;
+        //     hal_can_read(CAN1, &rx);
+        //     gpio_toggle_pin(PIN_LED3);
+        //     fprintf(Serial3.fp, "CAN MSG ID: %d\n", rx.id);
+        // }
         vTaskDelay(1000);
     }
 }

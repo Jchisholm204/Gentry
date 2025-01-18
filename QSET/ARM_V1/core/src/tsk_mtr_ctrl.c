@@ -52,7 +52,9 @@ void vTsk_mtr_ctrl(void *pvParams){
         mtr.position = mtr_ctrl.position;
         mtr.velocity = mtr_ctrl.velocity;
         ak7010_pack(&mtr, &msg);
+        // msg.id = mtr.can_id;
         can_write(&CANBus1, &msg, MTR_UPDATE_TIME);
+
     }
 }
 

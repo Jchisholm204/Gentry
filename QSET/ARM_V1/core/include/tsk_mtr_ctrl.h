@@ -28,7 +28,7 @@
 static AK7010_t joint[UDEV_N_MOTORS] = {
     // Joint 1
     (AK7010_t){
-        .can_id = 0,
+        .can_id = 1,
         .kP = 0,
         .kI = 0,
         .kD = 0,
@@ -41,7 +41,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
     },
     // Joint 2
     (AK7010_t){
-        .can_id = 0,
+        .can_id = 2,
         .kP = 0,
         .kI = 0,
         .kD = 0,
@@ -54,7 +54,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
     },
     // Joint 3
     (AK7010_t){
-        .can_id = 0,
+        .can_id = 3,
         .kP = 0,
         .kI = 0,
         .kD = 0,
@@ -67,7 +67,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
     },
     // Joint 4
     (AK7010_t){
-        .can_id = 0,
+        .can_id = 4,
         .kP = 0,
         .kI = 0,
         .kD = 0,
