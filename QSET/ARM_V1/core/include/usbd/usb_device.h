@@ -12,32 +12,17 @@
 #ifndef _USB_DEVICE_H_
 #define _USB_DEVICE_H_
 
-#include "usbd/usb_packet.h"
+#include "main.h"
+#include "FreeRTOS.h"
+#include "task.h"
+#include "usb_packet.h"
 #include "stdlib.h"
+
 
 // USB Device Initializer (Only Call ONCE)
 extern void udev_init(void);
-
-// Update the UDEV motor info passed back to the host device
-extern void udev_setMtr(int mtr, struct udev_mtr_info *pInfo);
-
-// Get the latest control data from the USB Host
-extern void udev_getMtr(int mtr, struct udev_mtr_ctrl *pCtrl);
-
 // Get the latest servo data from the USB device
-extern uint8_t udev_getSrv(int servo);
-
-// Update the UDEV limit switch info passed back to the host device
-extern void udev_setLmt(uint8_t lsw);
-
-// Get the latest tool power output data from the USB Host
-extern uint8_t udev_getTPR(void);
-
-// Set the device status passed back to the host
-extern void udev_setSts(uint8_t sts);
-
-// Get the status given to the device from the host
-extern uint8_t udev_getSts(void);
+extern int udev_getSrv(int servo);
 
 /**
  * @brief Write to the USB VCOM Port

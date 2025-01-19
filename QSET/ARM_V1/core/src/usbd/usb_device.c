@@ -27,6 +27,9 @@ uint32_t ubuf[CDC_EP0_SIZE];
 // Incoming and outgoing usb packets
 struct udev_pkt_ctrl pkt_ctrl;
 struct udev_pkt_status pkt_status;
+// Control Data
+uint32_t ctrl_servo[ARM_N_SERVOS];
+struct udev_motor ctrl_motor[ARM_N_MOTORS];
 
 // VCOM buffers
 uint8_t vcom_tx_buf[VCOM_DATA_SZ] = {0};
@@ -41,13 +44,13 @@ StaticSemaphore_t vcom_rx_static_sem;
 
 
 void udev_setMtr(int mtr, struct udev_mtr_info *pInfo){
-    if(mtr >= UDEV_N_MOTORS) return;
+    if(mtr >= ARM_N_MOTORS) return;
     pkt_status.mtr[mtr] = *pInfo;
 }
 
-void udev_getMtr(int mtr, struct udev_mtr_ctrl *pCtrl){
-    if(mtr >= UDEV_N_MOTORS) return;
-    *pCtrl = pkt_ctrl.mtr[mtr];
+int udev_getMtr(int mtr, struct udev_motor *pMotor){
+    if(mtr >= ARM_N_MOTORS) return -1;
+    // *pCtrl = pkt_ctrl.mtr[mtr];
     // pCtrl->position = pkt_ctrl.mtr[mtr].position;
     // pCtrl->velocity = pkt_ctrl.mtr[mtr].velocity;
 }

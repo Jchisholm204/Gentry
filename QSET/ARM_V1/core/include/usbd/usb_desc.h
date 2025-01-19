@@ -16,6 +16,8 @@
 #include "drivers/stusb/stm32_compat.h"
 #include "drivers/stusb/usb.h"
 #include "drivers/stusb/usb_cdc.h"
+// Include USB Device Definitions from the driver
+#include "usb_dev.h"
 
 // USB CDC Protocol to use
 #define CDC_PROTOCOL USB_PROTO_IAD
@@ -23,35 +25,6 @@
 // Do not change (Control EP0 Size)
 #define CDC_EP0_SIZE    0x08
 
-#define UDEV_INTERFACES  0x04
-
-// Virtual Com Port
-#define VCOM_RXD_EP      0x01
-#define VCOM_TXD_EP      0x81
-#define VCOM_DATA_SZ     0x40
-#define VCOM_NTF_EP      0x82
-#define VCOM_NTF_SZ      0x08
-#define VCOM_NTF_INUM    0x00
-#define VCOM_DATA_INUM   0x01
-
-// Device Control
-#define CTRL_RXD_EP      0x03
-#define CTRL_TXD_EP      0x83
-#define CTRL_DATA_SZ     0x40
-#define CTRL_NTF_EP      0x84
-#define CTRL_NTF_SZ      0x08
-#define CTRL_NTF_INUM    0x02
-#define CTRL_DATA_INUM   0x03
-
-// USB Device Vendor ID:
-//  Use 0xFFFF or 0xFFFE as designated by the USBIF,
-//  These vendor ID's are reserved for test or hobby devices and
-//  will not conflict with registered vendor drivers
-#define VENDOR_ID 0xFFFE
-// USB Device Product ID:
-//  Used to seperate usb devices from the same vendor
-//  Must be different for each type of device
-#define DEVICE_ID 0x0A4D
 
 // Lanuguage that the device uses = English
 static const struct usb_string_descriptor lang_desc     = USB_ARRAY_DESC(USB_LANGID_ENG_US);
