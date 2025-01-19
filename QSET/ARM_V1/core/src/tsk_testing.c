@@ -7,9 +7,11 @@
  * 
  * @copyright Copyright (c) 2024
  * 
+ * This file is used for testing - Disable this in production systems
+ *
+ * Anything here is not guaranteed to work, and most likely does not work
  */
 #include "main.h"
-// #include "/usr/arm-none-eabi/include/stdio.h"
 #include <stdio.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"

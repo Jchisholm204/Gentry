@@ -8,6 +8,9 @@
  * @copyright Copyright (c) 2024
  * 
  * Set interface to 1 to enable
+ *
+ * Interface initializers must also be called in the Init function
+ *  in main.c
  * 
  */
 

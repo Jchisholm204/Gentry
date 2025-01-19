@@ -30,6 +30,9 @@ struct systime {
 };
 
 #ifdef SYSTIME_USE_STR
+// Convert the systemtime struct into a string
+// SYSTIME_USE_STR must be defined
+// String is stored in the systime.str field
 static inline size_t systime_getStr(struct systime *pT){
 #if (SYSTIME_STR_LEN >= 13)
     if(pT == NULL) return 0;

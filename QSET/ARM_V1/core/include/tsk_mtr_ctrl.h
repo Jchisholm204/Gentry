@@ -15,7 +15,7 @@
 #include "drivers/AK7010/ak7010.h"
 #include "usbd/usb_device.h"
 
-// Motor Joint References
+// Motor Joint References (same as udev motor IDs)
 #define J1 0
 #define J2 1
 #define J3 2
@@ -25,6 +25,8 @@
 #define MTR_UPDATE_TIME 100
 
 // Motor Joint initializers
+// Configure the motor constants
+// This structure is used by the motor control task
 static AK7010_t joint[UDEV_N_MOTORS] = {
     // Joint 1
     (AK7010_t){
@@ -36,7 +38,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
         .position = 0,
         .velocity = 0,
         .temp = 0,
-        .enable = false,
+        // .enable = false,
         .error = 0,
     },
     // Joint 2
@@ -49,7 +51,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
         .position = 0,
         .velocity = 0,
         .temp = 0,
-        .enable = false,
+        // .enable = false,
         .error = 0,
     },
     // Joint 3
@@ -62,7 +64,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
         .position = 0,
         .velocity = 0,
         .temp = 0,
-        .enable = false,
+        // .enable = false,
         .error = 0,
     },
     // Joint 4
@@ -75,7 +77,7 @@ static AK7010_t joint[UDEV_N_MOTORS] = {
         .position = 0,
         .velocity = 0,
         .temp = 0,
-        .enable = false,
+        // .enable = false,
         .error = 0,
     },
 };
