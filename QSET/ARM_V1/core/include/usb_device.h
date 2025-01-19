@@ -21,8 +21,8 @@
 
 // USB Device Initializer (Only Call ONCE)
 extern void udev_init(void);
-// Get the latest servo data from the USB device
-extern int udev_getSrv(int servo);
+
+extern void vTsk_usb(void *pvParams);
 
 /**
  * @brief Write to the USB VCOM Port

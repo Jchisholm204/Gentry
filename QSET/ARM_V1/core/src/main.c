@@ -18,6 +18,8 @@
 #include "string.h"
 #include "config/pin_cfg.h"
 
+#include "usb_device.h"
+
 #include "tsk_mtr_ctrl.h"
 #include "tsk_testing.h"
 #include "tsk_usbTest.h"
@@ -31,6 +33,7 @@ void Init(void){
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
 
+    udev_init();
 }
 
 // Static Task Buffers
@@ -55,7 +58,7 @@ int main(void){
     // xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL,
     //         1, puxTskStack[1], &pxTsks[1]);
 
-    xTaskCreateStatic(vTsk_usbTest, "USB tst", configMINIMAL_STACK_SIZE<<1, NULL, 
+    xTaskCreateStatic(vTsk_usb, "USB", configMINIMAL_STACK_SIZE<<1, NULL, 
             1, puxTskStack[2], &pxTsks[2]);
 
     // Initialize Motor Control Tasks
