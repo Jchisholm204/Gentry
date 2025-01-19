@@ -63,12 +63,12 @@ int main(void){
     // Task will typecast the passed parameter to uint32_t
     xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL1", configMINIMAL_STACK_SIZE,
             (void*)J1, 1, puxTskStack[3], &pxTsks[3]);
-    xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL2", configMINIMAL_STACK_SIZE,
-            (void*)J2, 1, puxTskStack[4], &pxTsks[4]);
-    xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL3", configMINIMAL_STACK_SIZE,
-            (void*)J3, 1, puxTskStack[5], &pxTsks[5]);
-    xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL4", configMINIMAL_STACK_SIZE,
-            (void*)J4, 1, puxTskStack[6], &pxTsks[6]);
+    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL2", configMINIMAL_STACK_SIZE,
+    //         (void*)J2, 1, puxTskStack[4], &pxTsks[4]);
+    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL3", configMINIMAL_STACK_SIZE,
+    //         (void*)J3, 1, puxTskStack[5], &pxTsks[5]);
+    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL4", configMINIMAL_STACK_SIZE,
+    //         (void*)J4, 1, puxTskStack[6], &pxTsks[6]);
 
     // Start Scheduler: Runs tasks initialized above
     vTaskStartScheduler();

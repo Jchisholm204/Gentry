@@ -25,6 +25,8 @@ int main() {
     int res;
 
     struct udev_pkt_ctrl pkt_ctrl = {0};
+    pkt_ctrl.mtr[0].position = 4;
+    pkt_ctrl.mtr[0].velocity = 1;
 
     struct udev_pkt_status pkt_status = {0};
 
@@ -72,12 +74,6 @@ int main() {
         } else {
             printf("Sent %d bytes\n", transferred);
         }
-        pkt_ctrl.mtr[0].velocity += 10;
-        pkt_ctrl.mtr[0].position += 10;
-        if(pkt_ctrl.mtr[0].position > 100)
-            pkt_ctrl.mtr[0].position = 0;
-        if(pkt_ctrl.mtr[0].velocity > 100)
-            pkt_ctrl.mtr[0].velocity = 0;
 
         // Receive data
         res = libusb_bulk_transfer(dev_handle, CTRL_TXD_EP, (unsigned char *)&pkt_status, sizeof(struct udev_pkt_status), &transferred, 0);

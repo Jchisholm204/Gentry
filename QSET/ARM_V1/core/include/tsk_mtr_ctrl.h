@@ -30,8 +30,8 @@
 static AK7010_t joint[UDEV_N_MOTORS] = {
     // Joint 1
     (AK7010_t){
-        .can_id = 1,
-        .kP = 0,
+        .can_id = 10,
+        .kP = 1,
         .kI = 0,
         .kD = 0,
         .kF = 0,

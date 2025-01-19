@@ -159,14 +159,14 @@ void default_handler(CAN_t *pHndl){
 
 #if (configUSE_CAN1 == 1)
 CAN_t CANBus1 = {
-    CAN1,
-    CAN1_RX0_IRQn,
-    "CAN1",
-    NULL,
-    {NULL},
-    {0},
-    {0},
-    NULL,
+    .CAN = CAN1,
+    .IRQn = CAN1_RX0_IRQn,
+    .pcName = "CAN1",
+    .tx_semphr_hndl = NULL,
+    .mailbox_semphr_hndl = {NULL},
+    .static_tx_semphr = {0},
+    .static_mailbox_semphr = {0},
+    .mailbox = {0},
     0,
     NULL,
     {0},
@@ -176,6 +176,7 @@ CAN_t CANBus1 = {
     {0},
     eCanNoInit
 };
+
 void CAN1_RX0_IRQHandler(void){
     default_handler(&CANBus1);
 }

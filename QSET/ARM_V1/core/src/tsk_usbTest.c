@@ -31,8 +31,8 @@ void vTsk_usbTest(void * pvParams){
         // udev_write(msg, sizeof(msg));
         systime_fromTicks(xTaskGetTickCount(), &t);
         // int slen = sprintf(buf, "%s", t.str);
-        udev_write(t.str, 8);
-        udev_write("\n", 1);
+        // udev_write(t.str, 8);
+        // udev_write("\n", 1);
         vTaskDelay(1000);
     }
 }
