@@ -10,7 +10,7 @@
  *
  */
 #include <memory.h>
-#include "usbd/usb_desc.h"
+#include "usb_desc.h"
 
 
 static usbd_respond udev_getdesc (usbd_ctlreq *req, void **address, uint16_t *length) {

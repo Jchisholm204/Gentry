@@ -16,8 +16,10 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include "usbd/usb_device.h"
-#include "usbd/usb_desc.h"
+#include "usb_device.h"
+#include "usb_desc.h"
+#include "usb_mtr.h"
+#include "usb_arm_defs.h"
 
 #include "config/nvic.h"
 
@@ -29,7 +31,7 @@ struct udev_pkt_ctrl pkt_ctrl;
 struct udev_pkt_status pkt_status;
 // Control Data
 uint32_t ctrl_servo[ARM_N_SERVOS];
-struct udev_motor ctrl_motor[ARM_N_MOTORS];
+struct udev_mtr_mailbox mtr_mailboxes[ARM_N_MOTORS];
 
 // VCOM buffers
 uint8_t vcom_tx_buf[VCOM_DATA_SZ] = {0};

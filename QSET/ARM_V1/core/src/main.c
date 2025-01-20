@@ -19,10 +19,10 @@
 #include "config/pin_cfg.h"
 
 #include "usb_device.h"
+#include "usb_arm_defs.h"
 
-#include "tsk_mtr_ctrl.h"
-#include "tsk_testing.h"
-#include "tsk_usbTest.h"
+#include "mtr_ctrl.h"
+#include "test_tsks.h"
 
 
 // Initialize all system Interfaces
@@ -65,7 +65,7 @@ int main(void){
     // Pass the motor they control into the task as a (void*)
     // Task will typecast the passed parameter to uint32_t
     xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL1", configMINIMAL_STACK_SIZE,
-            (void*)J1, 1, puxTskStack[3], &pxTsks[3]);
+            (void*)eJoint1, 1, puxTskStack[3], &pxTsks[3]);
     // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL2", configMINIMAL_STACK_SIZE,
     //         (void*)J2, 1, puxTskStack[4], &pxTsks[4]);
     // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL3", configMINIMAL_STACK_SIZE,

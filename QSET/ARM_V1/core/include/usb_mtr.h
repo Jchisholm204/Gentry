@@ -27,13 +27,13 @@ struct udev_mtr_mailbox {
     uint8_t error;
 };
 
-extern void udev_mtr_mailboxInit(struct udev_mtr_mailbox *pMailbox);
+extern void udev_mtr_mailboxInit(enum eArmMotors mtr, struct udev_mtr_mailbox *pMailbox);
 
 extern int udev_mtr_mailboxPollSetup(struct udev_mtr_mailbox *pMailbox, struct udev_mtr_setup *pInfo);
 
 extern int udev_mtr_mailboxPoll(struct udev_mtr_mailbox *pMailbox, struct udev_mtr_ctrl *pInfo);
 
 // Set the device status passed back to the host
-extern void udev_mtr_update(struct udev_mtr_info *pInfo);
+extern void udev_mtr_update(enum eArmMotors mtr, struct udev_mtr_info *pInfo);
 
 #endif

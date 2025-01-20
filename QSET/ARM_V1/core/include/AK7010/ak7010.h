@@ -15,7 +15,7 @@
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
-#include "drivers/AK7010/ak7010_constants.h"
+#include "AK7010/ak7010_constants.h"
 #include "drivers/canbus.h"
 
 // AK70-10 RX/TX Structure

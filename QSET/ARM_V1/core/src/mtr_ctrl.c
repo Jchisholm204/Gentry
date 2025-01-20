@@ -10,9 +10,10 @@
  */
 
 #include "main.h"
-#include "drivers/AK7010/ak7010.h"
-#include "tsk_mtr_ctrl.h"
-#include "usbd/usb_device.h"
+#include "AK7010/ak7010.h"
+#include "mtr_ctrl.h"
+#include "usb_device.h"
+#include "usb_mtr.h"
 #include <stdio.h>
 
 char stbuf[100];
