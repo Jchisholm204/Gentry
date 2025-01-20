@@ -16,7 +16,6 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "usb_packet.h"
-#include "stdlib.h"
 
 // USB Device Motor Mailbox
 struct udev_mtr_mailbox {

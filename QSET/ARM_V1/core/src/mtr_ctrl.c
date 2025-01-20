@@ -16,7 +16,6 @@
 #include "usb_mtr.h"
 #include <stdio.h>
 
-char stbuf[100];
 /**
  * @brief Motor Control Task
  *  This task is designed to be able to control a single motor,
@@ -58,29 +57,27 @@ void vTsk_mtr_ctrl(void *pvParams){
     for(;;){
         // Attempt to get a message from the can bus within the time frame
         //  Blocks for MTR_UPDATE_TIME ms then continues
-        // if(can_mailbox_wait(&mailbox, &msg, MTR_UPDATE_TIME) == eCanOK){
-        //     // Forward data to USB device on recv
-        //     ak7010_unpack(&mtr, &msg);
-        //     // Pack the data into a USB compliant structure
-        //     struct udev_mtr_info mtr_info = {
-        //         .temp = (uint8_t)mtr.temp,
-        //         .velocity = mtr.velocity,
-        //         .position = mtr.position,
-        //         .current = (uint8_t)mtr.current,
-        //     };
-        //     // Call the USB Device function to update the current transmit header
-        //     udev_setMtr((int)mtr_id, &mtr_info);
-        // }
+        if(can_mailbox_wait(&mailbox, &msg, MTR_UPDATE_TIME) == eCanOK){
+            // Forward data to USB device on recv
+            ak7010_unpack(&mtr, &msg);
+            // Pack the data into a USB compliant structure
+            struct udev_mtr_info mtr_info = {
+                .temp = (uint8_t)mtr.temp,
+                .velocity = mtr.velocity,
+                .position = mtr.position,
+                .current = (uint8_t)mtr.current,
+            };
+            // Call the USB Device function to update the current transmit header
+            // udev_setMtr((int)mtr_id, &mtr_info);
+        }
 
         // Relay data from USB device to the CAN bus
         // Assume that the data has been updated
         struct udev_mtr_ctrl mtr_ctrl;
-        udev_getMtr((int)mtr_id, &mtr_ctrl);
+        // udev_getMtr((int)mtr_id, &mtr_ctrl);
         // Transfer data from udev control structure into AK70-10 structure
         mtr.position = mtr_ctrl.position;
         mtr.velocity = mtr_ctrl.velocity;
-        int strlen = sprintf(stbuf, "P: %0.2f V: %0.2f\n", mtr.position, mtr.velocity);
-        udev_write("HELLO\n", 6);
         // use AK70-10 CANAL to pack the message
         ak7010_pack(&mtr, &msg);
         // Transmit the message onto the CAN Bus

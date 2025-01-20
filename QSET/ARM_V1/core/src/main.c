@@ -1,8 +1,8 @@
 /**
  * @file main.c
  * @author Jacob Chisholm (https://jchisholm.github.io) //
- * @brief System Entry Point
- * @date 2023-08-30
+ * @brief QSET USB Arm Control Board
+ * @date 2025-01-19
  * @version 2.2
  * 
  */
@@ -10,30 +10,58 @@
 
 #include "main.h"
 #include <stdio.h>
+#include <string.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
 #include "config/FreeRTOSConfig.h"
 #include "task.h"
 #include "drivers/serial.h"
-#include "string.h"
 #include "config/pin_cfg.h"
+#include "hal/hal_usb.h"
 
-#include "usb_device.h"
+// USB Device Includes
 #include "usb_arm_defs.h"
+#include "drivers/stusb/usb.h"
+#include "usb_desc.h"
 
 #include "mtr_ctrl.h"
 #include "test_tsks.h"
 
+// USB Device
+usbd_device udev;
+uint32_t usb0_buf[CDC_EP0_SIZE];
+static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
+
 
 // Initialize all system Interfaces
 void Init(void){
+    // Initialize the USB Device
+    hal_usb_init_rcc();
+    // libusb_stm32 init device
+    usbd_init(&udev, &usbd_hw, CDC_EP0_SIZE, usb0_buf, sizeof(usb0_buf));
+    // Apply the device registration function
+    usbd_reg_config(&udev, udev_setconf);
+    // Apply the USBD Descriptors
+    usbd_reg_control(&udev, udev_control);
+    usbd_reg_descr(&udev, udev_getdesc);
+    
+    // Enable USB OTG Interrupt
+    NVIC_SetPriority(OTG_FS_IRQn, NVIC_Priority_MIN);
+    NVIC_EnableIRQ(OTG_FS_IRQn);
+    // Enable the USB Device
+    usbd_enable(&udev, 1);
+    usbd_connect(&udev, 1);
+
     // Initialize UART
-    serial_init(&Serial3, 250000, PIN_USART3_RX, PIN_USART3_TX);
+    serial_init(&Serial3, /*baud*/ 250000, PIN_USART3_RX, PIN_USART3_TX);
     // Initialize CAN
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
+}
 
-    udev_init();
+// Interrupt handler for USB OTG FS
+void OTG_FS_IRQHandler(void) {
+    usbd_poll(&udev);
 }
 
 // Static Task Buffers

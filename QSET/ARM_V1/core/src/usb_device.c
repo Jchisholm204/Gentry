@@ -162,18 +162,6 @@ static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
 
 
 
-void udev_init_rcc(void){
-    /* enabling GPIOA and setting PA11 and PA12 to AF10 (USB_FS) */
-    #if defined(USBD_PRIMARY_OTGHS)
-    _BST(RCC->AHB1ENR, RCC_AHB1ENR_GPIOBEN);
-    _BST(GPIOB->AFR[1], (0x0C << 24) | (0x0C << 28));
-    _BMD(GPIOB->MODER, (0x03 << 28) | (0x03 << 30), (0x02 << 28) | (0x02 << 30));
-    #else
-    _BST(RCC->AHB1ENR, RCC_AHB1ENR_GPIOAEN);
-    _BST(GPIOA->AFR[1], (0x0A << 12) | (0x0A << 16));
-    _BMD(GPIOA->MODER, (0x03 << 22) | (0x03 << 24), (0x02 << 22) | (0x02 << 24));
-    #endif
-}
 
 
 void udev_init(void){
@@ -181,7 +169,7 @@ void udev_init(void){
     vcom_tx_hndl = xSemaphoreCreateMutexStatic(&vcom_tx_static_sem);
     vcom_rx_hndl = xSemaphoreCreateMutexStatic(&vcom_rx_static_sem);
     // Enable the USBD RCC
-    udev_init_rcc();
+    usb_init_rcc();
     // libusb_stm32 init device
     usbd_init(&udev, &usbd_hw, CDC_EP0_SIZE, ubuf, sizeof(ubuf));
     // Apply the device registration function
