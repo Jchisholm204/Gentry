@@ -12,11 +12,25 @@
 #ifndef _MTR_CTRL_H_
 #define _MTR_CTRL_H_
 
-#include "AK7010/ak7010.h"
-#include "usb_device.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+#include "AkMotor/AKMotor.h"
+
 
 // Time interval to force a motor update in ms
 #define MTR_UPDATE_TIME 100
+
+
+/**
+ * @struct _mtr_controller
+ * @brief Motor Control Task Data Structure
+ *
+ */
+struct _mtr_controller {
+    AkMotor_t ak_motor;
+    TaskHandle_t pRxHndl;
+};
 
 /**
  * @brief Motor Control Task
