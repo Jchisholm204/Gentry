@@ -16,27 +16,35 @@
 #include "task.h"
 
 #include "AkMotor/AKMotor.h"
-
+#include "usb_packet.h"
 
 // Time interval to force a motor update in ms
-#define MTR_UPDATE_TIME 100
+#define MTR_UPDATE_TIME 20
 
+#define MTR_TSK_STACK_SIZE configMINIMAL_STACK_SIZE
 
 /**
- * @struct _mtr_controller
+ * @struct _mtrCtrlHndl
  * @brief Motor Control Task Data Structure
  *
  */
-struct _mtr_controller {
-    AkMotor_t ak_motor;
-    TaskHandle_t pRxHndl;
-};
+typedef struct _mtrCtrlHndl {
+    enum eArmMotors mtr_id;
+    AkMotor_t akMtr;
+    TaskHandle_t pTskHndl;
+    char pcName[10];
+    struct udev_mtr_setup udev_setup;
+    struct udev_mtr_ctrl  udev_ctrl;
+    struct udev_mtr_info  udev_info;
+    StackType_t puxStack[MTR_TSK_STACK_SIZE];
+    StaticTask_t pxTsk;
+} mtrCtrlHndl_t;
 
-/**
- * @brief Motor Control Task
- *
- * @param pvParams Motor ID this task should control
- */
-void vTsk_mtr_ctrl(void *pvParams);
+void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ);
+
+void mtrCtrl_setup(mtrCtrlHndl_t *pHndl, struct udev_mtr_setup *pSetup);
+
+void mtrCtrl_update(mtrCtrlHndl_t *pHndl, struct udev_mtr_ctrl *pCtrl);
+
 
 #endif

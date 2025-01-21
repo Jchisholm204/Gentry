@@ -45,6 +45,7 @@ struct udev_mtr_setup {
     // Motor Configuration Data
     float kP, kI, kD, kF;
     uint32_t can_id;
+    uint8_t enable;
 } __attribute__((packed));
 
 // Control Packet:
@@ -90,9 +91,7 @@ struct udev_mtr_info {
 //  Must be less than 0x40 in length
 struct udev_pkt_status {
     // Device Status
-    enum eArmStatus status;
-    // Additional status information
-    uint8_t status_val;
+    struct udev_status status;
     // Each bit represents a limit switch that is open (0) or closed (1)
     uint8_t limit_sw;
     // Motor Control Response Information

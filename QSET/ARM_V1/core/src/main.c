@@ -16,6 +16,7 @@
 #include "config/FreeRTOSConfig.h"
 #include "task.h"
 #include "drivers/serial.h"
+#include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
 
@@ -86,14 +87,14 @@ int main(void){
     // xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL,
     //         1, puxTskStack[1], &pxTsks[1]);
 
-    xTaskCreateStatic(vTsk_usb, "USB", configMINIMAL_STACK_SIZE<<1, NULL, 
-            1, puxTskStack[2], &pxTsks[2]);
+    // xTaskCreateStatic(vTsk_usb, "USB", configMINIMAL_STACK_SIZE<<1, NULL, 
+    //         1, puxTskStack[2], &pxTsks[2]);
 
     // Initialize Motor Control Tasks
     // Pass the motor they control into the task as a (void*)
     // Task will typecast the passed parameter to uint32_t
-    xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL1", configMINIMAL_STACK_SIZE,
-            (void*)eJoint1, 1, puxTskStack[3], &pxTsks[3]);
+    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL1", configMINIMAL_STACK_SIZE,
+    //         (void*)eJoint1, 1, puxTskStack[3], &pxTsks[3]);
     // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL2", configMINIMAL_STACK_SIZE,
     //         (void*)J2, 1, puxTskStack[4], &pxTsks[4]);
     // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL3", configMINIMAL_STACK_SIZE,

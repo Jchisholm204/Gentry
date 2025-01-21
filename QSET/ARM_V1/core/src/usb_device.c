@@ -16,7 +16,7 @@
 #include "FreeRTOS.h"
 #include "semphr.h"
 
-#include "usb_device.h"
+// #include "usb_device.h"
 #include "usb_desc.h"
 #include "usb_mtr.h"
 #include "usb_arm_defs.h"
