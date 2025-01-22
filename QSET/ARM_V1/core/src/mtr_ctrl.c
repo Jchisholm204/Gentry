@@ -73,7 +73,7 @@ void mtrCtrl_getInfo(mtrCtrlHndl_t *pHndl, struct udev_mtr_info *pInfo){
  *
  * @param pvParams Motor ID this task should control
  */
-void vTsk_mtr_ctrl(void *pvParams){
+void mtrCtrl_task(void *pvParams){
     // Typecast the task parameters to get the internal motor ID
     mtrCtrlHndl_t *pHndl = (mtrCtrlHndl_t*)pvParams;
     AkMotor_t *pMtr = &pHndl->akMtr;
