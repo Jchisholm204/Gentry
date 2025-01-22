@@ -28,11 +28,25 @@
 #include "mtr_ctrl.h"
 #include "test_tsks.h"
 
+#define USB_STACK_SIZE configMINIMAL_STACK_SIZE << 1
+
 // USB Device
 usbd_device udev;
-uint32_t usb0_buf[CDC_EP0_SIZE];
+uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
+// USB Info Packet
+volatile static struct udev_mtr_info udev_info;
+// USBD Configuration Callback
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
 
+// Motor Controller Handles
+static mtrCtrlHndl_t mtrControllers[ARM_N_MOTORS];
+// USB Task Handle
+static TaskHandle_t usbHndl;
+static StackType_t puUsbStack[USB_STACK_SIZE];
+static StaticTask_t pxUsbTsk;
+
+// USB Task
+void vTskUSB(void *pvParams);
 
 // Initialize all system Interfaces
 void Init(void){
@@ -58,59 +72,52 @@ void Init(void){
     // Initialize CAN
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
-}
-
-// Interrupt handler for USB OTG FS
-void OTG_FS_IRQHandler(void) {
-    usbd_poll(&udev);
-}
-
-// Static Task Buffers
-// Increase N_TSKS to add a new task
-#define N_TSKS 7
-StackType_t puxTskStack[N_TSKS][configMINIMAL_STACK_SIZE<<1];
-StaticTask_t pxTsks[N_TSKS];
-
-int main(void){
-
-    Init();
-
+    
     /**
      * Initialize System Tasks...
      * All tasks should be initialized as static
      * Tasks can be initialized dynamically, but may crash the system if they
      * overflow the system memory (128Kb for the STM32f446)
      */
-    xTaskCreateStatic(vTsk_testOnline, "TestTask", configMINIMAL_STACK_SIZE, NULL,
-            /*Priority*/1, puxTskStack[0], &pxTsks[0]);
+    usbHndl = xTaskCreateStatic(
+            vTskUSB, "USB", USB_STACK_SIZE, NULL,
+            /*Priority*/1, puUsbStack, &pxUsbTsk);
 
-    // xTaskCreateStatic(vTsk_testUART, "S2 Echo", configMINIMAL_STACK_SIZE, NULL,
-    //         1, puxTskStack[1], &pxTsks[1]);
+    // Initialize the motor control Tasks
+    mtrCtrl_init(&mtrControllers[eJoint1], eJoint1, eAK7010, 0x123);
+    mtrCtrl_init(&mtrControllers[eJoint2], eJoint2, eAK7010, 0x124);
+    mtrCtrl_init(&mtrControllers[eJoint3], eJoint3, eAK7010, 0x125);
+    mtrCtrl_init(&mtrControllers[eJoint4], eJoint4, eAK7010, 0x126);
+}
 
-    // xTaskCreateStatic(vTsk_usb, "USB", configMINIMAL_STACK_SIZE<<1, NULL, 
-    //         1, puxTskStack[2], &pxTsks[2]);
+void vTskUSB(void *pvParams){
 
-    // Initialize Motor Control Tasks
-    // Pass the motor they control into the task as a (void*)
-    // Task will typecast the passed parameter to uint32_t
-    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL1", configMINIMAL_STACK_SIZE,
-    //         (void*)eJoint1, 1, puxTskStack[3], &pxTsks[3]);
-    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL2", configMINIMAL_STACK_SIZE,
-    //         (void*)J2, 1, puxTskStack[4], &pxTsks[4]);
-    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL3", configMINIMAL_STACK_SIZE,
-    //         (void*)J3, 1, puxTskStack[5], &pxTsks[5]);
-    // xTaskCreateStatic(vTsk_mtr_ctrl, "MTRCTRL4", configMINIMAL_STACK_SIZE,
-    //         (void*)J4, 1, puxTskStack[6], &pxTsks[6]);
+}
 
-    // Start Scheduler: Runs tasks initialized above
-    vTaskStartScheduler();
+static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
 
-    // System Main loop (Should never run -> Scheduler runs infinitely)
-    for(;;) {
-        asm("nop");
-        gpio_write(PIN_LED2, true);
+}
+
+static void ctrl_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
+
+}
+
+// USBD RX/TX Callbacks: Control
+static void ctrl_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
+    if(evt == usbd_evt_eprx)
+        ctrl_rx(dev, evt, ep);
+    else
+        ctrl_tx(dev, evt, ep);
+}
+
+// USBD RX/TX Callbacks: Virtual COM Port
+static void vcom_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
+    if(evt == usbd_evt_eprx){
+        usbd_ep_read(dev, ep, NULL, 0);
     }
-    return 0;
+    else{
+        usbd_ep_write(dev, ep, NULL, 0);
+    }
 }
 
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
@@ -138,10 +145,10 @@ static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
         usbd_ep_config(dev, CTRL_NTF_EP, USB_EPTYPE_INTERRUPT, CTRL_NTF_SZ);
 
         // TODO: Add back these functions
-        usbd_reg_endpoint(dev, VCOM_RXD_EP, NULL);
-        usbd_reg_endpoint(dev, VCOM_TXD_EP, NULL);
-        usbd_reg_endpoint(dev, CTRL_RXD_EP, NULL);
-        usbd_reg_endpoint(dev, CTRL_TXD_EP, NULL);
+        usbd_reg_endpoint(dev, VCOM_RXD_EP, vcom_rxtx);
+        usbd_reg_endpoint(dev, VCOM_TXD_EP, vcom_rxtx);
+        usbd_reg_endpoint(dev, CTRL_RXD_EP, ctrl_rxtx);
+        usbd_reg_endpoint(dev, CTRL_TXD_EP, ctrl_rxtx);
 
         usbd_ep_write(dev, VCOM_TXD_EP, 0, 0);
         usbd_ep_write(dev, CTRL_TXD_EP, 0, 0);
@@ -149,5 +156,26 @@ static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
     default:
         return usbd_fail;
     }
+}
+
+// Interrupt handler for USB OTG FS
+void OTG_FS_IRQHandler(void) {
+    usbd_poll(&udev);
+}
+
+int main(void){
+
+    // Call the init function
+    Init();
+
+    // Start Scheduler: Runs tasks initialized above
+    vTaskStartScheduler();
+
+    // System Main loop (Should never run -> Scheduler runs infinitely)
+    for(;;) {
+        asm("nop");
+        // gpio_write(PIN_LED2, true);
+    }
+    return 0;
 }
 
