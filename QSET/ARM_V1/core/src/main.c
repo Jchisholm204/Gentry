@@ -33,8 +33,9 @@
 // USB Device
 usbd_device udev;
 uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
-// USB Info Packet
-volatile static struct udev_mtr_info udev_info;
+// USB Info/Ctrl Packet
+static volatile struct udev_pkt_status udev_info;
+static volatile struct udev_pkt_ctrl udev_ctrl;
 // USBD Configuration Callback
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
 
@@ -91,15 +92,42 @@ void Init(void){
 }
 
 void vTskUSB(void *pvParams){
-
+    (void)(pvParams);
 }
 
 static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
-
+    (void)evt;
+    usbd_ep_read(dev, ep, (void*)&udev_ctrl, sizeof(struct udev_pkt_ctrl));
+    // Handling servo changes, nothing else needs to be done
+    if(udev_ctrl.hdr.typ == ePktTypeSrvo){
+        switch(udev_ctrl.id.srv){
+            case eServo1:
+                break;
+            case eServo2:
+                break;
+            case eServo3:
+                break;
+            case eServo4:
+                break;
+            default:
+                break;
+        };
+        
+    }
+    else if(udev_ctrl.hdr.typ == ePktTypeMtr){
+        enum eArmMotors mtr_id = udev_ctrl.id.mtr;
+        if(mtr_id >= ARM_N_MOTORS) return;
+        mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&udev_ctrl.mtr_ctrl);
+    }
 }
 
 static void ctrl_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
-
+    (void)evt;
+    // Get the latest data from the motor
+    for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
+        mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
+    }
+    usbd_ep_write(dev, ep, (void*)&udev_info, sizeof(struct udev_pkt_status));
 }
 
 // USBD RX/TX Callbacks: Control

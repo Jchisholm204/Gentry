@@ -29,7 +29,7 @@ struct AKMotorConfig {
 // AK Motor Configurations - Must be in order of AKMotorType enum
 static const struct AKMotorConfig AKConfigs[eAK_N_MOTORS] = {
     // AK70-10 Configuration
-    (struct AKMotorConfig){
+    (const struct AKMotorConfig){
         .pos_min = -12.5,
         .pos_max = 12.5,
         .vel_min = -50,

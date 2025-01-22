@@ -314,6 +314,7 @@ static usbd_respond udev_getdesc (usbd_ctlreq *req, void **address, uint16_t *le
 }
 
 static usbd_respond udev_control(usbd_device *dev, usbd_ctlreq *req, usbd_rqc_callback *callback) {
+    (void)callback;
     if (((USB_REQ_RECIPIENT | USB_REQ_TYPE) & req->bmRequestType) == (USB_REQ_INTERFACE | USB_REQ_CLASS)
         && req->wIndex == 0 ) {
         switch (req->bRequest) {

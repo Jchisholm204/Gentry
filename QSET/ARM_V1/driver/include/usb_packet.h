@@ -25,7 +25,6 @@ enum ePktType{
     ePktTypeReset,
     ePktTypeMtr,
     ePktTypeSrvo,
-    ePktTypeSetup,
 };
 
 struct udev_pkt_hdr {
