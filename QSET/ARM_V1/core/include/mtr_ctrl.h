@@ -40,7 +40,7 @@ typedef struct _mtrCtrlHndl {
     StaticTask_t pxTsk;
 } mtrCtrlHndl_t;
 
-void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ);
+void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id);
 
 void mtrCtrl_setup(mtrCtrlHndl_t *pHndl, struct udev_mtr_setup *pSetup);
 

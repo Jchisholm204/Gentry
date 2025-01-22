@@ -38,15 +38,12 @@ struct udev_mtr_ctrl {
     float position;
     // Motor Velocity Command
     float velocity;
-} __attribute__((packed));
-
-// Motor Control Structure
-struct udev_mtr_setup {
     // Motor Configuration Data
     float kP, kI, kD, kF;
-    uint32_t can_id;
+    // Enable this Motor
     uint8_t enable;
 } __attribute__((packed));
+
 
 // Control Packet:
 //  From Host to Device
@@ -61,7 +58,6 @@ struct udev_pkt_ctrl {
         uint32_t servo_ctrl;
         // CAN Bus Motor Control
         struct udev_mtr_ctrl mtr_ctrl;
-        struct udev_mtr_setup mtr_setup;
     };
 } __attribute__((packed));
 

@@ -26,11 +26,25 @@ enum eTskUpdateType{
 void mtrCtrl_task(void *pvParams);
 
 
-void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ){
+void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id){
+    // Setup the Motor Information
     pHndl->mtr_id = mtr_id;
     pHndl->akMtr.type = mtr_typ;
+    pHndl->akMtr.can_id = can_id;
+    pHndl->akMtr.position = 0;
+    pHndl->akMtr.velocity = 0;
+    pHndl->akMtr.enable = false;
+
+    // Zero out Control Data
+    pHndl->udev_ctrl = (struct udev_mtr_ctrl){0};
+    pHndl->udev_setup = (struct udev_mtr_setup){0};
+    pHndl->udev_info = (struct udev_mtr_info){0};
+    
+    // Setup Task Information
     memcpy(pHndl->pcName, "MTR_TSK0", sizeof("MTR_TSK0"));
     pHndl->pcName[9] = '0' + (uint8_t)mtr_id;
+
+    // Setup the Task
     pHndl->pTskHndl = xTaskCreateStatic(
             mtrCtrl_task,
             pHndl->pcName,
@@ -53,7 +67,6 @@ void mtrCtrl_update(mtrCtrlHndl_t *pHndl, struct udev_mtr_ctrl *pCtrl){
 }
 
 void hndl_setup(AkMotor_t *pMtr, struct udev_mtr_setup *pSetup){
-    pMtr->can_id = pSetup->can_id;
     pMtr->kP = pSetup->kP;
     pMtr->kI = pSetup->kI;
     pMtr->kD = pSetup->kD;
