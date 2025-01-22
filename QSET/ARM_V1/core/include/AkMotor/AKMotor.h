@@ -21,9 +21,9 @@
 // AK70-10 RX/TX Structure
 typedef struct {
     // Motor Bus ID
-    uint32_t can_id;
+    const uint32_t can_id;
     // Motor Type (Model Number)
-    enum AKMotorType type;
+    const enum AKMotorType type;
     // Tuning Values
     float    kP, kI, kD, kF;
     // Motor velocity/position rx/tx values

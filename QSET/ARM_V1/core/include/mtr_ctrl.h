@@ -20,6 +20,8 @@
 
 // Time interval to force a motor update in ms
 #define MTR_UPDATE_TIME 20
+// Maximum time the task will wait for an external event before trying later
+#define MTR_POLL_TIME (MTR_UPDATE_TIME >> 2)
 
 #define MTR_TSK_STACK_SIZE configMINIMAL_STACK_SIZE
 
@@ -29,22 +31,44 @@
  *
  */
 typedef struct _mtrCtrlHndl {
+    // Motor Identifier
     enum eArmMotors mtr_id;
+    // AK Motor
     AkMotor_t akMtr;
-    TaskHandle_t pTskHndl;
-    char pcName[10];
-    struct udev_mtr_setup udev_setup;
+    // USB Device Packet Data
     struct udev_mtr_ctrl  udev_ctrl;
     struct udev_mtr_info  udev_info;
+    // FreeRTOS Task Information
+    TaskHandle_t pTskHndl;
+    char pcName[10];
     StackType_t puxStack[MTR_TSK_STACK_SIZE];
     StaticTask_t pxTsk;
 } mtrCtrlHndl_t;
 
-void mtrCtrl_init(mtrCtrlHndl_t *pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id);
+/**
+ * @brief Initialize a Motor Control Task
+ *
+ * @param pHndl Pointer to the memory storing the Task Handle
+ * @param mtr_id Motor ID of the motor to control
+ * @param mtr_typ Type of the motor to control
+ * @param can_id CAN ID of the motor to control
+ */
+void mtrCtrl_init(mtrCtrlHndl_t *const pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id);
 
-void mtrCtrl_setup(mtrCtrlHndl_t *pHndl, struct udev_mtr_setup *pSetup);
-
+/**
+ * @brief Update the USB Control Packet
+ *
+ * @param pHndl Motor Control Handle to update
+ * @param pCtrl Pointer to the UDEV Motor Control Data
+ */
 void mtrCtrl_update(mtrCtrlHndl_t *pHndl, struct udev_mtr_ctrl *pCtrl);
 
+/**
+ * @brief Get the latest data from the motor in UDEV format
+ *
+ * @param pHndl Handle to the motor control task
+ * @param pInfo Pointer to the info struct to copy into
+ */
+void mtrCtrl_getInfo(mtrCtrlHndl_t *pHndl, struct udev_mtr_info *pInfo);
 
 #endif

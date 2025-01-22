@@ -113,3 +113,41 @@ int main(void){
     return 0;
 }
 
+static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
+    switch (cfg) {
+    case 0:
+        /* deconfiguring device */
+        usbd_ep_deconfig(dev, VCOM_NTF_EP);
+        usbd_ep_deconfig(dev, VCOM_TXD_EP);
+        usbd_ep_deconfig(dev, VCOM_RXD_EP);
+        usbd_ep_deconfig(dev, CTRL_NTF_EP);
+        usbd_ep_deconfig(dev, CTRL_TXD_EP);
+        usbd_ep_deconfig(dev, CTRL_RXD_EP);
+        usbd_reg_endpoint(dev, VCOM_RXD_EP, 0);
+        usbd_reg_endpoint(dev, VCOM_TXD_EP, 0);
+        usbd_reg_endpoint(dev, CTRL_RXD_EP, 0);
+        usbd_reg_endpoint(dev, CTRL_TXD_EP, 0);
+        return usbd_ack;
+    case 1:
+        /* configuring device */
+        usbd_ep_config(dev, VCOM_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, VCOM_DATA_SZ);
+        usbd_ep_config(dev, VCOM_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, VCOM_DATA_SZ);
+        usbd_ep_config(dev, VCOM_NTF_EP, USB_EPTYPE_INTERRUPT, VCOM_NTF_SZ);
+        usbd_ep_config(dev, CTRL_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, CTRL_DATA_SZ);
+        usbd_ep_config(dev, CTRL_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, CTRL_DATA_SZ);
+        usbd_ep_config(dev, CTRL_NTF_EP, USB_EPTYPE_INTERRUPT, CTRL_NTF_SZ);
+
+        // TODO: Add back these functions
+        usbd_reg_endpoint(dev, VCOM_RXD_EP, NULL);
+        usbd_reg_endpoint(dev, VCOM_TXD_EP, NULL);
+        usbd_reg_endpoint(dev, CTRL_RXD_EP, NULL);
+        usbd_reg_endpoint(dev, CTRL_TXD_EP, NULL);
+
+        usbd_ep_write(dev, VCOM_TXD_EP, 0, 0);
+        usbd_ep_write(dev, CTRL_TXD_EP, 0, 0);
+        return usbd_ack;
+    default:
+        return usbd_fail;
+    }
+}
+
