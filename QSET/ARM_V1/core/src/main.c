@@ -11,6 +11,7 @@
 #include "main.h"
 #include <stdio.h>
 #include <string.h>
+#include <memory.h>
 #include "stm32f446xx.h"
 #include "FreeRTOS.h"
 #include "config/FreeRTOSConfig.h"
@@ -19,6 +20,7 @@
 #include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
+#include "systime.h"
 
 // USB Device Includes
 #include "usb_arm_defs.h"
@@ -26,6 +28,7 @@
 #include "usb_desc.h"
 
 #include "mtr_ctrl.h"
+#include "limit_switches.h"
 #include "test_tsks.h"
 
 #define USB_STACK_SIZE configMINIMAL_STACK_SIZE << 1
@@ -36,6 +39,10 @@ uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
 // USB Info/Ctrl Packet
 static volatile struct udev_pkt_status udev_info;
 static volatile struct udev_pkt_ctrl udev_ctrl;
+// USB VCOM Buffers
+static volatile uint8_t vcom_rxBuf[VCOM_DATA_SZ] = {0};
+static volatile uint8_t vcom_txBuf[VCOM_DATA_SZ] = {0};
+static volatile uint16_t vcom_txSize = 0;
 // USBD Configuration Callback
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
 
@@ -74,6 +81,9 @@ void Init(void){
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
     
+    // Initialize Limit Switches
+    lmtSW_init();
+
     /**
      * Initialize System Tasks...
      * All tasks should be initialized as static
@@ -93,8 +103,20 @@ void Init(void){
 
 void vTskUSB(void *pvParams){
     (void)(pvParams);
+    char msg[] = "USB Task Online";
+    memcpy((void*)vcom_txBuf, msg, sizeof(msg));
+    vcom_txSize = sizeof(msg);
+    struct systime time;
+    for(;;){
+        systime_fromTicks(xTaskGetTickCount(), &time);
+        memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
+        vcom_txSize = SYSTIME_STR_LEN;
+        vTaskDelay(1000);
+    }
 }
 
+
+// Triggered when the USB Host provides data to the control interface
 static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
     usbd_ep_read(dev, ep, (void*)&udev_ctrl, sizeof(struct udev_pkt_ctrl));
@@ -121,16 +143,22 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     }
 }
 
+// Triggered when the USB Host requests data from the control interface
 static void ctrl_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
     // Get the latest data from the motor
     for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
         mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
     }
+    // Get the latest Limit Switch data
+    udev_info.limit_sw = lmtSW_get();
+
+    // Write back to the USB Memory
     usbd_ep_write(dev, ep, (void*)&udev_info, sizeof(struct udev_pkt_status));
 }
 
 // USBD RX/TX Callbacks: Control
+// Triggered during Control Interface events
 static void ctrl_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx)
         ctrl_rx(dev, evt, ep);
@@ -139,12 +167,13 @@ static void ctrl_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
 }
 
 // USBD RX/TX Callbacks: Virtual COM Port
+// Triggered during Virtual Communications Interface events
 static void vcom_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx){
-        usbd_ep_read(dev, ep, NULL, 0);
+        usbd_ep_read(dev, ep, (void*)vcom_rxBuf, VCOM_DATA_SZ);
     }
     else{
-        usbd_ep_write(dev, ep, NULL, 0);
+        usbd_ep_write(dev, ep, (void*)&vcom_txBuf, vcom_txSize);
     }
 }
 
