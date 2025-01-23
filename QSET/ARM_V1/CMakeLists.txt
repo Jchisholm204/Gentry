@@ -66,8 +66,8 @@ set(GENERIC_COMPILE_OPTIONS
 
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
     ${PROJECT_DIR}/src/*.c
-    ${PROJECT_DIR}/src/*.cpp
-    ${PROJECT_DIR}/src/*.cc
+    # ${PROJECT_DIR}/src/*.cpp
+    # ${PROJECT_DIR}/src/*.cc
 )
 
 add_executable(${EXECUTABLE}

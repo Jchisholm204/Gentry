@@ -95,6 +95,7 @@ void Init(void){
             /*Priority*/1, puUsbStack, &pxUsbTsk);
 
     // Initialize the motor control Tasks
+    //           Motor Control Handle,  Joint ID, AK Mtr Type, CAN ID
     mtrCtrl_init(&mtrControllers[eJoint1], eJoint1, eAK7010, 0x123);
     mtrCtrl_init(&mtrControllers[eJoint2], eJoint2, eAK7010, 0x124);
     mtrCtrl_init(&mtrControllers[eJoint3], eJoint3, eAK7010, 0x125);
