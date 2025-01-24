@@ -83,12 +83,14 @@ void Init(void){
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
 
     // Initialize the PWM Timer for the servos
-    srvCtrl_init(167, 19999);
-    // Set Servos to default Values
-    srvCtrl_setUS(eServo1, 1500);
-    srvCtrl_setUS(eServo2, 1000);
-    srvCtrl_setUS(eServo3, 2000);
-    srvCtrl_setUS(eServo4, 1750);
+    // DO NOT CHANGE THESE VALUES - They work for us control
+    srvCtrl_init((PLL_N/PLL_P)-1, 9999);
+
+    // Set Servos to default Values - in us
+    srvCtrl_set(eServo1, 1500);
+    srvCtrl_set(eServo2, 2500);
+    srvCtrl_set(eServo3, 2000);
+    srvCtrl_set(eServo4, 1750);
 
     // Initialize Limit Switches
     lmtSW_init();
@@ -136,7 +138,7 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     usbd_ep_read(dev, ep, (void*)&udev_ctrl, sizeof(struct udev_pkt_ctrl));
     // Handling servo changes, nothing else needs to be done
     if(udev_ctrl.hdr.typ == ePktTypeSrvo){
-        srvCtrl_setUS(udev_ctrl.id.srv, udev_ctrl.servo_ctrl);
+        srvCtrl_set(udev_ctrl.id.srv, udev_ctrl.servo_ctrl);
     }
     else if(udev_ctrl.hdr.typ == ePktTypeMtr){
         enum eArmMotors mtr_id = udev_ctrl.id.mtr;
