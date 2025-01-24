@@ -20,6 +20,7 @@
 #include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
+#include "hal/hal_tim_pwm.h"
 #include "systime.h"
 
 // USB Device Includes
@@ -80,7 +81,14 @@ void Init(void){
     // Initialize CAN
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
-    
+    // Initialize the PWM Timer
+    hal_tim_pwm_init(TIM3, 1000, 1000);
+    hal_tim_pwm_set(TIM3, 0, 1000);
+    hal_tim_pwm_set(TIM3, 1, 1000);
+    hal_tim_pwm_set(TIM3, 2, 1000);
+    hal_tim_pwm_set(TIM3, 3, 1000);
+    gpio_set_mode(PIN_SERVO_1, GPIO_MODE_AF);
+    gpio_set_af(PIN_SERVO_1, GPIO_AF_TIM3_5);
     // Initialize Limit Switches
     lmtSW_init();
 
