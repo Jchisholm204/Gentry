@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.21)
 include(./gcc-arm-none-eabi.cmake)
 # set(CMAKE_SYSTEM_NAME Generic)
 
-project(Q24VCU)
+project(QSET_ARM_FW)
 set(PROJECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/core)
 set(RTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS)
 set(DRIVER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/driver)
