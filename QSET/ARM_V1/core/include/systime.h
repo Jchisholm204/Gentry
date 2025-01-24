@@ -46,11 +46,11 @@ static inline size_t systime_getStr(struct systime *pT){
     s[6] = (char)(pT->secs / 10) + '0';
     s[7] = (char)(pT->secs % 10) + '0';
     s[8] = '.';
+    // Ensure milliseconds are always 3 digits
     int msecs = pT->msecs;
-    for(int i = 0; i < 3 && msecs > 0; i++){
-        s[11-i] = (char)(msecs % 10) + '0';
-        msecs /= 10;
-    }
+    s[9] = (char)((msecs / 100) % 10) + '0'; // Hundreds place
+    s[10] = (char)((msecs / 10) % 10) + '0'; // Tens place
+    s[11] = (char)(msecs % 10) + '0';        // Units place
     s[12] = '\n';
     s[13] = '\0';
     return SYSTIME_STR_LEN;

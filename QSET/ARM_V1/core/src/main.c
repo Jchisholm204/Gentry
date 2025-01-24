@@ -110,8 +110,12 @@ void vTskUSB(void *pvParams){
     struct systime time;
     for(;;){
         systime_fromTicks(xTaskGetTickCount(), &time);
+        int stlen = strlen(time.str);
         memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         vcom_txSize = SYSTIME_STR_LEN;
+        vTaskDelay(1);
+        systime_fromTicks(xTaskGetTickCount(), &time);
+        printf(time.str);
         vTaskDelay(1000);
     }
 }
@@ -175,6 +179,7 @@ static void vcom_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     }
     else{
         usbd_ep_write(dev, ep, (void*)&vcom_txBuf, vcom_txSize);
+        vcom_txSize = 0;
     }
 }
 
