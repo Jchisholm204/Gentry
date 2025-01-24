@@ -14,6 +14,8 @@
 
 #include <stm32f4xx.h>
 #include "config/nvic.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 extern void SystemInit(void);
 

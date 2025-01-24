@@ -62,9 +62,13 @@
 #define PIN_LSW_6     PIN('B', 13)
 
 // Servos
+// TIM3 CH 1
 #define PIN_SERVO_1   PIN('A', 6)
+// TIM3 CH 2
 #define PIN_SERVO_2   PIN('A', 7)
+// TIM3 CH 3
 #define PIN_SERVO_3   PIN('B', 0)
+// TIM3 CH 4
 #define PIN_SERVO_4   PIN('B', 1)
 
 #endif

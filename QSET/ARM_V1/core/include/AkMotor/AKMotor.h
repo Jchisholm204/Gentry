@@ -1,7 +1,7 @@
 /**
- * @file ak7010.h
+ * @file AKMOTOR.h
  * @author Jacob Chisholm (https://Jchisholm204.github.io)
- * @brief AK70-10 Motor Driver
+ * @brief Generic Structure for controlling an AK Motor
  * @version 0.1
  * @date 2025-1-16
  * 
@@ -9,20 +9,22 @@
  * 
  */
 
-#ifndef _AK7010_H_
-#define _AK7010_H_
+#ifndef _AKMOTOR_H_
+#define _AKMOTOR_H_
+
 
 #include <stdint.h>
-#include <float.h>
 #include <math.h>
-#include "drivers/AK7010/ak7010_constants.h"
-#include "drivers/canbus.h"
+#include "AKMotor_constants.h"
+#include "hal/hal_can.h"
 
 // AK70-10 RX/TX Structure
 typedef struct {
     // Motor Bus ID
-    uint32_t can_id;
-    // Tuning Values - Set at compile time
+    const uint32_t can_id;
+    // Motor Type (Model Number)
+    const enum AKMotorType type;
+    // Tuning Values
     float    kP, kI, kD, kF;
     // Motor velocity/position rx/tx values
     float    position;
@@ -32,11 +34,10 @@ typedef struct {
     // Motor Current Draw (A)
     float current;
     // Set to true if motor has been enabled
-    // bool enable;
+    bool enable;
     // Error Value (See AK70-10 Datasheet)
     uint8_t error;
-} AK7010_t;
-
+} AkMotor_t;
 
 // Converts float values into integers (ak7010 compatible conversion)
 static uint32_t ak7010_toInt(float x, float x_min, float x_max, int bits){
@@ -64,19 +65,20 @@ static float ak7010_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
  * @param mtr AK70-10 Motor Control Message (unmodified)
  * @param msg CAN bus message to pack data into
  */
-static inline void ak7010_pack(AK7010_t *mtr, can_msg_t *msg){
-    float p_des = fminf(fmaxf(AK_P_MIN, mtr->position), AK_P_MAX);
-    float v_des = fminf(fmaxf(AK_V_MIN, mtr->velocity), AK_V_MAX);
-    float kp = fminf(fmaxf(AK_KP_MIN, mtr->kP), AK_KP_MAX);
-    float kd = fminf(fmaxf(AK_KD_MIN, mtr->kD), AK_KD_MAX);
-    float t_ff = fminf(fmaxf(AK_T_MIN, mtr->kF), AK_T_MAX);
+static inline void akMotor_pack(AkMotor_t *mtr, can_msg_t *msg){
+    const struct AKMotorConfig *pCfg = &AKConfigs[mtr->type];
+    float p_des = fminf(fmaxf(pCfg->pos_min, mtr->position), pCfg->pos_max);
+    float v_des = fminf(fmaxf(pCfg->vel_min, mtr->velocity), pCfg->vel_max);
+    float kp = fminf(fmaxf(pCfg->kp_min, mtr->kP), pCfg->kp_max);
+    float kd = fminf(fmaxf(pCfg->kd_min, mtr->kD), pCfg->kd_max);
+    float t_ff = fminf(fmaxf(pCfg->trq_min, mtr->kF), pCfg->trq_min);
 
     /// convert floats to unsigned ints ///
-    uint32_t p_int = ak7010_toInt(p_des, AK_P_MIN, AK_P_MAX, 16);
-    uint32_t v_int = ak7010_toInt(v_des, AK_V_MIN, AK_V_MAX, 12);
-    uint32_t kp_int = ak7010_toInt(kp, AK_KP_MIN, AK_KP_MAX, 12);
-    uint32_t kd_int = ak7010_toInt(kd, AK_KD_MIN, AK_KD_MAX, 12);
-    uint32_t t_int = ak7010_toInt(t_ff, AK_T_MIN, AK_T_MAX, 12);
+    uint32_t p_int = ak7010_toInt(p_des, pCfg->pos_min, pCfg->pos_max, 16);
+    uint32_t v_int = ak7010_toInt(v_des, pCfg->vel_min, pCfg->vel_max, 12);
+    uint32_t kp_int = ak7010_toInt(kp, pCfg->kp_min, pCfg->kp_max, 12);
+    uint32_t kd_int = ak7010_toInt(kd, pCfg->kd_min, pCfg->kd_max, 12);
+    uint32_t t_int = ak7010_toInt(t_ff, pCfg->trq_min, pCfg->trq_max, 12);
 
     /// pack ints into the can buffer ///
     msg->id = mtr->can_id;
@@ -97,7 +99,8 @@ static inline void ak7010_pack(AK7010_t *mtr, can_msg_t *msg){
  * @param mtr Motor message to unpack into
  * @param msg Message from the CAN Bus
  */
-static inline void ak7010_unpack(AK7010_t *mtr, can_msg_t *msg){
+static inline void akMotor_unpack(AkMotor_t *mtr, can_msg_t *msg){
+    const struct AKMotorConfig *pCfg = &AKConfigs[mtr->type];
     /// unpack ints from can buffer ///
     uint32_t p_int = (uint32_t)(msg->data[1] << 8) | msg->data[2];  // Motor position data
     uint32_t v_int = (uint32_t)(msg->data[3] << 4) | (msg->data[4] >> 4);  // Motor speed data
@@ -105,15 +108,15 @@ static inline void ak7010_unpack(AK7010_t *mtr, can_msg_t *msg){
     uint32_t T_int = msg->data[6];
 
     /// convert ints to floats ///
-    mtr->position = ak7010_toFlt(p_int, AK_P_MIN, AK_P_MAX, 16);
-    mtr->velocity = ak7010_toFlt(v_int, AK_V_MIN, AK_V_MAX, 12);
-    mtr->current = ak7010_toFlt(i_int, -AK_I_MAX, AK_I_MAX, 12);
-    mtr->temp = ak7010_toFlt(T_int, AK_Temp_MIN, AK_Temp_MAX, 8);
+    mtr->position = ak7010_toFlt(p_int, pCfg->pos_min, pCfg->pos_max, 16);
+    mtr->velocity = ak7010_toFlt(v_int, pCfg->vel_min, pCfg->vel_max, 12);
+    mtr->current = ak7010_toFlt(i_int, pCfg->cur_min, pCfg->cur_max, 12);
+    mtr->temp = ak7010_toFlt(T_int, pCfg->tmp_min, pCfg->tmp_max, 8);
     mtr->error = msg->data[7];
 }
 
 // Retrieve the AK70-10 enable message
-static inline void ak7010_enable(AK7010_t *mtr, can_msg_t *msg){
+static inline void akMotor_enable(AkMotor_t *mtr, can_msg_t *msg){
     // ak7010 start code
     msg->data[0] = 0xff;
     msg->data[1] = 0xff;
@@ -129,7 +132,7 @@ static inline void ak7010_enable(AK7010_t *mtr, can_msg_t *msg){
 }
 
 // Retrieve the AK70-10 disable message
-static inline void ak7010_disable(AK7010_t *mtr, can_msg_t *msg){
+static inline void akMotor_disable(AkMotor_t *mtr, can_msg_t *msg){
     // ak7010 stop code
     msg->data[0] = 0xff;
     msg->data[1] = 0xff;
@@ -145,7 +148,7 @@ static inline void ak7010_disable(AK7010_t *mtr, can_msg_t *msg){
 }
 
 // Retrieve the AK70-10 Encoder Zero Message
-static inline void ak7010_zero(AK7010_t *mtr, can_msg_t *msg){
+static inline void akMotor_zero(AkMotor_t *mtr, can_msg_t *msg){
     // ak7010 stop code
     msg->data[0] = 0xff;
     msg->data[1] = 0xff;
@@ -160,5 +163,4 @@ static inline void ak7010_zero(AK7010_t *mtr, can_msg_t *msg){
     msg->len = 8;
 }
 
-#endif  // _AK7010_H_
-
+#endif

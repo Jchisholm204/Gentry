@@ -16,6 +16,8 @@
 #include "drivers/stusb/stm32_compat.h"
 #include "drivers/stusb/usb.h"
 #include "drivers/stusb/usb_cdc.h"
+// Include USB Device Definitions from the driver
+#include "usb_dev.h"
 
 // USB CDC Protocol to use
 #define CDC_PROTOCOL USB_PROTO_IAD
@@ -23,35 +25,6 @@
 // Do not change (Control EP0 Size)
 #define CDC_EP0_SIZE    0x08
 
-#define UDEV_INTERFACES  0x04
-
-// Virtual Com Port
-#define VCOM_RXD_EP      0x01
-#define VCOM_TXD_EP      0x81
-#define VCOM_DATA_SZ     0x40
-#define VCOM_NTF_EP      0x82
-#define VCOM_NTF_SZ      0x08
-#define VCOM_NTF_INUM    0x00
-#define VCOM_DATA_INUM   0x01
-
-// Device Control
-#define CTRL_RXD_EP      0x03
-#define CTRL_TXD_EP      0x83
-#define CTRL_DATA_SZ     0x40
-#define CTRL_NTF_EP      0x84
-#define CTRL_NTF_SZ      0x08
-#define CTRL_NTF_INUM    0x02
-#define CTRL_DATA_INUM   0x03
-
-// USB Device Vendor ID:
-//  Use 0xFFFF or 0xFFFE as designated by the USBIF,
-//  These vendor ID's are reserved for test or hobby devices and
-//  will not conflict with registered vendor drivers
-#define VENDOR_ID 0xFFFE
-// USB Device Product ID:
-//  Used to seperate usb devices from the same vendor
-//  Must be different for each type of device
-#define DEVICE_ID 0x0A4D
 
 // Lanuguage that the device uses = English
 static const struct usb_string_descriptor lang_desc     = USB_ARRAY_DESC(USB_LANGID_ENG_US);
@@ -309,5 +282,56 @@ static struct usb_cdc_line_coding cdc_line = {
 };
 
 
+static usbd_respond udev_getdesc (usbd_ctlreq *req, void **address, uint16_t *length) {
+    const uint8_t dtype = req->wValue >> 8;
+    const uint8_t dnumber = req->wValue & 0xFF;
+    const void* desc;
+    uint16_t len = 0;
+    switch (dtype) {
+    case USB_DTYPE_DEVICE:
+        desc = &device_desc;
+        break;
+    case USB_DTYPE_CONFIGURATION:
+        desc = &config_desc;
+        len = sizeof(config_desc);
+        break;
+    case USB_DTYPE_STRING:
+        if (dnumber < 3) {
+            desc = dtable[dnumber];
+        } else {
+            return usbd_fail;
+        }
+        break;
+    default:
+        return usbd_fail;
+    }
+    if (len == 0) {
+        len = ((struct usb_header_descriptor*)desc)->bLength;
+    }
+    *address = (void*)desc;
+    *length = len;
+    return usbd_ack;
+}
+
+static usbd_respond udev_control(usbd_device *dev, usbd_ctlreq *req, usbd_rqc_callback *callback) {
+    (void)callback;
+    if (((USB_REQ_RECIPIENT | USB_REQ_TYPE) & req->bmRequestType) == (USB_REQ_INTERFACE | USB_REQ_CLASS)
+        && req->wIndex == 0 ) {
+        switch (req->bRequest) {
+        case USB_CDC_SET_CONTROL_LINE_STATE:
+            return usbd_ack;
+        case USB_CDC_SET_LINE_CODING:
+            memcpy(&cdc_line, req->data, sizeof(cdc_line));
+            return usbd_ack;
+        case USB_CDC_GET_LINE_CODING:
+            dev->status.data_ptr = &cdc_line;
+            dev->status.data_count = sizeof(cdc_line);
+            return usbd_ack;
+        default:
+            return usbd_fail;
+        }
+    }
+    return usbd_fail;
+}
 
 #endif
