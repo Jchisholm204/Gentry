@@ -20,7 +20,6 @@
 #include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
-#include "hal/hal_tim_pwm.h"
 #include "systime.h"
 
 // USB Device Includes
@@ -31,6 +30,7 @@
 #include "mtr_ctrl.h"
 #include "limit_switches.h"
 #include "test_tsks.h"
+#include "srv_ctrl.h"
 
 #define USB_STACK_SIZE configMINIMAL_STACK_SIZE << 1
 
@@ -81,24 +81,14 @@ void Init(void){
     // Initialize CAN
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
-    // Initialize the PWM Timer
-    hal_tim_pwm_init(TIM3, 83, 39999);
-    hal_tim_pwm_configure_channel(TIM3, eTimCh1);
-    hal_tim_pwm_configure_channel(TIM3, eTimCh2);
-    hal_tim_pwm_configure_channel(TIM3, eTimCh3);
-    hal_tim_pwm_configure_channel(TIM3, eTimCh4);
-    hal_tim_pwm_set(TIM3, eTimCh1, 2999);
-    hal_tim_pwm_set(TIM3, eTimCh2, 2999);
-    hal_tim_pwm_set(TIM3, eTimCh3, 3500);
-    hal_tim_pwm_set(TIM3, eTimCh4, 500);
-    gpio_set_mode(PIN_SERVO_1, GPIO_MODE_AF);
-    gpio_set_af(PIN_SERVO_1, GPIO_AF_TIM3_5);
-    gpio_set_mode(PIN_SERVO_2, GPIO_MODE_AF);
-    gpio_set_af(PIN_SERVO_2, GPIO_AF_TIM3_5);
-    gpio_set_mode(PIN_SERVO_3, GPIO_MODE_AF);
-    gpio_set_af(PIN_SERVO_3, GPIO_AF_TIM3_5);
-    gpio_set_mode(PIN_SERVO_4, GPIO_MODE_AF);
-    gpio_set_af(PIN_SERVO_4, GPIO_AF_TIM3_5);
+
+    // Initialize the PWM Timer for the servos
+    srvCtrl_init(167, 19999);
+    // Set Servos to default Values
+    srvCtrl_setUS(eServo1, 1500);
+    srvCtrl_setUS(eServo2, 1000);
+    srvCtrl_setUS(eServo3, 2000);
+    srvCtrl_setUS(eServo4, 1750);
 
     // Initialize Limit Switches
     lmtSW_init();
@@ -146,19 +136,7 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     usbd_ep_read(dev, ep, (void*)&udev_ctrl, sizeof(struct udev_pkt_ctrl));
     // Handling servo changes, nothing else needs to be done
     if(udev_ctrl.hdr.typ == ePktTypeSrvo){
-        switch(udev_ctrl.id.srv){
-            case eServo1:
-                break;
-            case eServo2:
-                break;
-            case eServo3:
-                break;
-            case eServo4:
-                break;
-            default:
-                break;
-        };
-        
+        srvCtrl_setUS(udev_ctrl.id.srv, udev_ctrl.servo_ctrl);
     }
     else if(udev_ctrl.hdr.typ == ePktTypeMtr){
         enum eArmMotors mtr_id = udev_ctrl.id.mtr;
