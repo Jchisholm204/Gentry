@@ -82,13 +82,24 @@ void Init(void){
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
     // Initialize the PWM Timer
-    hal_tim_pwm_init(TIM3, 1000, 1000);
-    hal_tim_pwm_set(TIM3, 0, 1000);
-    hal_tim_pwm_set(TIM3, 1, 1000);
-    hal_tim_pwm_set(TIM3, 2, 1000);
-    hal_tim_pwm_set(TIM3, 3, 1000);
+    hal_tim_pwm_init(TIM3, 83, 39999);
+    hal_tim_pwm_configure_channel(TIM3, eTimCh1);
+    hal_tim_pwm_configure_channel(TIM3, eTimCh2);
+    hal_tim_pwm_configure_channel(TIM3, eTimCh3);
+    hal_tim_pwm_configure_channel(TIM3, eTimCh4);
+    hal_tim_pwm_set(TIM3, eTimCh1, 2999);
+    hal_tim_pwm_set(TIM3, eTimCh2, 2999);
+    hal_tim_pwm_set(TIM3, eTimCh3, 3500);
+    hal_tim_pwm_set(TIM3, eTimCh4, 500);
     gpio_set_mode(PIN_SERVO_1, GPIO_MODE_AF);
     gpio_set_af(PIN_SERVO_1, GPIO_AF_TIM3_5);
+    gpio_set_mode(PIN_SERVO_2, GPIO_MODE_AF);
+    gpio_set_af(PIN_SERVO_2, GPIO_AF_TIM3_5);
+    gpio_set_mode(PIN_SERVO_3, GPIO_MODE_AF);
+    gpio_set_af(PIN_SERVO_3, GPIO_AF_TIM3_5);
+    gpio_set_mode(PIN_SERVO_4, GPIO_MODE_AF);
+    gpio_set_af(PIN_SERVO_4, GPIO_AF_TIM3_5);
+
     // Initialize Limit Switches
     lmtSW_init();
 
