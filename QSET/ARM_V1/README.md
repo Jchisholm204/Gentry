@@ -81,7 +81,15 @@ The USB Task handles limit switches and driving servos.
 
 Motor Control is handled by the `mtr_ctrl` task.
 Multiple instances of this task can be spawned through the `mtrCtrl_init` function.
+Motor types and CAN ID's must be set through this function.
+
+If a motor type is not present, it must be added to `include/AKMotor/AkMotor_constants.h`.
+First, the type of motor must be added to the `AKMotorType` enum.
+Secondly, the constants for the new motor type can be specified in the `AKConfigs` array.
+
 
 ## Driver
-WORK IN PROGRESS
+A libUSB driver has been created for interfacing with the Arm Board.
+See `./driver` for more details.
+See `driver/test` for a sample program on how to use the Arm Board Driver.
 
