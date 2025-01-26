@@ -28,7 +28,10 @@ enum ePktType{
 };
 
 struct udev_pkt_hdr {
-    enum ePktType typ;
+    // Packet Type ENUM
+    uint8_t pkt_typ;
+    // Motor or Servo ID
+    uint8_t ctrl_typ;
 } __attribute__((packed));
 
 // Motor Control Structure
@@ -49,10 +52,6 @@ struct udev_mtr_ctrl {
 //  Must be less than 0x40 in length
 struct udev_pkt_ctrl {
     struct udev_pkt_hdr hdr;
-    union {
-        enum eArmMotors mtr;
-        enum eArmServos srv;
-    } id;
     union{
         uint32_t servo_ctrl;
         // CAN Bus Motor Control
@@ -62,7 +61,8 @@ struct udev_pkt_ctrl {
 
 struct udev_status {
     // Status code given by the enum
-    enum eArmStatus code;
+    // enum eArmStatus code;
+    uint8_t code;
     // Extra information could be:
     //  - Error code from the motor
     //  - number of the motor that failed initialization

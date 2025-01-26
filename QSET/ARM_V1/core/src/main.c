@@ -124,9 +124,6 @@ void vTskUSB(void *pvParams){
         int stlen = strlen(time.str);
         memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         vcom_txSize = SYSTIME_STR_LEN;
-        vTaskDelay(1);
-        systime_fromTicks(xTaskGetTickCount(), &time);
-        printf(time.str);
         vTaskDelay(1000);
     }
 }
@@ -137,11 +134,11 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
     usbd_ep_read(dev, ep, (void*)&udev_ctrl, sizeof(struct udev_pkt_ctrl));
     // Handling servo changes, nothing else needs to be done
-    if(udev_ctrl.hdr.typ == ePktTypeSrvo){
-        srvCtrl_set(udev_ctrl.id.srv, udev_ctrl.servo_ctrl);
+    if((enum ePktType)udev_ctrl.hdr.pkt_typ == ePktTypeSrvo){
+        srvCtrl_set(udev_ctrl.hdr.ctrl_typ, udev_ctrl.servo_ctrl);
     }
-    else if(udev_ctrl.hdr.typ == ePktTypeMtr){
-        enum eArmMotors mtr_id = udev_ctrl.id.mtr;
+    else if(udev_ctrl.hdr.pkt_typ == ePktTypeMtr){
+        enum eArmMotors mtr_id = (enum eArmMotors)udev_ctrl.hdr.ctrl_typ;
         if(mtr_id >= ARM_N_MOTORS) return;
         mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&udev_ctrl.mtr_ctrl);
     }
