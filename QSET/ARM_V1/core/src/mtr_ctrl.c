@@ -52,8 +52,10 @@ void mtrCtrl_init(mtrCtrlHndl_t * const pHndl, enum eArmMotors mtr_id, enum AKMo
 }
 
 void mtrCtrl_update(mtrCtrlHndl_t *pHndl, struct udev_mtr_ctrl *pCtrl){
+    BaseType_t xHigherWoken;
     memcpy(&pHndl->udev_ctrl, pCtrl, sizeof(struct udev_mtr_ctrl));
-    xTaskNotify(pHndl->pTskHndl, 0, eSetValueWithOverwrite);
+    xTaskNotifyFromISR(pHndl->pTskHndl, 0, eSetValueWithOverwrite, &xHigherWoken);
+    portYIELD_FROM_ISR(xHigherWoken);
 }
 
 void mtrCtrl_getInfo(mtrCtrlHndl_t *pHndl, struct udev_mtr_info *pInfo){
