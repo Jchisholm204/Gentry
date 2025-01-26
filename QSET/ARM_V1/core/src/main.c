@@ -119,11 +119,16 @@ void vTskUSB(void *pvParams){
     memcpy((void*)vcom_txBuf, msg, sizeof(msg));
     vcom_txSize = sizeof(msg);
     struct systime time;
+    gpio_set_mode(PIN_LED1, GPIO_MODE_OUTPUT);
+    gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
+    gpio_write(PIN_LED1, true);
     for(;;){
         systime_fromTicks(xTaskGetTickCount(), &time);
         int stlen = strlen(time.str);
         memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         vcom_txSize = SYSTIME_STR_LEN;
+        gpio_toggle_pin(PIN_LED1);
+        gpio_toggle_pin(PIN_LED2);
         vTaskDelay(1000);
     }
 }
