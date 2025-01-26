@@ -62,7 +62,8 @@ struct udev_pkt_ctrl {
 
 struct udev_status {
     // Status code given by the enum
-    enum eArmStatus code;
+    // enum eArmStatus code;
+    uint8_t code;
     // Extra information could be:
     //  - Error code from the motor
     //  - number of the motor that failed initialization
@@ -91,7 +92,7 @@ struct udev_pkt_status {
     uint8_t limit_sw;
     // Motor Control Response Information
     struct udev_mtr_info mtr[ARM_N_MOTORS];
-} __attribute__((packed));
+}; //__attribute__((packed));
 
 // USB Packets must be less than 0x40/64 bytes in length
 // static_assert(sizeof(struct udev_pkt_ctrl) <= CTRL_DATA_SZ, "USBD Control Packet Oversize");

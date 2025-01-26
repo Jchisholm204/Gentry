@@ -38,8 +38,8 @@
 usbd_device udev;
 uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
 // USB Info/Ctrl Packet
-static volatile struct udev_pkt_status udev_info;
-static volatile struct udev_pkt_ctrl udev_ctrl;
+static struct udev_pkt_status udev_info = {0};
+static struct udev_pkt_ctrl udev_ctrl = {0};
 // USB VCOM Buffers
 static volatile uint8_t vcom_rxBuf[VCOM_DATA_SZ] = {0};
 static volatile uint8_t vcom_txBuf[VCOM_DATA_SZ] = {0};
@@ -147,18 +147,25 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     }
 }
 
+
+static uint8_t buf[sizeof(struct udev_pkt_status)] = {5};
+static struct udev_pkt_status sts = {0};
 // Triggered when the USB Host requests data from the control interface
 static void ctrl_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
     // Get the latest data from the motor
-    for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
-        mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
-    }
+    // for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
+    //     mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
+    // }
+    memset(&sts, 7, 52);
+    memset(&buf, 5, 52);
     // Get the latest Limit Switch data
-    udev_info.limit_sw = lmtSW_get();
-
+    ((uint8_t*)&sts)[8] = 55;//lmtSW_get();
+    sts.limit_sw = 43;
+    // memcpy(buf, &sts, sizeof(struct udev_pkt_status));
+    buf[2] = 12;
     // Write back to the USB Memory
-    usbd_ep_write(dev, ep, (void*)&udev_info, sizeof(struct udev_pkt_status));
+    usbd_ep_write(dev, ep, (void*)&sts, 52);// sizeof(struct udev_pkt_status));
 }
 
 // USBD RX/TX Callbacks: Control
