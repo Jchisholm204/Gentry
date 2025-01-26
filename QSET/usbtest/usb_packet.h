@@ -1,11 +1,72 @@
+
+/**
+ * @file usb_arm_defs.h
+ * @author Jacob Chisholm (Jchisholm204.github.io)
+ * @brief QSET ARM Interface Definitions
+ * @version 0.1
+ * @date 2025-01-12
+ * 
+ * @copyright Copyright (c) 2023
+ *
+ *
+ * This file is used by the driver and the embedded device
+ * Both must be recompiled/flashed when changed
+ *
+ */
+#ifndef _USB_ARM_DEFS_H_
+#define _USB_ARM_DEFS_H_
+
+enum eArmMotors {
+    eJoint1,
+    eJoint2,
+    eJoint3,
+    eJoint4,
+    ARM_N_MOTORS
+};
+
+enum eArmServos {
+    eServo1,
+    eServo2,
+    eServo3,
+    eServo4,
+    ARM_N_SERVOS
+};
+
+// Bit mappings for the limit switches
+enum eArmLimitSW {
+    LIMITSW_1 = 0x01,
+    LIMITSW_2 = 0x02,
+    LIMITSW_3 = 0x04,
+    LIMITSW_4 = 0x08,
+    LIMITSW_5 = 0x10,
+    LIMITSW_6 = 0x20,
+};
+
+enum eArmStatus {
+    eArmOK,
+    // Arm is still waiting for one or more initialization message
+    eArmUnInit,
+    // Initialization failed on an interface
+    eArmIniFail,
+    // A bus or task has stalled triggering the watchdog (will self resolve in time)
+    eArmStall,
+    // A motor has failed to respond in a timely manner
+    eArmMtrFail,
+};
+
+#endif
 /**
  * @file usb_packet.h
  * @author Jacob Chisholm (Jchisholm204.github.io)
- * @brief USB Control Packet Declaration
+ * @brief USB Packet Declarations
  * @version 0.1
  * @date 2025-01-12
- * Taken from usb_packet.h in the Arm Firmware Project
+ * 
  * @copyright Copyright (c) 2023
+ *
+ *
+ * This file is used by the driver and the embedded device
+ * Both must be recompiled/flashed when changed
  *
  */
 
@@ -14,41 +75,56 @@
 
 #include <stdint.h>
 #include <assert.h>
+// #include "usb_arm_defs.h"
+// #include "usb_dev.h"
 
-#define UDEV_N_MOTORS 4
-#define UDEV_N_SERVOS 4
+enum ePktType{
+    ePktTypeReset,
+    ePktTypeMtr,
+    ePktTypeSrvo,
+};
 
-// USB Status
-// Enable the USB Device
-#define UDEV_STS_EN    0x01
-// Home the Arm
-#define UDEV_STS_HOME  0x02
-// Set when Arm has reached a software limit or limit switch is closed
-#define UDEV_STS_LIMIT 0x04
-// Motor Over Temp Detected
-#define UDEV_STS_OTEMP 0x08
-// Hardware Failure Detected
-#define UDEV_STS_HFAIL 0x10
-// AK Motor Failure
-#define UDEV_STS_MFAIL 0x20
+struct udev_pkt_hdr {
+    enum ePktType typ;
+} __attribute__((packed));
 
-// Bit mappings for the tool power
-#define UDEV_TOOL_A1   0x01
-#define UDEV_TOOL_A2   0x02
-#define UDEV_TOOL_LP1  0x04
-#define UDEV_TOOL_LP2  0x08
+// Motor Control Structure
+struct udev_mtr_ctrl {
+    // Motor Position Command
+    float position;
+    // Motor Velocity Command
+    float velocity;
+    // Motor Configuration Data
+    float kP, kI, kD, kF;
+    // Enable this Motor
+    uint8_t enable;
+} __attribute__((packed));
 
-// Bit mappings for the limit switches
-#define UDEV_LSW_1    0x01
-#define UDEV_LSW_2    0x02
-#define UDEV_LSW_3    0x04
-#define UDEV_LSW_4    0x08
-#define UDEV_LSW_5    0x10
-#define UDEV_LSW_6    0x20
 
-#define BIT_GET(reg, bit) ((reg & (1 << bit)) > 0)
-#define BIT_SET(reg, bit) (reg |= (1 << bit))
-#define BIT_CLR(reg, bit) (reg &= ~(1 << bit))
+// Control Packet:
+//  From Host to Device
+//  Must be less than 0x40 in length
+struct udev_pkt_ctrl {
+    struct udev_pkt_hdr hdr;
+    union {
+        enum eArmMotors mtr;
+        enum eArmServos srv;
+    } id;
+    union{
+        uint32_t servo_ctrl;
+        // CAN Bus Motor Control
+        struct udev_mtr_ctrl mtr_ctrl;
+    };
+} __attribute__((packed));
+
+struct udev_status {
+    // Status code given by the enum
+    enum eArmStatus code;
+    // Extra information could be:
+    //  - Error code from the motor
+    //  - number of the motor that failed initialization
+    uint8_t value;
+};
 
 // Motor Control Structure
 struct udev_mtr_info {
@@ -62,44 +138,22 @@ struct udev_mtr_info {
     float velocity;
 } __attribute__((packed));
 
-// Motor Control Structure
-struct udev_mtr_ctrl {
-    // Motor Position Command
-    float position;
-    // Motor Velocity Command
-    float velocity;
-} __attribute__((packed));
-
-// Control Packet:
-//  From Host to Device
-//  Must be less than 0x40 in length
-struct udev_pkt_ctrl {
-    // Device Status (Set bit to reset trigger)
-    uint8_t status;
-    // Enable the tool Power (bitwise controlled)
-    uint8_t tool_pwr;
-    // Servo PWM Outputs
-    uint8_t ctrl_servo[UDEV_N_SERVOS];
-    // CAN Bus Motor Control
-    struct udev_mtr_ctrl mtr[UDEV_N_MOTORS];
-} __attribute__((packed));
-
 // Status Packet:
 //  From Device to Host
 //  Must be less than 0x40 in length
 struct udev_pkt_status {
     // Device Status
-    uint8_t status;
+    struct udev_status status;
     // Each bit represents a limit switch that is open (0) or closed (1)
     uint8_t limit_sw;
     // Motor Control Response Information
-    struct udev_mtr_info mtr[UDEV_N_MOTORS];
+    struct udev_mtr_info mtr[ARM_N_MOTORS];
 } __attribute__((packed));
 
 // USB Packets must be less than 0x40/64 bytes in length
-static_assert(sizeof(struct udev_pkt_ctrl) <= 0x40, "USBD Control Packet Oversize");
-static_assert(sizeof(struct udev_pkt_status) <= 0x40, "USBD Status Packet Oversize");
-
+// static_assert(sizeof(struct udev_pkt_ctrl) <= CTRL_DATA_SZ, "USBD Control Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_status) <= CTRL_DATA_SZ, "USBD Status Packet Oversize");
 
 #endif
+
 

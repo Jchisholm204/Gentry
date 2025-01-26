@@ -24,11 +24,7 @@ int main() {
     int transferred;
     int res;
 
-    struct udev_pkt_ctrl pkt_ctrl = {0};
-    pkt_ctrl.mtr[0].position = 4;
-    pkt_ctrl.mtr[0].velocity = 1;
-
-    struct udev_pkt_status pkt_status = {0};
+    static struct udev_pkt_status pkt_status = {0};
 
     // Initialize libusb
     res = libusb_init(&ctx);
@@ -68,22 +64,25 @@ int main() {
     while(1){
 
         // Send data
-        res = libusb_bulk_transfer(dev_handle, CTRL_RXD_EP, (unsigned char *)&pkt_ctrl, sizeof(struct udev_pkt_ctrl), &transferred, 0);
-        if (res != 0) {
-            fprintf(stderr, "Failed to send data: %s\n", libusb_error_name(res));
-        } else {
-            printf("Sent %d bytes\n", transferred);
-        }
+        // res = libusb_bulk_transfer(dev_handle, CTRL_RXD_EP, (unsigned char *)&pkt_ctrl, sizeof(struct udev_pkt_ctrl), &transferred, 0);
+        // if (res != 0) {
+        //     fprintf(stderr, "Failed to send data: %s\n", libusb_error_name(res));
+        // } else {
+        //     printf("Sent %d bytes\n", transferred);
+        // }
 
         // Receive data
-        res = libusb_bulk_transfer(dev_handle, CTRL_TXD_EP, (unsigned char *)&pkt_status, sizeof(struct udev_pkt_status), &transferred, 0);
+        uint8_t shit[49] = {0};
+        res = libusb_bulk_transfer(dev_handle, CTRL_TXD_EP, (void*)&shit, sizeof(uint8_t)*49, &transferred, 1000);
         if (res != 0) {
             fprintf(stderr, "Failed to receive data: %s\n", libusb_error_name(res));
         } else {
-            // printf("Received %d bytes\n", transferred);
+            memcpy(&pkt_status, shit, 49);
+            printf("Received %d bytes\n", transferred);
             printf("Motor 0 Temp = %d\n", pkt_status.mtr[0].temp);
             printf("Motor 0 Vel  = %0.2f\n", pkt_status.mtr[0].velocity);
             printf("Motor 0 Pos  = %0.2f\n", pkt_status.mtr[0].position);
+            printf("Shit = %d\n", shit[2]);
         }
         
         sleep(1);

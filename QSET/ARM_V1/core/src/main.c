@@ -126,7 +126,7 @@ void vTskUSB(void *pvParams){
         vcom_txSize = SYSTIME_STR_LEN;
         vTaskDelay(1);
         systime_fromTicks(xTaskGetTickCount(), &time);
-        printf(time.str);
+        // printf(time.str);
         vTaskDelay(1000);
     }
 }
@@ -140,25 +140,33 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(udev_ctrl.hdr.typ == ePktTypeSrvo){
         srvCtrl_set(udev_ctrl.id.srv, udev_ctrl.servo_ctrl);
     }
-    else if(udev_ctrl.hdr.typ == ePktTypeMtr){
+    if(udev_ctrl.hdr.typ == ePktTypeMtr){
         enum eArmMotors mtr_id = udev_ctrl.id.mtr;
         if(mtr_id >= ARM_N_MOTORS) return;
         mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&udev_ctrl.mtr_ctrl);
     }
 }
 
+static struct udev_pkt_status sts = {0};
+static uint8_t shit[52] = {5};
 // Triggered when the USB Host requests data from the control interface
 static void ctrl_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
     // Get the latest data from the motor
-    for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
-        mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
-    }
+    // for(enum eArmMotors m = 0; m < ARM_N_MOTORS; m++){
+    //     mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&udev_info.mtr[m]);
+    // }
     // Get the latest Limit Switch data
-    udev_info.limit_sw = lmtSW_get();
-
+    sts.limit_sw = 33;
+    sts.mtr[0].velocity = 55;
+    sts.mtr[0].temp = 32;
+    memcpy(&shit, &sts, 49);
+    // shit[40] += 1;
+    // if(shit[40] > 200) shit[40] = 3;
+    // sizeof(struct udev_pkt_status);
+    // udev_info.limit_sw = 32; //lmtSW_get();
     // Write back to the USB Memory
-    usbd_ep_write(dev, ep, (void*)&udev_info, sizeof(struct udev_pkt_status));
+    usbd_ep_write(dev, ep, (void*)&shit, sizeof(uint8_t)*49);
 }
 
 // USBD RX/TX Callbacks: Control
