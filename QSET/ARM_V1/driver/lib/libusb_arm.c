@@ -87,8 +87,8 @@ struct udev_pkt_status *armDev_getStatusPkt(armDev_t *pDev){
 
 int armDev_setServo(armDev_t *pDev, enum eArmServos servo, uint32_t val_us){
     struct udev_pkt_ctrl ctrl;
-    ctrl.hdr.typ = ePktTypeSrvo;
-    ctrl.id.srv = servo;
+    ctrl.hdr.pkt_typ = ePktTypeSrvo;
+    ctrl.hdr.ctrl_typ = servo;
     ctrl.servo_ctrl = val_us;
     return armdev_send(pDev, &ctrl);
 }
@@ -96,8 +96,8 @@ int armDev_setServo(armDev_t *pDev, enum eArmServos servo, uint32_t val_us){
 int armDev_setMtr(armDev_t *pDev, enum eArmMotors mtr, struct udev_mtr_ctrl *pVals){
     if(pVals == NULL) return -1;
     struct udev_pkt_ctrl ctrl;
-    ctrl.hdr.typ = ePktTypeMtr;
-    ctrl.id.mtr = mtr;
+    ctrl.hdr.pkt_typ = ePktTypeMtr;
+    ctrl.hdr.ctrl_typ = mtr;
     memcpy(&ctrl.mtr_ctrl, pVals, sizeof(struct udev_mtr_ctrl));
     memcpy(&pDev->pkt_mtr[mtr], pVals, sizeof(struct udev_mtr_ctrl));
     return armdev_send(pDev, &ctrl);
@@ -109,8 +109,8 @@ int armDev_updateMtr(armDev_t *pDev, enum eArmMotors mtr, float pos, float vel){
     pDev->pkt_mtr[mtr].velocity = vel;
 
     struct udev_pkt_ctrl ctrl;
-    ctrl.hdr.typ = ePktTypeMtr;
-    ctrl.id.mtr = mtr;
+    ctrl.hdr.pkt_typ = ePktTypeMtr;
+    ctrl.hdr.ctrl_typ = mtr;
     memcpy(&ctrl.mtr_ctrl, &pDev->pkt_mtr[mtr], sizeof(struct udev_mtr_ctrl));
     return armdev_send(pDev, &ctrl);
 }
