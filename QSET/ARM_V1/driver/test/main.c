@@ -21,7 +21,7 @@ int main(void){
         armDev_setServo(&dev, eServo2, 2200);
         struct udev_pkt_status *sts = armDev_getStatusPkt(&dev);
         printf("Joint1: %0.2f rad/s LS: %d\n", sts->mtr[eJoint1].velocity, sts->limit_sw & 0x7F);
-        sleep(1);
+        // sleep(1);
     }
     armDev_free(&dev);
     return 0;
