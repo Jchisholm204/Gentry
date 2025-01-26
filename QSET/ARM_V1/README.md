@@ -93,3 +93,25 @@ A libUSB driver has been created for interfacing with the Arm Board.
 See `./driver` for more details.
 See `driver/test` for a sample program on how to use the Arm Board Driver.
 
+
+The driver is split into three folders:
+- `include`:
+    - contains files common to the firmware and the driver.
+    - only `libusb_arm.h` must be included to use the driver.
+- `lib`: Contains C files for the driver code
+- `test`: Contains a test program for using the driver
+
+### Using the Driver
+Using the driver requires `libusb1.0`. Install on Ubuntu with:
+
+```shell
+sudo apt-get install libusb-1.0-0-dev
+```
+
+Clone/Copy the files from `include` and `lib`.
+Symlinking to this repository is best as it ensures that changes to the firmware files will be present in the application code.
+
+
+After Symlinking, follow the example code in `test` to interface with the board.
+Most of the functions in the library are simple wrappers around `libusb1.0`.
+
