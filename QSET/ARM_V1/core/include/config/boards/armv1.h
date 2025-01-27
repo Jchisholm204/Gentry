@@ -43,8 +43,8 @@
 #define PIN_USB_DP    PIN('A', 12)
 
 // Motor Control
-#define PIN_MTR_EN    PIN('A', 3);
-#define PIN_MTR_PWM1  PIN('A', 4);
+#define PIN_MTR_EN    PIN('A', 3)
+#define PIN_MTR_PWM1  PIN('A', 4)
 #define PIN_MTR_PWM2  PIN('A', 5)
 
 // Arm Tooling

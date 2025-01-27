@@ -25,6 +25,7 @@ enum ePktType{
     ePktTypeReset,
     ePktTypeMtr,
     ePktTypeSrvo,
+    ePktTypeGrip,
 };
 
 struct udev_pkt_hdr {
@@ -53,6 +54,7 @@ struct udev_mtr_ctrl {
 struct udev_pkt_ctrl {
     struct udev_pkt_hdr hdr;
     union{
+        int8_t  grip_ctrl;
         uint32_t servo_ctrl;
         // CAN Bus Motor Control
         struct udev_mtr_ctrl mtr_ctrl;

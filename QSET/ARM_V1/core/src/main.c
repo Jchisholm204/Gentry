@@ -31,6 +31,7 @@
 #include "limit_switches.h"
 #include "test_tsks.h"
 #include "srv_ctrl.h"
+#include "gripper_ctrl.h"
 
 #define USB_STACK_SIZE configMINIMAL_STACK_SIZE << 1
 
@@ -92,6 +93,9 @@ void Init(void){
     srvCtrl_set(eServo3, 2000);
     srvCtrl_set(eServo4, 1750);
 
+    // Initialize gripper control
+    gripCtrl_init((PLL_N/PLL_P)-1, 9999);
+
     // Initialize Limit Switches
     lmtSW_init();
 
@@ -146,6 +150,9 @@ static void ctrl_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
         enum eArmMotors mtr_id = (enum eArmMotors)udev_ctrl.hdr.ctrl_typ;
         if(mtr_id >= ARM_N_MOTORS) return;
         mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&udev_ctrl.mtr_ctrl);
+    }
+    else if(udev_ctrl.hdr.pkt_typ == ePktTypeGrip){
+        gripCtrl_set(udev_ctrl.grip_ctrl);
     }
 }
 
