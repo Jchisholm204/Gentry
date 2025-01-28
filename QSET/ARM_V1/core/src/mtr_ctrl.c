@@ -121,13 +121,19 @@ void mtrCtrl_task(void *pvParams){
             pMtr->kP = pCtrl->kP;
             pMtr->kI = pCtrl->kI;
             pMtr->kD = pCtrl->kD;
-            pMtr->enable = pCtrl->enable;
+            pMtr->enable = pCtrl->enable & 0x01;
 
             // Check if the motor needs to be enabled
-            if(pMtr->enable)  akMotor_enable(pMtr, &msg);
-            if(!pMtr->enable) akMotor_enable(pMtr, &msg);
+            akMotor_enable(pMtr, &msg);
             // Write enable or disable message to the bus
             can_write(&CANBus1, &msg, MTR_POLL_TIME);
+            // Check if the motor needs to be zeroed
+            if(pCtrl->enable & 0x02){
+                akMotor_zero(pMtr, &msg);
+                // Write enable or disable message to the bus
+                can_write(&CANBus1, &msg, MTR_POLL_TIME);
+                CLEAR_BIT(pCtrl->enable, 0x02);
+            }
 
             // Transmit the latest motor message to the CAN BUS
             akMotor_pack(pMtr, &msg);
