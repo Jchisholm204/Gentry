@@ -19,6 +19,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define AK_MTR_EN   0x01
+#define AK_MTR_ZERO 0x02
+
 typedef struct _armDev{
     libusb_context *lusb_ctx;
     libusb_device_handle *lusb_devHndl;
@@ -40,6 +43,8 @@ struct udev_pkt_status *armDev_getStatusPkt(armDev_t *pDev);
 int armDev_setServo(armDev_t *pDev, enum eArmServos servo, uint32_t val_us);
 
 int armDev_setMtr(armDev_t *pDev, enum eArmMotors mtr, struct udev_mtr_ctrl *pVals);
+
+int armDev_setGripper(armDev_t *pDev, int8_t val);
 
 int armDev_updateMtr(armDev_t *pDev, enum eArmMotors mtr, float pos, float vel);
 

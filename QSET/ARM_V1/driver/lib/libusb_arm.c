@@ -104,6 +104,14 @@ int armDev_setMtr(armDev_t *pDev, enum eArmMotors mtr, struct udev_mtr_ctrl *pVa
 
 }
 
+int armDev_setGripper(armDev_t *pDev, int8_t val){
+    struct udev_pkt_ctrl ctrl;
+    ctrl.hdr.pkt_typ = ePktTypeGrip;
+    ctrl.hdr.ctrl_typ = 0;
+    ctrl.grip_ctrl = val;
+    return armdev_send(pDev, &ctrl);
+}
+
 int armDev_updateMtr(armDev_t *pDev, enum eArmMotors mtr, float pos, float vel){
     pDev->pkt_mtr[mtr].position = pos;
     pDev->pkt_mtr[mtr].velocity = vel;
