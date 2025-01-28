@@ -13,7 +13,7 @@ int main(void){
         .kI = 0,
         .kD = 0,
         .kF = 0,
-        .enable = true,
+        .enable = AK_MTR_EN | AK_MTR_ZERO,
     };
     printf("udev_connected\n");
     for(;;){
