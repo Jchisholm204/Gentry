@@ -18,10 +18,10 @@
 static void srvCtrl_init(uint16_t pre, uint16_t arr){
     // Arm Board uses Timer 3
     hal_tim_pwm_init(SERVO_TIM, pre, arr);
-    // hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh1);
+    hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh1);
     hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh2);
-    // hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh3);
-    // hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh4);
+    hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh3);
+    hal_tim_pwm_configure_channel(SERVO_TIM, eTimCh4);
     // Setup the GPIO pins
     gpio_set_mode(PIN_SERVO_1, GPIO_MODE_AF);
     gpio_set_af(PIN_SERVO_1, GPIO_AF_TIM3_5);
