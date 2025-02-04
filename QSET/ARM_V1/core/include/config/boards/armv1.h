@@ -54,7 +54,7 @@
 #define PIN_TOOL_A2   PIN('A', 1)
 
 // Arm Limit Switches
-#define PIN_LSW_1     PIN('C', 6)
+#define PIN_LSW_1     PIN('B', 15)
 #define PIN_LSW_2     PIN('B', 15)
 #define PIN_LSW_3     PIN('B', 12)
 #define PIN_LSW_4     PIN('C', 7)
@@ -62,6 +62,7 @@
 #define PIN_LSW_6     PIN('B', 13)
 
 // Servos
+#define PIN_SRVO_EN   PIN('C', 6)
 // TIM3 CH 1
 #define PIN_SERVO_1   PIN('A', 6)
 // TIM3 CH 2

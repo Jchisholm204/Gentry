@@ -95,6 +95,20 @@ void Init(void){
 
     // Initialize gripper control
     gripCtrl_init((PLL_N/PLL_P)-1, 9999);
+    // gripCtrl_set(100);
+    hal_tim_pwm_init(TIM2, (PLL_N/PLL_P)-1, 9999);
+    hal_tim_pwm_configure_channel(TIM2, eTimCh1);
+    hal_tim_pwm_configure_channel(TIM2, eTimCh2);
+    gpio_set_mode(PIN_MTR_EN, GPIO_MODE_OUTPUT);
+    gpio_write(PIN_MTR_EN, true);
+
+    gpio_set_mode(PIN_MTR_PWM1, GPIO_MODE_AF);
+    gpio_set_af(PIN_MTR_PWM1, GPIO_AF_TIM2);
+    gpio_set_mode(PIN_MTR_PWM2, GPIO_MODE_AF);
+    gpio_set_af(PIN_MTR_PWM2, GPIO_AF_TIM2);
+
+    hal_tim_pwm_set(TIM2, eTimCh1, 9999);
+    // hal_tim_pwm_set(TIM2, eTimCh2, 9999);
 
     // Initialize Limit Switches
     lmtSW_init();

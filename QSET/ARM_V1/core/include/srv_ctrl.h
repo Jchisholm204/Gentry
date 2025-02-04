@@ -31,7 +31,9 @@ static void srvCtrl_init(uint16_t pre, uint16_t arr){
     gpio_set_af(PIN_SERVO_3, GPIO_AF_TIM3_5);
     gpio_set_mode(PIN_SERVO_4, GPIO_MODE_AF);
     gpio_set_af(PIN_SERVO_4, GPIO_AF_TIM3_5);
-}
+    gpio_set_mode(PIN_SRVO_EN, GPIO_MODE_OUTPUT);
+    gpio_write(PIN_SRVO_EN, true);
+}   
 
 
 static void srvCtrl_set(enum eArmServos srv, uint32_t val_us){
