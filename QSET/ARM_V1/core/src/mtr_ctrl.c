@@ -53,13 +53,21 @@ void mtrCtrl_init(mtrCtrlHndl_t * const pHndl, enum eArmMotors mtr_id, enum AKMo
 
 void mtrCtrl_update(mtrCtrlHndl_t *pHndl, struct udev_mtr_ctrl *pCtrl){
     BaseType_t xHigherWoken;
-    memcpy(&pHndl->udev_ctrl, pCtrl, sizeof(struct udev_mtr_ctrl));
+    volatile struct udev_mtr_ctrl *pHndlCtrl = &pHndl->udev_ctrl;
+    // memcpy(&pHndl->udev_ctrl, pCtrl, sizeof(struct udev_mtr_ctrl));
+    pHndlCtrl->enable = pCtrl->enable;
+    pHndlCtrl->kP = pCtrl->kP;
+    pHndlCtrl->kI = pCtrl->kI;
+    pHndlCtrl->kD = pCtrl->kD;
+    pHndlCtrl->kF = pCtrl->kF;
+    pHndlCtrl->velocity = pCtrl->velocity;
+    pHndlCtrl->position = pCtrl->position;
     xTaskNotifyFromISR(pHndl->pTskHndl, 0, eSetValueWithOverwrite, &xHigherWoken);
     portYIELD_FROM_ISR(xHigherWoken);
 }
 
 void mtrCtrl_getInfo(mtrCtrlHndl_t *pHndl, struct udev_mtr_info *pInfo){
-    struct udev_mtr_info *pI = &pHndl->udev_info;
+    volatile struct udev_mtr_info *pI = &pHndl->udev_info;
     pInfo->position = pI->position;
     pInfo->velocity = pI->velocity;
     pInfo->temp = pI->temp;
@@ -79,8 +87,8 @@ void mtrCtrl_task(void *pvParams){
     // Typecast the task parameters to get the internal motor ID
     mtrCtrlHndl_t *pHndl = (mtrCtrlHndl_t*)pvParams;
     AkMotor_t *pMtr = &pHndl->akMtr;
-    struct udev_mtr_ctrl *pCtrl = &pHndl->udev_ctrl;
-    struct udev_mtr_info *pInfo = &pHndl->udev_info;
+    volatile struct udev_mtr_ctrl *pCtrl = &pHndl->udev_ctrl;
+    volatile struct udev_mtr_info *pInfo = &pHndl->udev_info;
     can_msg_t msg;
 
     // CAN Mailbox Setup

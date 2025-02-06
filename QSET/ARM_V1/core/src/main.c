@@ -33,7 +33,7 @@
 #include "srv_ctrl.h"
 #include "gripper_ctrl.h"
 
-#define USB_STACK_SIZE configMINIMAL_STACK_SIZE << 1
+#define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
 // USB Device
 usbd_device udev;
@@ -49,7 +49,7 @@ static volatile uint16_t vcom_txSize = 0;
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
 
 // Motor Controller Handles
-static mtrCtrlHndl_t mtrControllers[ARM_N_MOTORS];
+mtrCtrlHndl_t mtrControllers[ARM_N_MOTORS];
 // USB Task Handle
 static TaskHandle_t usbHndl;
 static StackType_t puUsbStack[USB_STACK_SIZE];
@@ -142,7 +142,7 @@ void vTskUSB(void *pvParams){
     gpio_write(PIN_LED1, true);
     for(;;){
         systime_fromTicks(xTaskGetTickCount(), &time);
-        int stlen = strlen(time.str);
+        // int stlen = strlen(time.str);
         memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         vcom_txSize = SYSTIME_STR_LEN;
         gpio_toggle_pin(PIN_LED1);

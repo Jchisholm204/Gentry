@@ -83,10 +83,10 @@ static inline void akMotor_pack(AkMotor_t *mtr, can_msg_t *msg){
     /// pack ints into the can buffer ///
     msg->id = mtr->can_id;
     msg->len = 8;
-    msg->data[0] = (uint8_t)(p_int >> 8U);    // Position 8 higher
+    msg->data[0] = (uint8_t)((p_int >> 8U) & 0xFFU);    // Position 8 higher
     msg->data[1] = (uint8_t)(p_int & 0xFFU);  // Position 8 lower
-    msg->data[2] = (uint8_t)(v_int >> 4);    // Speed 8 higher
-    msg->data[3] = (uint8_t)((v_int & 0xFU) << 4) | ((uint8_t)(kp_int >> 8) & 0x0FU);  // Speed 4 bit lower KP 4bit higher
+    msg->data[2] = (uint8_t)((v_int >> 4) & 0xFF);    // Speed 8 higher
+    msg->data[3] = (uint8_t)((v_int << 4) & 0xF0U) | ((uint8_t)(kp_int >> 8) & 0x0FU);  // Speed 4 bit lower KP 4bit higher
     msg->data[4] = (uint8_t)(kp_int & 0xFFU); // KP 8 bit lower
     msg->data[5] = (uint8_t)(kd_int >> 4);            // Kd 8 bit higher
     msg->data[6] = (uint8_t)((kd_int & 0xFU) << 4) | ((uint8_t)(t_int >> 8) & 0x0FU);  // KP 4 bit lower torque 4 bit higher;

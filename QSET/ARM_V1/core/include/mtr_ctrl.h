@@ -23,7 +23,7 @@
 // Maximum time the task will wait for an external event before trying later
 #define MTR_POLL_TIME (MTR_UPDATE_TIME >> 2)
 
-#define MTR_TSK_STACK_SIZE configMINIMAL_STACK_SIZE
+#define MTR_TSK_STACK_SIZE (configMINIMAL_STACK_SIZE<<1)
 
 /**
  * @struct _mtrCtrlHndl
@@ -36,8 +36,8 @@ typedef struct _mtrCtrlHndl {
     // AK Motor
     AkMotor_t akMtr;
     // USB Device Packet Data
-    struct udev_mtr_ctrl  udev_ctrl;
-    struct udev_mtr_info  udev_info;
+    volatile struct udev_mtr_ctrl  udev_ctrl;
+    volatile struct udev_mtr_info  udev_info;
     // FreeRTOS Task Information
     TaskHandle_t pTskHndl;
     char pcName[10];
