@@ -40,7 +40,7 @@ typedef struct {
 } AkMotor_t;
 
 // Converts float values into integers (ak7010 compatible conversion)
-static uint32_t ak7010_toInt(float x, float x_min, float x_max, int bits){
+static uint32_t akMotor_toInt(float x, float x_min, float x_max, int bits){
     /// Converts a float to an unsigned int, given range and number of bits ///
     float span = x_max - x_min;
     if (x < x_min)
@@ -52,11 +52,18 @@ static uint32_t ak7010_toInt(float x, float x_min, float x_max, int bits){
 }
 
 // Converts integer values into floating point values (ak7010 compatible conversion)
-static float ak7010_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
+static float akMotor_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
     /// converts unsigned int to float, given range and number of bits ///
     float span = x_max - x_min;
     float offset = x_min;
     return ((float)x_int) * span / ((float)((1 << bits) - 1)) + offset;
+}
+
+// confines a value to the minimum and maximum value
+static inline float akMotor_minmax(float val, float max, float min){
+    if(val < min) val = min;
+    if(val > max) val = max;
+    return val;
 }
 
 /**
@@ -67,18 +74,18 @@ static float ak7010_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
  */
 static inline void akMotor_pack(AkMotor_t *mtr, can_msg_t *msg){
     const struct AKMotorConfig *pCfg = &AKConfigs[mtr->type];
-    float p_des = fminf(fmaxf(pCfg->pos_min, mtr->position), pCfg->pos_max);
-    float v_des = fminf(fmaxf(pCfg->vel_min, mtr->velocity), pCfg->vel_max);
-    float kp = fminf(fmaxf(pCfg->kp_min, mtr->kP), pCfg->kp_max);
-    float kd = fminf(fmaxf(pCfg->kd_min, mtr->kD), pCfg->kd_max);
-    float t_ff = fminf(fmaxf(pCfg->trq_min, mtr->kF), pCfg->trq_min);
+    float p_des = akMotor_minmax(mtr->position, pCfg->pos_min, pCfg->pos_max);
+    float v_des = akMotor_minmax(mtr->velocity, pCfg->vel_min, pCfg->vel_max);
+    float kp = akMotor_minmax(mtr->kP, pCfg->kp_min, pCfg->kp_max);
+    float kd = akMotor_minmax(mtr->kD, pCfg->kd_min, pCfg->kd_max);
+    float t_ff = akMotor_minmax(mtr->kF, pCfg->trq_min, pCfg->trq_min);
 
     /// convert floats to unsigned ints ///
-    uint32_t p_int = ak7010_toInt(p_des, pCfg->pos_min, pCfg->pos_max, 16);
-    uint32_t v_int = ak7010_toInt(v_des, pCfg->vel_min, pCfg->vel_max, 12);
-    uint32_t kp_int = ak7010_toInt(kp, pCfg->kp_min, pCfg->kp_max, 12);
-    uint32_t kd_int = ak7010_toInt(kd, pCfg->kd_min, pCfg->kd_max, 12);
-    uint32_t t_int = ak7010_toInt(t_ff, pCfg->trq_min, pCfg->trq_max, 12);
+    uint32_t p_int = akMotor_toInt(p_des, pCfg->pos_min, pCfg->pos_max, 16);
+    uint32_t v_int = akMotor_toInt(v_des, pCfg->vel_min, pCfg->vel_max, 12);
+    uint32_t kp_int = akMotor_toInt(kp, pCfg->kp_min, pCfg->kp_max, 12);
+    uint32_t kd_int = akMotor_toInt(kd, pCfg->kd_min, pCfg->kd_max, 12);
+    uint32_t t_int = akMotor_toInt(t_ff, pCfg->trq_min, pCfg->trq_max, 12);
 
     /// pack ints into the can buffer ///
     msg->id = mtr->can_id;
@@ -86,10 +93,10 @@ static inline void akMotor_pack(AkMotor_t *mtr, can_msg_t *msg){
     msg->data[0] = (uint8_t)((p_int >> 8U) & 0xFFU);    // Position 8 higher
     msg->data[1] = (uint8_t)(p_int & 0xFFU);  // Position 8 lower
     msg->data[2] = (uint8_t)((v_int >> 4) & 0xFF);    // Speed 8 higher
-    msg->data[3] = (uint8_t)((v_int << 4) & 0xF0U) | ((uint8_t)(kp_int >> 8) & 0x0FU);  // Speed 4 bit lower KP 4bit higher
+    msg->data[3] = (uint8_t)((uint8_t)((v_int << 4) & 0xF0U) | (uint8_t)((uint8_t)(kp_int >> 8) & 0x0FU));  // Speed 4 bit lower KP 4bit higher
     msg->data[4] = (uint8_t)(kp_int & 0xFFU); // KP 8 bit lower
     msg->data[5] = (uint8_t)(kd_int >> 4);            // Kd 8 bit higher
-    msg->data[6] = (uint8_t)((kd_int & 0xFU) << 4) | ((uint8_t)(t_int >> 8) & 0x0FU);  // KP 4 bit lower torque 4 bit higher;
+    msg->data[6] = (uint8_t)((uint8_t)((kd_int & 0xFU) << 4) | ((uint8_t)(t_int >> 8) & 0x0FU));  // KP 4 bit lower torque 4 bit higher;
     msg->data[7] = (uint8_t)(t_int & 0xFFU);  // torque 4 bit lower
 }
 
@@ -108,10 +115,10 @@ static inline void akMotor_unpack(AkMotor_t *mtr, can_msg_t *msg){
     uint32_t T_int = msg->data[6];
 
     /// convert ints to floats ///
-    mtr->position = ak7010_toFlt(p_int, pCfg->pos_min, pCfg->pos_max, 16);
-    mtr->velocity = ak7010_toFlt(v_int, pCfg->vel_min, pCfg->vel_max, 12);
-    mtr->current = ak7010_toFlt(i_int, pCfg->cur_min, pCfg->cur_max, 12);
-    mtr->temp = ak7010_toFlt(T_int, pCfg->tmp_min, pCfg->tmp_max, 8);
+    mtr->position = akMotor_toFlt(p_int, pCfg->pos_min, pCfg->pos_max, 16);
+    mtr->velocity = akMotor_toFlt(v_int, pCfg->vel_min, pCfg->vel_max, 12);
+    mtr->current = akMotor_toFlt(i_int, pCfg->cur_min, pCfg->cur_max, 12);
+    mtr->temp = akMotor_toFlt(T_int, pCfg->tmp_min, pCfg->tmp_max, 8);
     mtr->error = msg->data[7];
 }
 

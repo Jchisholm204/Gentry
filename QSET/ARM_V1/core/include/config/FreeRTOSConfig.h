@@ -77,6 +77,7 @@
 #define configUSE_PORT_OPTIMISED_TASK_SELECTION  1
 #define configUSE_TRACE_FACILITY                 1 // Enable trace facility
 #define configGENERATE_RUN_TIME_STATS            1 // Enable runtime stats
+#define configUSE_TASK_FPU_SUPPORT               1 // Enable context switching for floating points
 #define configRECORD_STACK_HIGH_ADDRESS          1
 /* USER CODE BEGIN MESSAGE_BUFFER_LENGTH_TYPE */
 /* Defaults to size_t for backward compatibility, but can be changed
