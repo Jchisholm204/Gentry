@@ -10,7 +10,45 @@
  *
  */
 #include "libusb_arm.h"
+#include <unistd.h>
 #include <memory.h>
+
+int is_device_connected(libusb_context *ctx) {
+    libusb_device **devices;
+    ssize_t count;
+    int found = 0;
+
+    // Get the list of USB devices
+    count = libusb_get_device_list(ctx, &devices);
+    if (count < 0) {
+        fprintf(stderr, "Error getting device list: %s\n", libusb_error_name(count));
+        return -1; // Error
+    }
+
+    // Iterate through the list of devices
+    for (ssize_t i = 0; i < count; i++) {
+        libusb_device *device = devices[i];
+        struct libusb_device_descriptor desc;
+
+        // Get the device descriptor
+        int ret = libusb_get_device_descriptor(device, &desc);
+        if (ret < 0) {
+            fprintf(stderr, "Error getting device descriptor: %s\n", libusb_error_name(ret));
+            continue;
+        }
+
+        // Check if the device matches the vendor and product IDs
+        if (desc.idVendor == VENDOR_ID && desc.idProduct == DEVICE_ID) {
+            found = 1;
+            break; // Device found
+        }
+    }
+
+    // Free the device list
+    libusb_free_device_list(devices, 1);
+
+    return found; // 1 if device is connected, 0 otherwise
+}
 
 int armDev_init(armDev_t *pDev){
     pDev->lusb_ctx = NULL;
@@ -22,6 +60,10 @@ int armDev_init(armDev_t *pDev){
     if(res != 0){
         pDev->err = res;
         return -1;
+    }
+    while(!is_device_connected(pDev->lusb_ctx)){
+        printf("Device Not Connected\n");
+        sleep(1);
     }
     pDev->lusb_devHndl = libusb_open_device_with_vid_pid(pDev->lusb_ctx, VENDOR_ID, DEVICE_ID);
     if(!pDev->lusb_devHndl){
