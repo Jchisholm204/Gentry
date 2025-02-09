@@ -60,7 +60,8 @@ static float akMotor_toFlt(uint32_t x_int, float x_min, float x_max, int bits){
 }
 
 // confines a value to the minimum and maximum value
-static inline float akMotor_minmax(float val, float max, float min){
+static inline float akMotor_minmax(float val, float min, float max){
+    // return val;
     if(val < min) val = min;
     if(val > max) val = max;
     return val;

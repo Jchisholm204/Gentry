@@ -10,8 +10,8 @@ armDev_t dev;
 int main(void){
     armDev_init(&dev);
     struct udev_mtr_ctrl mtr = {
-        .velocity = 1,
-        .position = 0,
+        .velocity = 0,
+        .position = 1,
         .kP = 1,
         .kI = 0,
         .kD = 0,
@@ -28,10 +28,11 @@ int main(void){
         }
         else{
             armDev_setMtr(&dev, eJoint1, &mtr);
+            mtr.enable = 0;
             // armDev_setServo(&dev, eServo2, 2200);
             // armDev_setGripper(&dev, 120);
             struct udev_pkt_status *sts = armDev_getStatusPkt(&dev);
-            printf("Joint1: %0.2f rad/s LS: %d\n", sts->mtr[eJoint1].velocity, sts->limit_sw & 0x7F);
+            printf("Joint1: %0.2f rad/s LS: %d\n", sts->mtr[eJoint1].position, sts->limit_sw & 0x7F);
         }
         // sleep(1);
     }
