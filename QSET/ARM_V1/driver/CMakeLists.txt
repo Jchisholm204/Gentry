@@ -80,4 +80,5 @@ target_link_libraries(${EXECUTABLE}
     # -lnosys
     # -lrdimon
     -lusb-1.0
+    # -lusb
 )

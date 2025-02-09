@@ -32,6 +32,9 @@ typedef struct _armDev{
 
 int armDev_init(armDev_t *pDev);
 
+// BLOCKING FUNCTION
+int armDev_reconnect(armDev_t *pDev);
+
 int armDev_get(armDev_t *pDev);
 
 uint8_t armDev_getLS(armDev_t *pDev);

@@ -51,6 +51,21 @@ int armDev_init(armDev_t *pDev){
     return 0;
 }
 
+int armDev_reconnect(armDev_t *pDev) {
+    while (1) {
+        // Attempt to reconnect
+        pDev->lusb_devHndl = libusb_open_device_with_vid_pid(pDev->lusb_ctx, VENDOR_ID, DEVICE_ID);
+        if (pDev->lusb_devHndl) {
+            // Re-initialize the device
+            if (libusb_kernel_driver_active(pDev->lusb_devHndl, CTRL_DATA_INUM) == 1) {
+                libusb_detach_kernel_driver(pDev->lusb_devHndl, CTRL_DATA_INUM);
+            }
+            pDev->err = libusb_claim_interface(pDev->lusb_devHndl, CTRL_DATA_INUM);
+            break; // Successfully reconnected
+        }
+    }
+}
+
 int armDev_get(armDev_t *pDev){
     // Receive data
     int transferred;
