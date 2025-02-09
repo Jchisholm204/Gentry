@@ -43,9 +43,9 @@
 #define PIN_USB_DP    PIN('A', 12)
 
 // Motor Control
-#define PIN_MTR_EN    PIN('A', 3)
+#define PIN_MTR_EN    PIN('A', 3) // Tim 2 Ch 4
 #define PIN_MTR_PWM1  PIN('A', 4)
-#define PIN_MTR_PWM2  PIN('A', 5)
+#define PIN_MTR_PWM2  PIN('A', 5) // Tim 2 Ch 1
 
 // Arm Tooling
 #define PIN_TOOL_LP1  PIN('C', 2)
