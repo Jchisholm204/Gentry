@@ -16,7 +16,7 @@
 #define GRIP_IDL_PWR 1000
 
 static void gripCtrl_init(uint16_t pre, uint16_t arr){
-    // Arm Board uses Timer 3
+    // Arm Board uses Timer 2
     hal_tim_pwm_init(TIM2, pre, arr); // Must call twice
     hal_tim_pwm_init(TIM2, pre, arr);
     hal_tim_pwm_configure_channel(TIM2, eTimCh1);
