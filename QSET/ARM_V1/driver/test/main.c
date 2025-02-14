@@ -20,6 +20,7 @@ int main(void){
     };
     printf("udev_connected\n");
     bool dis = false;
+    int8_t gval = -128;
     for(;;){
         if (dev.err != 0) {
             printf("Disconnection Event Detected\n");
@@ -28,6 +29,7 @@ int main(void){
         }
         else{
             armDev_setMtr(&dev, eJoint1, &mtr);
+            armDev_setGripper(&dev, gval);
             mtr.enable = 0;
             // armDev_setServo(&dev, eServo2, 2200);
             // armDev_setGripper(&dev, 120);
@@ -35,6 +37,8 @@ int main(void){
             printf("Joint1: %0.2f rad/s LS: %d\n", sts->mtr[eJoint1].position, sts->limit_sw & 0x7F);
         }
         // sleep(1);
+        gval += 1;
+        if(gval > 120) gval = -120;
     }
     armDev_free(&dev);
     return 0;

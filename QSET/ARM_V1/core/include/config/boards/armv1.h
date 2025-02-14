@@ -24,8 +24,8 @@
 #define PIN_USART3_TX PIN('C', 10)
 #define PIN_USART3_RX PIN('C', 11)
 
-#define PIN_UART5_TX  PIN('C', 12)
-#define PIN_UART5_RX  PIN('D', 2)
+// #define PIN_UART5_TX  PIN('C', 12)
+// #define PIN_UART5_RX  PIN('D', 2)
 
 // CAN Pins
 #define PIN_CAN1_RX   PIN('B', 8)
@@ -43,8 +43,8 @@
 #define PIN_USB_DP    PIN('A', 12)
 
 // Motor Control
-#define PIN_MTR_EN    PIN('A', 3) // Tim 2 Ch 4
-#define PIN_MTR_PWM1  PIN('A', 4)
+#define PIN_MTR_EN    PIN('D', 2)
+#define PIN_MTR_PWM1  PIN('A', 2) // TIM 9 Ch 1
 #define PIN_MTR_PWM2  PIN('A', 5) // Tim 2 Ch 1
 
 // Arm Tooling
@@ -62,7 +62,7 @@
 #define PIN_LSW_6     PIN('B', 13)
 
 // Servos
-#define PIN_SRVO_EN   PIN('C', 6)
+#define PIN_SRVO_EN   PIN('C', 12)
 // TIM3 CH 1
 #define PIN_SERVO_1   PIN('A', 6)
 // TIM3 CH 2
