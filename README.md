@@ -40,6 +40,10 @@ Anyone is free to use any of the code contained within this repository so long a
     - VCU
         - FreeRTOS Based Vehicle Control Unit designed for Queen's Formula SAE Design Team
         - *NOTE: This is an old copy of the project saved for my own records, please see the [Queen's Formula 'Zenith' GitHub repository](https://github.com/qfsae/zenith/tree/master/Q24ECU) for the latest version.*
+- QSET (Queen's Space Engineering Team)
+	- ARM Board V1
+	- USB Eval Kit
+	- Drive Board V1.A
 - Tools
     - Rust
 	    - Test programs to interface with Microcontrollers using the Rust programming language

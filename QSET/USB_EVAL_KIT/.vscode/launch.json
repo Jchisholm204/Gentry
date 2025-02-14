@@ -1,0 +1,50 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Cortex Debug",
+            "cwd": "${workspaceFolder}",
+            "executable": "./build/firmware.elf",
+            "request": "launch",
+            "type": "cortex-debug",
+            "runToEntryPoint": "main",
+            "servertype": "stlink",
+            "postStartSessionCommands": [
+                "monitor reset halt",  // Reset and halt the CPU
+                "monitor stackinfo",   // Get stack usage info (if supported)
+                "set print frame-args all"
+            ],
+            "initCommands": [
+                "monitor vcpu"
+            ]
+        }
+    ]
+}
+
+// {
+//     "version": "0.2.0",
+//     "configurations": [
+//         {
+//             "name": "Cortex Debug",
+//             "type": "cortex-debug",
+//             "request": "launch",
+//             "servertype": "stlink",  // Use the appropriate server type for your setup
+//             "executable": "${workspaceFolder}/build/firmware.elf",
+//             "device": "STM32F446RE",  // Adjust this for your specific MCU
+//             "cwd": "${workspaceFolder}",
+//             "svdFile": "${workspaceFolder}/STM32F446.svd",  // Optional but useful for viewing registers
+//             "postStartSessionCommands": [
+//                 "monitor reset halt",  // Reset and halt the CPU
+//                 "monitor stackinfo"   // Get stack usage info (if supported)
+//             ],
+//             "overrideLaunchCommands": [
+//                 "target extended-remote :3333",  // Connect to the GDB server
+//                 "monitor reset halt",
+//                 "load"  // Load firmware.elf to the target
+//             ]
+//         }
+//     ]
+// }
