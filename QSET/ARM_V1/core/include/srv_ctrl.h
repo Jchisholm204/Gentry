@@ -37,6 +37,11 @@ static void srvCtrl_init(uint16_t pre, uint16_t arr){
 
 
 static void srvCtrl_set(enum eArmServos srv, uint32_t val_us){
+    static uint32_t prev[ARM_N_SERVOS] = {0};
+    if(prev[srv] == val_us){
+        return;
+    }
+    prev[srv] = val_us;
     switch(srv){
         case eServo1:
             hal_tim_pwm_set(SERVO_TIM, eTimCh1, val_us);

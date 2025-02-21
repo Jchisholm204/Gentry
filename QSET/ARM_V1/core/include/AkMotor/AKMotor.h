@@ -79,7 +79,7 @@ static inline void akMotor_pack(AkMotor_t *mtr, can_msg_t *msg){
     float v_des = akMotor_minmax(mtr->velocity, pCfg->vel_min, pCfg->vel_max);
     float kp = akMotor_minmax(mtr->kP, pCfg->kp_min, pCfg->kp_max);
     float kd = akMotor_minmax(mtr->kD, pCfg->kd_min, pCfg->kd_max);
-    float t_ff = akMotor_minmax(mtr->kF, pCfg->trq_min, pCfg->trq_min);
+    float t_ff = akMotor_minmax(mtr->kF, pCfg->trq_min, pCfg->trq_max);
 
     /// convert floats to unsigned ints ///
     uint32_t p_int = akMotor_toInt(p_des, pCfg->pos_min, pCfg->pos_max, 16);
