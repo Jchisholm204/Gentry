@@ -45,6 +45,11 @@ enum DMA_MEM_SIZE {
     DMA_MEM_SIZE_32 = 2
 };
 
+enum DMA_ERROR {
+    DMA_ERROR_OK,
+    DMA_ERROR_INVALID_ARG,
+};
+
 /**
  * @brief Initialize the DMA peripheral
  * 
@@ -56,16 +61,14 @@ enum DMA_MEM_SIZE {
  * @param periph_addr Peripheral Address
  * @param mem_addr Memory Address
  */
-
-
-static inline enum SYS_ERROR hal_dma_init(DMA_TypeDef *dma, DMA_Stream_TypeDef *stream, enum DMA_CHANNEL ch, enum DMA_PRIORITY priority, enum DMA_MEM_SIZE mem_size, volatile void *periph_addr, void *mem_addr, size_t num_transfers) {
+static inline enum DMA_ERROR hal_dma_init(DMA_TypeDef *dma, DMA_Stream_TypeDef *stream, enum DMA_CHANNEL ch, enum DMA_PRIORITY priority, enum DMA_MEM_SIZE mem_size, volatile void *periph_addr, void *mem_addr, size_t num_transfers) {
     // Enable DMA Clock
     if (dma == DMA1) {
         RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
     } else if (dma == DMA2) {
         RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
     } else {
-        return SYS_INVALID_ARG;
+        return DMA_ERROR_INVALID_ARG;
     }
 
     /**             DMA Stream Setup            **/
@@ -97,7 +100,7 @@ static inline enum SYS_ERROR hal_dma_init(DMA_TypeDef *dma, DMA_Stream_TypeDef *
     DMA2_Stream0->PAR = (uint32_t)(periph_addr);
     DMA2_Stream0->M0AR = (uint32_t)(mem_addr);
 
-    return SYS_OK;
+    return DMA_ERROR_OK;
 }
 
 /**

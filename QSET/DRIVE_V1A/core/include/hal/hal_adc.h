@@ -75,9 +75,8 @@ enum ADC_SEQUENCE {
  * 
  * @param adc The ADC to Initialize
  * @param resolution The resolution of the ADC (in bits)
- * @returns An Error or SYS_OK 
  */
-static inline enum SYS_ERROR hal_adc_init(ADC_TypeDef *adc, enum ADC_RESOLUTION resolution){
+static inline void hal_adc_init(ADC_TypeDef *adc, enum ADC_RESOLUTION resolution){
     if(adc == ADC1) SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC1EN);
     if(adc == ADC2) SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC2EN);
     if(adc == ADC3) SET_BIT(RCC->APB2ENR, RCC_APB2ENR_ADC3EN);
@@ -125,8 +124,6 @@ static inline enum SYS_ERROR hal_adc_init(ADC_TypeDef *adc, enum ADC_RESOLUTION 
 
     // Leave ADC Off
     CLEAR_BIT(adc->CR2, ADC_CR2_ADON);
-
-    return SYS_OK;
 }
 
 /**
