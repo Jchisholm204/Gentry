@@ -88,7 +88,8 @@ struct udev_pkt_cbom_ctrl {
 //  From Device to Host
 //  Must be less than 0x40 in length
 struct udev_pkt_cbom_sts {
-    // Camera Boom has no status information
+    uint8_t len;
+    uint8_t buf[0x20];
 } __attribute__((packed));
 
 struct udev_pkt_sens_ctrl {

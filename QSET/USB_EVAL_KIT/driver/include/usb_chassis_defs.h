@@ -54,6 +54,7 @@ enum eChassisADC{
     eDrvADC2,
     eDrvADC3,
     eDrvADC4,
+    eDrvADC_Temp,
     eN_DrvADC
 };
 
