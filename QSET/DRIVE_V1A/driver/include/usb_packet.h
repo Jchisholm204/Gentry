@@ -3,7 +3,7 @@
  * @author Jacob Chisholm (Jchisholm204.github.io)
  * @brief USB Packet Declarations
  * @version 0.1
- * @date 2025-01-12
+ * @date 2025-02-14
  * 
  * @copyright Copyright (c) 2023
  *
@@ -18,24 +18,20 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include "usb_arm_defs.h"
+#include "usb_chassis_defs.h"
 #include "usb_dev.h"
 
-enum ePktType{
-    ePktTypeReset,
-    ePktTypeMtr,
-    ePktTypeSrvo,
-    ePktTypeGrip,
+struct udev_status {
+    // Status code given by the enum
+    // enum eDrvStatus code;
+    uint8_t code;
+    // Extra information could be:
+    //  - Error code from the motor
+    //  - number of the motor that failed initialization
+    uint8_t value;
 };
 
-struct udev_pkt_hdr {
-    // Packet Type ENUM
-    uint8_t pkt_typ;
-    // Motor or Servo ID
-    uint8_t ctrl_typ;
-} __attribute__((packed));
-
-// Motor Control Structure
+// Motor Control Structure (Same as ARM)
 struct udev_mtr_ctrl {
     // Motor Position Command
     float position;
@@ -47,31 +43,7 @@ struct udev_mtr_ctrl {
     uint8_t enable;
 } __attribute__((packed));
 
-
-// Control Packet:
-//  From Host to Device
-//  Must be less than 0x40 in length
-struct udev_pkt_ctrl {
-    struct udev_pkt_hdr hdr;
-    union{
-        int8_t  grip_ctrl;
-        uint32_t servo_ctrl;
-        // CAN Bus Motor Control
-        struct udev_mtr_ctrl mtr_ctrl;
-    };
-} __attribute__((packed));
-
-struct udev_status {
-    // Status code given by the enum
-    // enum eArmStatus code;
-    uint8_t code;
-    // Extra information could be:
-    //  - Error code from the motor
-    //  - number of the motor that failed initialization
-    uint8_t value;
-};
-
-// Motor Control Structure
+// Motor Control Info Structure (Same as ARM)
 struct udev_mtr_info {
     // Motor Temperature (in C)
     uint8_t temp;
@@ -83,21 +55,61 @@ struct udev_mtr_info {
     float velocity;
 } __attribute__((packed));
 
-// Status Packet:
-//  From Device to Host
+
+// Drive Motor + Auto Lights Packet:
+//  From Host to Device
 //  Must be less than 0x40 in length
-struct udev_pkt_status {
-    // Device Status
-    struct udev_status status;
-    // Each bit represents a limit switch that is open (0) or closed (1)
-    uint8_t limit_sw;
-    // Motor Control Response Information
-    struct udev_mtr_info mtr[ARM_N_MOTORS];
+struct udev_pkt_drvm_ctrl {
+    uint8_t mtr_id;
+    // Lower three bits are RGB
+    uint8_t light_ctrl;
+    struct udev_mtr_ctrl mtr_ctrl;
 } __attribute__((packed));
 
+// Drive Motor + Auto Lights Packet:
+//  From Device to Host
+//  Must be less than 0x40 in length
+struct udev_pkt_drvm_sts {
+    // Device Status
+    struct udev_status   status;
+    struct udev_mtr_info mtr_info[eN_DrvMotor];
+} __attribute__((packed));
+
+
+// Servo Interface Packet:
+//  From Host to Device
+//  Must be less than 0x40 in length
+struct udev_pkt_srvo_ctrl {
+    uint8_t  srvo_id;
+    uint32_t srvo_ctrl;
+} __attribute__((packed));
+
+// Servo Interface Packet:
+//  From Device to Host
+//  Must be less than 0x40 in length
+struct udev_pkt_srvo_sts {
+    uint8_t len;
+    uint8_t buf[0x20];
+    float   core_temp;
+} __attribute__((packed));
+
+struct udev_pkt_sens_ctrl {
+    // Sensors have no controllable values
+}  __attribute__((packed));
+
+struct udev_pkt_sens_sts {
+    uint32_t  adc_vals[eN_DrvADC];
+    float     adc_volts[eN_DrvADC];
+}  __attribute__((packed));
+
+
 // USB Packets must be less than 0x40/64 bytes in length
-// static_assert(sizeof(struct udev_pkt_ctrl) <= CTRL_DATA_SZ, "USBD Control Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_status) <= CTRL_DATA_SZ, "USBD Status Packet Oversize");
+static_assert(sizeof(struct udev_pkt_drvm_ctrl) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
+static_assert(sizeof(struct udev_pkt_drvm_sts) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
+static_assert(sizeof(struct udev_pkt_srvo_ctrl) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
+static_assert(sizeof(struct udev_pkt_srvo_sts) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
+static_assert(sizeof(struct udev_pkt_sens_ctrl) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
+static_assert(sizeof(struct udev_pkt_sens_sts) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
 
 #endif
 

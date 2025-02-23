@@ -20,7 +20,7 @@
 void mtrCtrl_task(void *pvParams);
 
 
-void mtrCtrl_init(mtrCtrlHndl_t * const pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id){
+void mtrCtrl_init(mtrCtrlHndl_t * const pHndl, enum eDrvMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id){
     // Setup the Motor Information
     pHndl->mtr_id = mtr_id;
     // Forcefully modify the mtr_type parameter

@@ -83,8 +83,6 @@ struct udev_config {
     struct usb_endpoint_descriptor      sens_eptx;
 } __attribute__((packed));
 
-static int bs = sizeof(struct udev_config);
-
 extern void udev_applydesc(usbd_device *dev);
 
 // USB Device Descriptor - Used in bus enumeration

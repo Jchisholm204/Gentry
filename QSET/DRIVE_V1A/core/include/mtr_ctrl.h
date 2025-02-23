@@ -32,7 +32,7 @@
  */
 typedef struct _mtrCtrlHndl {
     // Motor Identifier
-    enum eArmMotors mtr_id;
+    enum eDrvMotors mtr_id;
     // AK Motor
     AkMotor_t akMtr;
     // USB Device Packet Data
@@ -53,7 +53,7 @@ typedef struct _mtrCtrlHndl {
  * @param mtr_typ Type of the motor to control
  * @param can_id CAN ID of the motor to control
  */
-void mtrCtrl_init(mtrCtrlHndl_t *const pHndl, enum eArmMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id);
+void mtrCtrl_init(mtrCtrlHndl_t *const pHndl, enum eDrvMotors mtr_id, enum AKMotorType mtr_typ, uint32_t can_id);
 
 /**
  * @brief Update the USB Control Packet

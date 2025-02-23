@@ -23,7 +23,7 @@
 #include "systime.h"
 
 // USB Device Includes
-#include "usb_arm_defs.h"
+#include "usb_chassis_defs.h"
 #include "drivers/stusb/usb.h"
 #include "usb_desc.h"
 
@@ -185,9 +185,9 @@ static void srvo_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
 // Triggered during Control Interface events
 static void srvo_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx)
-        drvm_rx(dev, evt, ep);
+        srvo_rx(dev, evt, ep);
     else
-        drvm_tx(dev, evt, ep);
+        srvo_tx(dev, evt, ep);
 }
 
 // Triggered when the USB Host provides data to the SRVO interface
@@ -209,9 +209,9 @@ static void sens_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
 // Triggered during Control Interface events
 static void sens_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx)
-        drvm_rx(dev, evt, ep);
+        sens_rx(dev, evt, ep);
     else
-        drvm_tx(dev, evt, ep);
+        sens_tx(dev, evt, ep);
 }
 
 
