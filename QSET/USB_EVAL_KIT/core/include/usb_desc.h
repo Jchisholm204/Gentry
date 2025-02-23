@@ -31,7 +31,7 @@ static const struct usb_string_descriptor lang_desc     = USB_ARRAY_DESC(USB_LAN
 // Vendor Description - Sent to host as a string, displays with `lsusb`
 static const struct usb_string_descriptor manuf_desc_en = USB_STRING_DESC("QSET USB");
 // Device Description - Shows up next to vendor description
-static const struct usb_string_descriptor prod_desc_en  = USB_STRING_DESC("ARM CTRL");
+static const struct usb_string_descriptor prod_desc_en  = USB_STRING_DESC("CHASSIS CTRL");
 
 // USB Device String Table - used to return the device description
 static const struct usb_string_descriptor *const dtable[] = {

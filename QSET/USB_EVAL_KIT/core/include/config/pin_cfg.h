@@ -18,7 +18,8 @@
 
 // Define the board to use
 // #define BOARD_MOCKECU
-#define BOARD_ARMV1
+// #define BOARD_ARMV1
+#define BOARD_CHASSISV1
 
 #if defined(BOARD_MOCKECU)
     #include "config/boards/mockecu.h"
@@ -26,6 +27,8 @@
     #include "config/boards/nucleoze.h"
 #elif defined(BOARD_ARMV1)
     #include "config/boards/armv1.h"
+#elif defined(BOARD_CHASSISV1)
+    #include "config/boards/chassisv1.h"
 #endif
 
 #ifndef _BOARD_CONFIG_

@@ -25,7 +25,7 @@
 
 #define UDEV_INTERFACES  0x06
 
-// Drive Motor + Auto Lights Interface
+// Drive Interface
 #define DRVM_RXD_EP      0x01
 #define DRVM_TXD_EP      0x81
 #define DRVM_DATA_SZ     0x40

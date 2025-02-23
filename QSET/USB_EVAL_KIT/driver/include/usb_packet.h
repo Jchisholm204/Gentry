@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 #include <assert.h>
-#include "usb_drv_defs.h"
+#include "usb_chassis_defs.h"
 #include "usb_dev.h"
 
 struct udev_status {

@@ -28,24 +28,28 @@ enum eDrvMotors {
     eN_DrvMotor
 };
 
-enum eDrvServo {
+enum eChassisServo {
     eServo1,
     eServo2,
     eServo3,
     eServo4,
     eServo5,
     eServo6,
+    eServo7,
+    eServo8,
     eN_Servo
 };
 
 // Bit mappings for the LED Outputs
 enum eDrvLights {
-    eDrvLight_R = 0x01,
-    eDrvLight_G = 0x02,
-    eDrvLight_B = 0x04,
+    eDrvLight_R  = 0x01,
+    eDrvLight_G  = 0x02,
+    eDrvLight_B  = 0x04,
+    eDrvLight_ON = 0x07,
+    eDrvLight_OF = 0x00,
 };
 
-enum eDrvADC{
+enum eChassisADC{
     eDrvADC1,
     eDrvADC2,
     eDrvADC3,
