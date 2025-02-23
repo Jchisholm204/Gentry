@@ -172,7 +172,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = DRVM_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
         .wMaxPacketSize         = DRVM_NTF_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .drvm_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
@@ -191,7 +191,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = DRVM_TXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = DRVM_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .drvm_eprx= {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
@@ -199,7 +199,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = DRVM_RXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = DRVM_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
 
     .cbom_iad = {
@@ -256,7 +256,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = CBOM_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
         .wMaxPacketSize         = CBOM_NTF_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .cbom_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
@@ -275,7 +275,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = CBOM_TXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = CBOM_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .cbom_eprx = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
@@ -283,7 +283,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = CBOM_RXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = CBOM_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
 
     .sens_iad = {
@@ -340,7 +340,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = SENS_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
         .wMaxPacketSize         = SENS_NTF_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .sens_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
@@ -359,7 +359,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = SENS_TXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = SENS_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
     .sens_eprx = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
@@ -367,7 +367,7 @@ static const struct udev_config config_desc = {
         .bEndpointAddress       = SENS_RXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
         .wMaxPacketSize         = SENS_DATA_SZ,
-        .bInterval              = 0x01,
+        .bInterval              = 0xFF,
     },
 };
 
