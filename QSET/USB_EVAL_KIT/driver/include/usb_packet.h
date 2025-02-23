@@ -71,41 +71,43 @@ struct udev_pkt_drvm_ctrl {
 //  Must be less than 0x40 in length
 struct udev_pkt_drvm_sts {
     // Device Status
-    struct udev_status status;
+    struct udev_status   status;
     struct udev_mtr_info mtr_info[eN_DrvMotor];
 } __attribute__((packed));
 
 
-// Camera Boom Interface Packet:
+// Servo Interface Packet:
 //  From Host to Device
 //  Must be less than 0x40 in length
-struct udev_pkt_cbom_ctrl {
-    uint8_t srvo_id;
+struct udev_pkt_srvo_ctrl {
+    uint8_t  srvo_id;
     uint32_t srvo_ctrl;
 } __attribute__((packed));
 
-// Camera Boom Interface Packet:
+// Servo Interface Packet:
 //  From Device to Host
 //  Must be less than 0x40 in length
-struct udev_pkt_cbom_sts {
+struct udev_pkt_srvo_sts {
     uint8_t len;
     uint8_t buf[0x20];
+    float   core_temp;
 } __attribute__((packed));
 
 struct udev_pkt_sens_ctrl {
-    // Camera Boom has no controllable values
+    // Sensors have no controllable values
 }  __attribute__((packed));
 
 struct udev_pkt_sens_sts {
-    uint32_t adc_vals[eN_DrvADC];
+    uint32_t  adc_vals[eN_DrvADC];
+    float     adc_volts[eN_DrvADC];
 }  __attribute__((packed));
 
 
 // USB Packets must be less than 0x40/64 bytes in length
 static_assert(sizeof(struct udev_pkt_drvm_ctrl) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
 static_assert(sizeof(struct udev_pkt_drvm_sts) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
-static_assert(sizeof(struct udev_pkt_cbom_ctrl) <= CBOM_DATA_SZ, "USBD CBOM Packet Oversize");
-static_assert(sizeof(struct udev_pkt_cbom_sts) <= CBOM_DATA_SZ, "USBD CBOM Packet Oversize");
+static_assert(sizeof(struct udev_pkt_srvo_ctrl) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
+static_assert(sizeof(struct udev_pkt_srvo_sts) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
 static_assert(sizeof(struct udev_pkt_sens_ctrl) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
 static_assert(sizeof(struct udev_pkt_sens_sts) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
 

@@ -34,14 +34,14 @@
 #define DRVM_NTF_INUM    0x00
 #define DRVM_DATA_INUM   0x01
 
-// Camera Boom Interface
-#define CBOM_RXD_EP      0x03
-#define CBOM_TXD_EP      0x83
-#define CBOM_DATA_SZ     0x40
-#define CBOM_NTF_EP      0x84
-#define CBOM_NTF_SZ      0x08
-#define CBOM_NTF_INUM    0x02
-#define CBOM_DATA_INUM   0x03
+// Servo Interface
+#define SRVO_RXD_EP      0x03
+#define SRVO_TXD_EP      0x83
+#define SRVO_DATA_SZ     0x40
+#define SRVO_NTF_EP      0x84
+#define SRVO_NTF_SZ      0x08
+#define SRVO_NTF_INUM    0x02
+#define SRVO_DATA_INUM   0x03
 
 // ADC + Sensor Data Interface
 #define SENS_RXD_EP      0x03
