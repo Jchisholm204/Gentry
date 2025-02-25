@@ -131,6 +131,9 @@ void vTskUSB(void *pvParams){
     for(;;){
         systime_fromTicks(xTaskGetTickCount(), &time);
         // int stlen = strlen(time.str);
+        memcpy(srvo_sts.buf, time.str, SYSTIME_STR_LEN);
+        srvo_sts.len = SYSTIME_STR_LEN;
+        srvo_sts.core_temp = 0.0;
         gpio_toggle_pin(PIN_LED1);
         gpio_toggle_pin(PIN_LED2);
         vTaskDelay(1000);
@@ -258,8 +261,13 @@ static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
         usbd_reg_endpoint(dev, DRVM_TXD_EP, drvm_rxtx);
         usbd_reg_endpoint(dev, SRVO_RXD_EP, srvo_rxtx);
         usbd_reg_endpoint(dev, SRVO_TXD_EP, srvo_rxtx);
-        usbd_reg_endpoint(dev, SENS_RXD_EP, sens_rxtx);
-        usbd_reg_endpoint(dev, SENS_TXD_EP, sens_rxtx);
+        // usbd_reg_endpoint(dev, SENS_RXD_EP, sens_rxtx);
+        // usbd_reg_endpoint(dev, SENS_TXD_EP, sens_rxtx);
+
+        // usbd_reg_endpoint(dev, DRVM_RXD_EP, srvo_rxtx);
+        // usbd_reg_endpoint(dev, DRVM_TXD_EP, srvo_rxtx);
+        usbd_reg_endpoint(dev, SENS_RXD_EP, srvo_rxtx);
+        usbd_reg_endpoint(dev, SENS_TXD_EP, srvo_rxtx);
 
         usbd_ep_write(dev, DRVM_TXD_EP, 0, 0);
         usbd_ep_write(dev, SRVO_TXD_EP, 0, 0);
