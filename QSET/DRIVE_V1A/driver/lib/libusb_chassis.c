@@ -1,15 +1,15 @@
 /**
- * @file libusb_arm.c
+ * @file libusb_chassis.c
  * @author Jacob Chisholm (Jchisholm204.github.io)
- * @brief USB Interface Library for QSET Arm
+ * @brief USB Interface Library for QSET Chassis Control Board
  * @version 0.1
- * @date 2025-01-25
+ * @date 2025-02-24
  * 
  * @copyright Copyright (c) 2023
  *
  *
  */
-#include "libusb_arm.h"
+#include "libusb_chassis.h"
 #include <unistd.h>
 #include <memory.h>
 
@@ -50,11 +50,12 @@ int is_device_connected(libusb_context *ctx) {
     return found; // 1 if device is connected, 0 otherwise
 }
 
-int armDev_init(armDev_t *pDev){
+int chassisDev_init(chassisDev_t *pDev){
     pDev->lusb_ctx = NULL;
     pDev->lusb_devHndl = NULL;
-    memset(&pDev->pkt_status, 0, sizeof(struct udev_pkt_status));
-    memset(&pDev->pkt_mtr, 0, sizeof(struct udev_mtr_ctrl)*ARM_N_MOTORS);
+    memset(&pDev->drvm_sts, 0, sizeof(struct udev_pkt_drvm_sts));
+    memset(&pDev->srvo_sts, 0, sizeof(struct udev_pkt_drvm_sts));
+    memset(&pDev->sens_sts, 0, sizeof(struct udev_pkt_drvm_sts));
     int res = 0;
     res = libusb_init(&pDev->lusb_ctx);
     if(res != 0){
@@ -93,7 +94,7 @@ int armDev_init(armDev_t *pDev){
     return 0;
 }
 
-int armDev_reconnect(armDev_t *pDev) {
+int chassisDev_reconnect(chassisDev_t *pDev) {
     while (1) {
         // Attempt to reconnect
         pDev->lusb_devHndl = libusb_open_device_with_vid_pid(pDev->lusb_ctx, VENDOR_ID, DEVICE_ID);
@@ -108,7 +109,7 @@ int armDev_reconnect(armDev_t *pDev) {
     }
 }
 
-int armDev_get(armDev_t *pDev){
+int chassisDev_get(chassisDev_t *pDev){
     // Receive data
     int transferred;
     int res = libusb_bulk_transfer(pDev->lusb_devHndl, CTRL_TXD_EP, (unsigned char *)&pDev->pkt_status, sizeof(struct udev_pkt_status), &transferred, 0);
@@ -119,7 +120,7 @@ int armDev_get(armDev_t *pDev){
     return transferred;
 }
 
-int armdev_send(armDev_t *pDev, struct udev_pkt_ctrl *pPkt){
+int chassisdev_send(chassisDev_t *pDev, struct udev_pkt_ctrl *pPkt){
     int res = 0, transferred;
     // Send data
     res = libusb_bulk_transfer(pDev->lusb_devHndl, CTRL_RXD_EP, (unsigned char *)pPkt, sizeof(struct udev_pkt_ctrl), &transferred, 0);
@@ -127,49 +128,49 @@ int armdev_send(armDev_t *pDev, struct udev_pkt_ctrl *pPkt){
     return res;
 }
 
-uint8_t armDev_getLS(armDev_t *pDev){
-    (void)armDev_get(pDev);
+uint8_t chassisDev_getLS(chassisDev_t *pDev){
+    (void)chassisDev_get(pDev);
     return pDev->pkt_status.limit_sw;
 }
 
-struct udev_mtr_info *armDev_getMtrInfo(armDev_t *pDev, enum eArmMotors mtr){
-    (void)armDev_get(pDev);
+struct udev_mtr_info *chassisDev_getMtrInfo(chassisDev_t *pDev, enum eArmMotors mtr){
+    (void)chassisDev_get(pDev);
     return &pDev->pkt_status.mtr[mtr];
 }
 
-struct udev_pkt_status *armDev_getStatusPkt(armDev_t *pDev){
-    (void)armDev_get(pDev);
+struct udev_pkt_status *chassisDev_getStatusPkt(chassisDev_t *pDev){
+    (void)chassisDev_get(pDev);
     return &pDev->pkt_status;
 }
 
-int armDev_setServo(armDev_t *pDev, enum eArmServos servo, uint32_t val_us){
+int chassisDev_setServo(chassisDev_t *pDev, enum eArmServos servo, uint32_t val_us){
     struct udev_pkt_ctrl ctrl;
     ctrl.hdr.pkt_typ = ePktTypeSrvo;
     ctrl.hdr.ctrl_typ = (uint8_t)servo;
     ctrl.servo_ctrl = val_us;
-    return armdev_send(pDev, &ctrl);
+    return chassisdev_send(pDev, &ctrl);
 }
 
-int armDev_setMtr(armDev_t *pDev, enum eArmMotors mtr, struct udev_mtr_ctrl *pVals){
+int chassisDev_setMtr(chassisDev_t *pDev, enum eArmMotors mtr, struct udev_mtr_ctrl *pVals){
     if(pVals == NULL) return -1;
     struct udev_pkt_ctrl ctrl;
     ctrl.hdr.pkt_typ = ePktTypeMtr;
     ctrl.hdr.ctrl_typ = (uint8_t)mtr;
     memcpy(&ctrl.mtr_ctrl, pVals, sizeof(struct udev_mtr_ctrl));
     memcpy(&pDev->pkt_mtr[mtr], pVals, sizeof(struct udev_mtr_ctrl));
-    return armdev_send(pDev, &ctrl);
+    return chassisdev_send(pDev, &ctrl);
 
 }
 
-int armDev_setGripper(armDev_t *pDev, int8_t val){
+int chassisDev_setGripper(chassisDev_t *pDev, int8_t val){
     struct udev_pkt_ctrl ctrl;
     ctrl.hdr.pkt_typ = ePktTypeGrip;
     ctrl.hdr.ctrl_typ = 0;
     ctrl.grip_ctrl = val;
-    return armdev_send(pDev, &ctrl);
+    return chassisdev_send(pDev, &ctrl);
 }
 
-int armDev_updateMtr(armDev_t *pDev, enum eArmMotors mtr, float pos, float vel){
+int chassisDev_updateMtr(chassisDev_t *pDev, enum eArmMotors mtr, float pos, float vel){
     pDev->pkt_mtr[mtr].position = pos;
     pDev->pkt_mtr[mtr].velocity = vel;
 
@@ -177,14 +178,14 @@ int armDev_updateMtr(armDev_t *pDev, enum eArmMotors mtr, float pos, float vel){
     ctrl.hdr.pkt_typ = ePktTypeMtr;
     ctrl.hdr.ctrl_typ = (uint8_t)mtr;
     memcpy(&ctrl.mtr_ctrl, &pDev->pkt_mtr[mtr], sizeof(struct udev_mtr_ctrl));
-    return armdev_send(pDev, &ctrl);
+    return chassisdev_send(pDev, &ctrl);
 }
 
-const char *armDev_getErr(armDev_t *pDev){
+const char *chassisDev_getErr(chassisDev_t *pDev){
     return libusb_error_name(pDev->err);
 }
 
-int armDev_free(armDev_t *pDev){
+int chassisDev_free(chassisDev_t *pDev){
     // Release interface and close device
     libusb_release_interface(pDev->lusb_devHndl, CTRL_DATA_INUM);
     libusb_close(pDev->lusb_devHndl);

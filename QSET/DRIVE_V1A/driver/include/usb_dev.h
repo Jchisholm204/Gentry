@@ -44,13 +44,13 @@
 #define SRVO_DATA_INUM   0x03
 
 // ADC + Sensor Data Interface
-#define SENS_RXD_EP      0x03
-#define SENS_TXD_EP      0x83
+#define SENS_RXD_EP      0x05
+#define SENS_TXD_EP      0x85
 #define SENS_DATA_SZ     0x40
-#define SENS_NTF_EP      0x84
+#define SENS_NTF_EP      0x86
 #define SENS_NTF_SZ      0x08
-#define SENS_NTF_INUM    0x02
-#define SENS_DATA_INUM   0x03
+#define SENS_NTF_INUM    0x04
+#define SENS_DATA_INUM   0x05
 
 // USB Device Vendor ID:
 //  Use 0xFFFF or 0xFFFE as designated by the USBIF,

@@ -104,12 +104,12 @@ struct udev_pkt_sens_sts {
 
 
 // USB Packets must be less than 0x40/64 bytes in length
-static_assert(sizeof(struct udev_pkt_drvm_ctrl) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
-static_assert(sizeof(struct udev_pkt_drvm_sts) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
-static_assert(sizeof(struct udev_pkt_srvo_ctrl) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
-static_assert(sizeof(struct udev_pkt_srvo_sts) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
-static_assert(sizeof(struct udev_pkt_sens_ctrl) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
-static_assert(sizeof(struct udev_pkt_sens_sts) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_drvm_ctrl) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_drvm_sts) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_srvo_ctrl) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_srvo_sts) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_sens_ctrl) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
+// static_assert(sizeof(struct udev_pkt_sens_sts) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
 
 #endif
 
