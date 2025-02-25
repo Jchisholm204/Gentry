@@ -42,11 +42,12 @@ enum eChassisServo {
 
 // Bit mappings for the LED Outputs
 enum eDrvLights {
-    eDrvLight_R  = 0x01,
-    eDrvLight_G  = 0x02,
-    eDrvLight_B  = 0x04,
-    eDrvLight_ON = 0x07,
-    eDrvLight_OF = 0x00,
+    eDrvLight_R1  = 0x01,
+    eDrvLight_R0  = 0x02,
+    eDrvLight_G1  = 0x04,
+    eDrvLight_G0  = 0x08,
+    eDrvLight_B0  = 0x10,
+    eDrvLight_B1  = 0x20,
 };
 
 enum eChassisADC{
@@ -67,7 +68,7 @@ enum eDrvStatus {
     // A bus or task has stalled triggering the watchdog (will self resolve in time)
     eDrvStall,
     // A motor has failed to respond in a timely manner
-    eDrvMtrFail,
+    eDrvMtrFail
 };
 
 #endif

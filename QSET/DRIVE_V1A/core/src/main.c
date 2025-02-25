@@ -1,8 +1,8 @@
 /**
  * @file main.c
  * @author Jacob Chisholm (https://jchisholm.github.io) //
- * @brief QSET USB Arm Control Board
- * @date 2025-01-19
+ * @brief QSET USB Chassis Control Board
+ * @date 2025-02-24
  * @version 2.2
  * 
  */
@@ -30,6 +30,7 @@
 #include "mtr_ctrl.h"
 #include "test_tsks.h"
 #include "srv_ctrl.h"
+#include "light_ctrl.h"
 
 #define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
@@ -85,6 +86,9 @@ void Init(void){
     can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
 
+    // Initialize the Auto Light Control
+    lightCtrl_init();
+
     // Initialize the PWM Timer for the servos
     // DO NOT CHANGE THESE VALUES - They work for us control
     srvCtrl_init((PLL_N/PLL_P)-1, 9999);
@@ -112,9 +116,9 @@ void Init(void){
     // Initialize the motor control Tasks
     //           Motor Control Handle,  Joint ID, AK Mtr Type, CAN ID
     mtrCtrl_init(&mtrControllers[eDrvMtrFL], eDrvMtrFL, eAK7010, 10);
-    // mtrCtrl_init(&mtrControllers[eJoint2], eJoint2, eAK7010, 0x124);
-    // mtrCtrl_init(&mtrControllers[eJoint3], eJoint3, eAK7010, 0x125);
-    // mtrCtrl_init(&mtrControllers[eJoint4], eJoint4, eAK7010, 0x126);
+    mtrCtrl_init(&mtrControllers[eDrvMtrFR], eDrvMtrFR, eAK7010, 11);
+    mtrCtrl_init(&mtrControllers[eDrvMtrBL], eDrvMtrBL, eAK7010, 12);
+    mtrCtrl_init(&mtrControllers[eDrvMtrBR], eDrvMtrBR, eAK7010, 13);
 }
 
 void vTskUSB(void *pvParams){
@@ -141,6 +145,7 @@ static void drvm_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     enum eDrvMotors mtr_id = (enum eDrvMotors)drvm_ctrl.mtr_id;
     if(mtr_id >= eN_DrvMotor) return;
     mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&drvm_ctrl.mtr_ctrl);
+    lightCtrl_pkt(drvm_ctrl.light_ctrl);
 }
 
 // Triggered when the USB Host requests data from the DRVM interface

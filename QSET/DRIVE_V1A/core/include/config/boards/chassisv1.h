@@ -16,9 +16,9 @@
 
 
 // LED Pins
-#define PIN_LED1      PIN('C', 8)
-#define PIN_LED2      PIN('C', 9)
-#define PIN_LED3      PIN('A', 8)
+#define PIN_LED1      PIN('C', 6)
+#define PIN_LED2      PIN('C', 7)
+#define PIN_LED3      PIN('C', 8)
 
 #define PIN_LEDR      PIN('C', 13)
 #define PIN_LEDG      PIN('C', 14)
