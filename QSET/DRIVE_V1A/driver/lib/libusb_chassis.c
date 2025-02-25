@@ -50,6 +50,31 @@ int is_device_connected(libusb_context *ctx) {
     return found; // 1 if device is connected, 0 otherwise
 }
 
+int dev_init(chassisDev_t *pDev, int inum){
+    int res = 0;
+    // Detach kernel driver if necessary
+    if (libusb_kernel_driver_active(pDev->lusb_devHndl, inum) == 1) {
+        res = libusb_detach_kernel_driver(pDev->lusb_devHndl, inum);
+        if (res != 0) {
+            pDev->err = res;
+            libusb_close(pDev->lusb_devHndl);
+            libusb_exit(pDev->lusb_ctx);
+            return 1;
+        }
+    }
+
+    // Claim the correct interface
+    res = libusb_claim_interface(pDev->lusb_devHndl, inum);
+    if (res != 0) {
+        pDev->err = res;
+        libusb_close(pDev->lusb_devHndl);
+        libusb_exit(pDev->lusb_ctx);
+        return 1;
+    }
+    return res;
+}
+
+
 int chassisDev_init(chassisDev_t *pDev){
     pDev->lusb_ctx = NULL;
     pDev->lusb_devHndl = NULL;
@@ -72,25 +97,11 @@ int chassisDev_init(chassisDev_t *pDev){
         return -2;
     }
 
-    // Detach kernel driver if necessary
-    if (libusb_kernel_driver_active(pDev->lusb_devHndl, CTRL_DATA_INUM) == 1) {
-        res = libusb_detach_kernel_driver(pDev->lusb_devHndl, CTRL_DATA_INUM);
-        if (res != 0) {
-            pDev->err = res;
-            libusb_close(pDev->lusb_devHndl);
-            libusb_exit(pDev->lusb_ctx);
-            return 1;
-        }
-    }
+    // Open the device interfaces
+    dev_init(pDev, DRVM_DATA_INUM);
+    dev_init(pDev, SRVO_DATA_INUM);
+    dev_init(pDev, SENS_DATA_INUM);
 
-    // Claim the correct interface
-    res = libusb_claim_interface(pDev->lusb_devHndl, CTRL_DATA_INUM);
-    if (res != 0) {
-        pDev->err = res;
-        libusb_close(pDev->lusb_devHndl);
-        libusb_exit(pDev->lusb_ctx);
-        return 1;
-    }
     return 0;
 }
 
@@ -100,10 +111,9 @@ int chassisDev_reconnect(chassisDev_t *pDev) {
         pDev->lusb_devHndl = libusb_open_device_with_vid_pid(pDev->lusb_ctx, VENDOR_ID, DEVICE_ID);
         if (pDev->lusb_devHndl) {
             // Re-initialize the device
-            if (libusb_kernel_driver_active(pDev->lusb_devHndl, CTRL_DATA_INUM) == 1) {
-                libusb_detach_kernel_driver(pDev->lusb_devHndl, CTRL_DATA_INUM);
-            }
-            pDev->err = libusb_claim_interface(pDev->lusb_devHndl, CTRL_DATA_INUM);
+            dev_init(pDev, DRVM_DATA_INUM);
+            dev_init(pDev, SRVO_DATA_INUM);
+            dev_init(pDev, SENS_DATA_INUM);
             break; // Successfully reconnected
         }
     }

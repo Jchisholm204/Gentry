@@ -36,8 +36,6 @@ int chassisDev_init(chassisDev_t *pDev);
 // BLOCKING FUNCTION
 int chassisDev_reconnect(chassisDev_t *pDev);
 
-int chassisDev_get(chassisDev_t *pDev);
-
 struct udev_mtr_info *chassisDev_getMtrInfo(chassisDev_t *pDev, enum eDrvMotors mtr);
 
 int chassisDev_setLights(chassisDev_t *pDev, uint8_t vals);
