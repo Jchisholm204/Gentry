@@ -16,100 +16,137 @@
 #ifndef _USB_PACKET_H_
 #define _USB_PACKET_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <assert.h>
-#include "usb_chassis_defs.h"
+#include "usb_payload_defs.h"
 #include "usb_dev.h"
+
+enum ePktType {
+    ePktStepSetup,
+    ePktStepCtrl,
+    ePktStepInfo,
+    ePktLightCtrl,
+    ePktPWMCtrl,
+};
+
+struct udev_pkt_hdr {
+    uint8_t ePktType;
+} __attribute__((packed));
 
 struct udev_status {
     // Status code given by the enum
     // enum eDrvStatus code;
     uint8_t code;
-    // Extra information could be:
-    //  - Error code from the motor
-    //  - number of the motor that failed initialization
-    uint8_t value;
+    // Error Message Associated with the Code
+    char msg[16];
 };
 
-// Motor Control Structure (Same as ARM)
+// Setup Packet Structure for Stepper Motors
+struct udev_stepper_setup {
+    // 4 bits
+    uint8_t holdCurrent_mA;
+    // 4 bits
+    uint8_t runCurrent_mA;
+    // 4 bits
+    uint8_t hold_delay;
+} __attribute__((packed));
+
+// Control Packet Structure for Stepper Motors
+struct udev_stepper_ctrl {
+    // Speed to step at (signed, +/- SERVO_MAX_VEL)
+    int32_t speed;
+    // Position to step to
+    uint32_t position;
+} __attribute__((packed));
+
+// Info Structure from TMC2208
+struct udev_stepper_info {
+    // 24 bits signed
+    int32_t velocity;
+    // Coil Currents (16 bit unsigned)
+    uint16_t curA_mA;
+    uint16_t curB_mA;
+} __attribute__((packed));
+
+// Servo Control Structure 
+struct udev_servo_ctrl {
+    // PWM Channel to write to
+    uint8_t ePWMChannel;
+    // Value to write to the channel
+    uint32_t value;
+} __attribute__((packed));
+
+// Light Control Structure
+struct udev_light_ctrl {
+    // ePayloadLight to turn on
+    uint8_t eLightChannel;
+} __attribute__((packed));
+
+// PWM Motor Control Structure
 struct udev_mtr_ctrl {
-    // Motor Position Command
-    float position;
-    // Motor Velocity Command
-    float velocity;
-    // Motor Configuration Data
-    float kP, kI, kD, kF;
-    // Enable this Motor
-    uint8_t enable;
+    // Motor Channel to write to (ePayloadMotor)
+    uint8_t eMtrChannel;
+    // Power Value for Motor (signed, -127, 127)
+    int8_t  value;
 } __attribute__((packed));
 
-// Motor Control Info Structure (Same as ARM)
-struct udev_mtr_info {
-    // Motor Temperature (in C)
-    uint8_t temp;
-    // Motor Current in A/10
-    uint8_t current;
-    // Motor Position
-    float position;
-    // Motor Velocity
-    float velocity;
+// ADC Sensor Readings Structure
+struct udev_adc_info {
+    // ADC_13 Reading (V)
+    float ADC_13;
+    // Internal Temperature Reading (deg C)
+    float temp_internal;
 } __attribute__((packed));
 
+// BME680 Sensor Data Structure
+struct udev_bme_info {
+    // BME680 Reported Temperature Reading (deg C)
+    float temp;
+    // BME680 Reported Pressure (hPa)
+    float pressure;
+    // BME680 Reported Humidity (%RH)
+    float humidity;
+    // BME680 Reported Gas Resistance (Ohms)
+    float gas_resistance;
+} __attribute__((packed));
 
-// Drive Motor + Auto Lights Packet:
+// USB Device Control Packet
 //  From Host to Device
 //  Must be less than 0x40 in length
-struct udev_pkt_drvm_ctrl {
-    uint8_t mtr_id;
-    // Lower three bits are RGB
-    uint8_t light_ctrl;
-    struct udev_mtr_ctrl mtr_ctrl;
+struct udev_pkt_ctrl {
+    struct udev_pkt_hdr hdr;
+    union {
+        struct udev_stepper_setup stepSetp;
+        struct udev_stepper_ctrl  stepCtrl;
+        struct udev_servo_ctrl    servoCtrl;
+        struct udev_light_ctrl    lightCtrl;
+        struct udev_mtr_ctrl      mtrCtrl;
+    };
 } __attribute__((packed));
 
-// Drive Motor + Auto Lights Packet:
+// USB Device Info Packet:
 //  From Device to Host
 //  Must be less than 0x40 in length
-struct udev_pkt_drvm_sts {
-    // Device Status
-    struct udev_status   status;
-    struct udev_mtr_info mtr_info[eN_DrvMotor];
+struct udev_pkt_info {
+    struct udev_status status;
+    struct udev_stepper_info stepper1;
+    struct udev_stepper_info stepper2;
+    struct udev_adc_info     adc_info;
+    struct udev_bme_info     bme_info;
 } __attribute__((packed));
-
-
-// Servo Interface Packet:
-//  From Host to Device
-//  Must be less than 0x40 in length
-struct udev_pkt_srvo_ctrl {
-    uint8_t  srvo_id;
-    uint32_t srvo_ctrl;
-} __attribute__((packed));
-
-// Servo Interface Packet:
-//  From Device to Host
-//  Must be less than 0x40 in length
-struct udev_pkt_srvo_sts {
-    uint8_t len;
-    uint8_t buf[0x20];
-    float   core_temp;
-} __attribute__((packed));
-
-struct udev_pkt_sens_ctrl {
-    // Sensors have no controllable values
-}  __attribute__((packed));
-
-struct udev_pkt_sens_sts {
-    uint32_t  adc_vals[eN_DrvADC];
-    float     adc_volts[eN_DrvADC];
-}  __attribute__((packed));
 
 
 // USB Packets must be less than 0x40/64 bytes in length
-// static_assert(sizeof(struct udev_pkt_drvm_ctrl) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_drvm_sts) <= DRVM_DATA_SZ, "USBD DRVM Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_srvo_ctrl) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_srvo_sts) <= SRVO_DATA_SZ, "USBD SRVO Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_sens_ctrl) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
-// static_assert(sizeof(struct udev_pkt_sens_sts) <= SENS_DATA_SZ, "USBD SENS Packet Oversize");
+static_assert(sizeof(struct udev_pkt_ctrl) <= PYLD_DATA_SZ, "USBD Packet Oversize");
+static_assert(sizeof(struct udev_pkt_info) <= PYLD_DATA_SZ, "USBD Packet Oversize");
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

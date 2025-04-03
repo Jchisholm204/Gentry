@@ -1,7 +1,7 @@
 /**
  * @file srv_ctrl.h
  * @author Jacob Chisholm (https://jchisholm.github.io)
- * @brief QSET Servo Control - Chassis Control
+ * @brief QSET Servo Control - Payload Control
  * @date 2025-01-24
  * @version 1.0
  * 
@@ -11,7 +11,7 @@
 
 #include "hal/hal_tim_pwm.h"
 #include "config/pin_cfg.h"
-#include "usb_chassis_defs.h"
+#include "usb_payload_defs.h"
 
 static void srvCtrl_init(uint16_t pre, uint16_t arr){
     // Chassis Board uses several Timer Interfaces

@@ -13,6 +13,7 @@
 #ifndef _USB_DESCRIPTOR_H_
 #define _USB_DESCRIPTOR_H_
 
+#include <memory.h>
 #include "drivers/stusb/stm32_compat.h"
 #include "drivers/stusb/usb.h"
 #include "drivers/stusb/usb_cdc.h"
@@ -31,7 +32,7 @@ static const struct usb_string_descriptor lang_desc     = USB_ARRAY_DESC(USB_LAN
 // Vendor Description - Sent to host as a string, displays with `lsusb`
 static const struct usb_string_descriptor manuf_desc_en = USB_STRING_DESC("QSET USB");
 // Device Description - Shows up next to vendor description
-static const struct usb_string_descriptor prod_desc_en  = USB_STRING_DESC("CHASSIS SRVO");
+static const struct usb_string_descriptor prod_desc_en  = USB_STRING_DESC("PAYLOAD");
 
 // USB Device String Table - used to return the device description
 static const struct usb_string_descriptor *const dtable[] = {
@@ -46,41 +47,29 @@ struct udev_config {
     // General Device Attributes
     struct usb_config_descriptor        config;
 
-    // Drive Control Descriptors
-    struct usb_iad_descriptor           drvm_iad;
-    struct usb_interface_descriptor     drvm;
-    struct usb_cdc_header_desc          drvm_hdr;
-    struct usb_cdc_call_mgmt_desc       drvm_mgmt;
-    struct usb_cdc_acm_desc             drvm_acm;
-    struct usb_cdc_union_desc           drvm_union;
-    struct usb_endpoint_descriptor      drvm_ep;
-    struct usb_interface_descriptor     drvm_data;
-    struct usb_endpoint_descriptor      drvm_eprx;
-    struct usb_endpoint_descriptor      drvm_eptx;
+    // Payload Interface Descriptors
+    struct usb_iad_descriptor           pyld_iad;
+    struct usb_interface_descriptor     pyld;
+    struct usb_cdc_header_desc          pyld_hdr;
+    struct usb_cdc_call_mgmt_desc       pyld_mgmt;
+    struct usb_cdc_acm_desc             pyld_acm;
+    struct usb_cdc_union_desc           pyld_union;
+    struct usb_endpoint_descriptor      pyld_ep;
+    struct usb_interface_descriptor     pyld_data;
+    struct usb_endpoint_descriptor      pyld_eprx;
+    struct usb_endpoint_descriptor      pyld_eptx;
 
-    // Servo / Camera Boom Control Descriptors
-    struct usb_iad_descriptor           srvo_iad;
-    struct usb_interface_descriptor     srvo;
-    struct usb_cdc_header_desc          srvo_hdr;
-    struct usb_cdc_call_mgmt_desc       srvo_mgmt;
-    struct usb_cdc_acm_desc             srvo_acm;
-    struct usb_cdc_union_desc           srvo_union;
-    struct usb_endpoint_descriptor      srvo_ep;
-    struct usb_interface_descriptor     srvo_data;
-    struct usb_endpoint_descriptor      srvo_eprx;
-    struct usb_endpoint_descriptor      srvo_eptx;
-
-    // Chassis Sensors Descriptors
-    struct usb_iad_descriptor           sens_iad;
-    struct usb_interface_descriptor     sens;
-    struct usb_cdc_header_desc          sens_hdr;
-    struct usb_cdc_call_mgmt_desc       sens_mgmt;
-    struct usb_cdc_acm_desc             sens_acm;
-    struct usb_cdc_union_desc           sens_union;
-    struct usb_endpoint_descriptor      sens_ep;
-    struct usb_interface_descriptor     sens_data;
-    struct usb_endpoint_descriptor      sens_eprx;
-    struct usb_endpoint_descriptor      sens_eptx;
+    // Virtual Comm Port Descriptors
+    struct usb_iad_descriptor           vcom_iad;
+    struct usb_interface_descriptor     vcom;
+    struct usb_cdc_header_desc          vcom_hdr;
+    struct usb_cdc_call_mgmt_desc       vcom_mgmt;
+    struct usb_cdc_acm_desc             vcom_acm;
+    struct usb_cdc_union_desc           vcom_union;
+    struct usb_endpoint_descriptor      vcom_ep;
+    struct usb_interface_descriptor     vcom_data;
+    struct usb_endpoint_descriptor      vcom_eprx;
+    struct usb_endpoint_descriptor      vcom_eptx;
 } __attribute__((packed));
 
 extern void udev_applydesc(usbd_device *dev);
@@ -116,7 +105,7 @@ static const struct udev_config config_desc = {
         .bMaxPower              = USB_CFG_POWER_MA(100),
     },
 
-    .drvm_iad = {
+    .pyld_iad = {
         .bLength = sizeof(struct usb_iad_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFASEASSOC,
         .bFirstInterface        = 0,
@@ -126,10 +115,10 @@ static const struct udev_config config_desc = {
         .bFunctionProtocol      = CDC_PROTOCOL,
         .iFunction              = NO_DESCRIPTOR,
     },
-    .drvm = {
+    .pyld = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = DRVM_NTF_INUM,
+        .bInterfaceNumber       = PYLD_NTF_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 1,
         .bInterfaceClass        = USB_CLASS_CDC,
@@ -137,13 +126,13 @@ static const struct udev_config config_desc = {
         .bInterfaceProtocol     = CDC_PROTOCOL,
         .iInterface             = NO_DESCRIPTOR,
     },
-    .drvm_hdr = {
+    .pyld_hdr = {
         .bFunctionLength        = sizeof(struct usb_cdc_header_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_HEADER,
         .bcdCDC                 = VERSION_BCD(1,1,0),
     },
-    .drvm_mgmt = {
+    .pyld_mgmt = {
         .bFunctionLength        = sizeof(struct usb_cdc_call_mgmt_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_CALL_MANAGEMENT,
@@ -151,31 +140,31 @@ static const struct udev_config config_desc = {
         .bDataInterface         = 1,
 
     },
-    .drvm_acm = {
+    .pyld_acm = {
         .bFunctionLength        = sizeof(struct usb_cdc_acm_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_ACM,
         .bmCapabilities         = 0,
     },
-    .drvm_union = {
+    .pyld_union = {
         .bFunctionLength        = sizeof(struct usb_cdc_union_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_UNION,
         .bMasterInterface0      = 0,
         .bSlaveInterface0       = 1,
     },
-    .drvm_ep = {
+    .pyld_ep = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = DRVM_NTF_EP,
+        .bEndpointAddress       = PYLD_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
-        .wMaxPacketSize         = DRVM_NTF_SZ,
+        .wMaxPacketSize         = PYLD_NTF_SZ,
         .bInterval              = 0xFF,
     },
-    .drvm_data = {
+    .pyld_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = DRVM_DATA_INUM,
+        .bInterfaceNumber       = PYLD_DATA_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 2,
         .bInterfaceClass        = USB_CLASS_CDC_DATA,
@@ -183,37 +172,37 @@ static const struct udev_config config_desc = {
         .bInterfaceProtocol     = USB_PROTO_NONE,
         .iInterface             = NO_DESCRIPTOR,
     },
-    .drvm_eptx= {
+    .pyld_eptx= {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = DRVM_TXD_EP,
+        .bEndpointAddress       = PYLD_TXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = DRVM_DATA_SZ,
+        .wMaxPacketSize         = PYLD_DATA_SZ,
         .bInterval              = 0xFF,
     },
-    .drvm_eprx= {
+    .pyld_eprx= {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = DRVM_RXD_EP,
+        .bEndpointAddress       = PYLD_RXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = DRVM_DATA_SZ,
+        .wMaxPacketSize         = PYLD_DATA_SZ,
         .bInterval              = 0xFF,
     },
 
-    .srvo_iad = {
+    .vcom_iad = {
         .bLength = sizeof(struct usb_iad_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFASEASSOC,
-        .bFirstInterface        = SRVO_NTF_INUM,
+        .bFirstInterface        = VCOM_NTF_INUM,
         .bInterfaceCount        = 2,
         .bFunctionClass         = USB_CLASS_CDC,
         .bFunctionSubClass      = USB_CDC_SUBCLASS_ACM,
         .bFunctionProtocol      = CDC_PROTOCOL,
         .iFunction              = NO_DESCRIPTOR,
     },
-    .srvo = {
+    .vcom = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = SRVO_NTF_INUM,
+        .bInterfaceNumber       = VCOM_NTF_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 1,
         .bInterfaceClass        = USB_CLASS_CDC,
@@ -221,45 +210,45 @@ static const struct udev_config config_desc = {
         .bInterfaceProtocol     = CDC_PROTOCOL,
         .iInterface             = NO_DESCRIPTOR,
     },
-    .srvo_hdr = {
+    .vcom_hdr = {
         .bFunctionLength        = sizeof(struct usb_cdc_header_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_HEADER,
         .bcdCDC                 = VERSION_BCD(1,1,0),
     },
-    .srvo_mgmt = {
+    .vcom_mgmt = {
         .bFunctionLength        = sizeof(struct usb_cdc_call_mgmt_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_CALL_MANAGEMENT,
         .bmCapabilities         = 0,
-        .bDataInterface         = SRVO_DATA_INUM,
+        .bDataInterface         = VCOM_DATA_INUM,
 
     },
-    .srvo_acm = {
+    .vcom_acm = {
         .bFunctionLength        = sizeof(struct usb_cdc_acm_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_ACM,
         .bmCapabilities         = 0,
     },
-    .srvo_union = {
+    .vcom_union = {
         .bFunctionLength        = sizeof(struct usb_cdc_union_desc),
         .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
         .bDescriptorSubType     = USB_DTYPE_CDC_UNION,
-        .bMasterInterface0      = SRVO_NTF_INUM,
-        .bSlaveInterface0       = SRVO_DATA_INUM,
+        .bMasterInterface0      = VCOM_NTF_INUM,
+        .bSlaveInterface0       = VCOM_DATA_INUM,
     },
-    .srvo_ep = {
+    .vcom_ep = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SRVO_NTF_EP,
+        .bEndpointAddress       = VCOM_NTF_EP,
         .bmAttributes           = USB_EPTYPE_INTERRUPT,
-        .wMaxPacketSize         = SRVO_NTF_SZ,
+        .wMaxPacketSize         = VCOM_NTF_SZ,
         .bInterval              = 0xFF,
     },
-    .srvo_data = {
+    .vcom_data = {
         .bLength                = sizeof(struct usb_interface_descriptor),
         .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = SRVO_DATA_INUM,
+        .bInterfaceNumber       = VCOM_DATA_INUM,
         .bAlternateSetting      = 0,
         .bNumEndpoints          = 2,
         .bInterfaceClass        = USB_CLASS_CDC_DATA,
@@ -267,104 +256,20 @@ static const struct udev_config config_desc = {
         .bInterfaceProtocol     = USB_PROTO_NONE,
         .iInterface             = NO_DESCRIPTOR,
     },
-    .srvo_eptx = {
+    .vcom_eptx = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SRVO_TXD_EP,
+        .bEndpointAddress       = VCOM_TXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = SRVO_DATA_SZ,
+        .wMaxPacketSize         = VCOM_DATA_SZ,
         .bInterval              = 0xFF,
     },
-    .srvo_eprx = {
+    .vcom_eprx = {
         .bLength                = sizeof(struct usb_endpoint_descriptor),
         .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SRVO_RXD_EP,
+        .bEndpointAddress       = VCOM_RXD_EP,
         .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = SRVO_DATA_SZ,
-        .bInterval              = 0xFF,
-    },
-
-    .sens_iad = {
-        .bLength = sizeof(struct usb_iad_descriptor),
-        .bDescriptorType        = USB_DTYPE_INTERFASEASSOC,
-        .bFirstInterface        = SENS_NTF_INUM,
-        .bInterfaceCount        = 2,
-        .bFunctionClass         = USB_CLASS_CDC,
-        .bFunctionSubClass      = USB_CDC_SUBCLASS_ACM,
-        .bFunctionProtocol      = CDC_PROTOCOL,
-        .iFunction              = NO_DESCRIPTOR,
-    },
-    .sens = {
-        .bLength                = sizeof(struct usb_interface_descriptor),
-        .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = SENS_NTF_INUM,
-        .bAlternateSetting      = 0,
-        .bNumEndpoints          = 1,
-        .bInterfaceClass        = USB_CLASS_CDC,
-        .bInterfaceSubClass     = USB_CDC_SUBCLASS_ACM,
-        .bInterfaceProtocol     = CDC_PROTOCOL,
-        .iInterface             = NO_DESCRIPTOR,
-    },
-    .sens_hdr = {
-        .bFunctionLength        = sizeof(struct usb_cdc_header_desc),
-        .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
-        .bDescriptorSubType     = USB_DTYPE_CDC_HEADER,
-        .bcdCDC                 = VERSION_BCD(1,1,0),
-    },
-    .sens_mgmt = {
-        .bFunctionLength        = sizeof(struct usb_cdc_call_mgmt_desc),
-        .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
-        .bDescriptorSubType     = USB_DTYPE_CDC_CALL_MANAGEMENT,
-        .bmCapabilities         = 0,
-        .bDataInterface         = SENS_DATA_INUM,
-
-    },
-    .sens_acm = {
-        .bFunctionLength        = sizeof(struct usb_cdc_acm_desc),
-        .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
-        .bDescriptorSubType     = USB_DTYPE_CDC_ACM,
-        .bmCapabilities         = 0,
-    },
-    .sens_union = {
-        .bFunctionLength        = sizeof(struct usb_cdc_union_desc),
-        .bDescriptorType        = USB_DTYPE_CS_INTERFACE,
-        .bDescriptorSubType     = USB_DTYPE_CDC_UNION,
-        .bMasterInterface0      = SENS_NTF_INUM,
-        .bSlaveInterface0       = SENS_DATA_INUM,
-    },
-    .sens_ep = {
-        .bLength                = sizeof(struct usb_endpoint_descriptor),
-        .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SENS_NTF_EP,
-        .bmAttributes           = USB_EPTYPE_INTERRUPT,
-        .wMaxPacketSize         = SENS_NTF_SZ,
-        .bInterval              = 0xFF,
-    },
-    .sens_data = {
-        .bLength                = sizeof(struct usb_interface_descriptor),
-        .bDescriptorType        = USB_DTYPE_INTERFACE,
-        .bInterfaceNumber       = SENS_DATA_INUM,
-        .bAlternateSetting      = 0,
-        .bNumEndpoints          = 2,
-        .bInterfaceClass        = USB_CLASS_CDC_DATA,
-        .bInterfaceSubClass     = USB_SUBCLASS_NONE,
-        .bInterfaceProtocol     = USB_PROTO_NONE,
-        .iInterface             = NO_DESCRIPTOR,
-    },
-    .sens_eptx = {
-        .bLength                = sizeof(struct usb_endpoint_descriptor),
-        .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SENS_TXD_EP,
-        .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = SENS_DATA_SZ,
-        .bInterval              = 0xFF,
-    },
-    .sens_eprx = {
-        .bLength                = sizeof(struct usb_endpoint_descriptor),
-        .bDescriptorType        = USB_DTYPE_ENDPOINT,
-        .bEndpointAddress       = SENS_RXD_EP,
-        .bmAttributes           = USB_EPTYPE_BULK,
-        .wMaxPacketSize         = SENS_DATA_SZ,
+        .wMaxPacketSize         = VCOM_DATA_SZ,
         .bInterval              = 0xFF,
     },
 };

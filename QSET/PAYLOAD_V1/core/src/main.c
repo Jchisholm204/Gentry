@@ -23,14 +23,12 @@
 #include "systime.h"
 
 // USB Device Includes
-#include "usb_chassis_defs.h"
+#include "usb_payload_defs.h"
 #include "drivers/stusb/usb.h"
 #include "usb_desc.h"
 
-#include "mtr_ctrl.h"
 #include "test_tsks.h"
 #include "srv_ctrl.h"
-#include "light_ctrl.h"
 
 #define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
