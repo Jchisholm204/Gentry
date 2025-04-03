@@ -1,0 +1,6 @@
+# CompileFlags:
+#   Add: [--gcc-toolchain=/usr, --target=arm-none-eabi]
+CompileFlags:
+  Add: [ -I/usr/arm-none-eabi/include, -I/usr/lib/arm-none-eabi/include, -I/usr/lib/gcc/arm-none-eabi/14.1.0/include -DNULL ((void*)0)]
+
+
