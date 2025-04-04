@@ -30,7 +30,7 @@ enum ePktType {
     ePktStepCtrl,
     ePktStepInfo,
     ePktLightCtrl,
-    ePktPWMCtrl,
+    ePktServoCtrl,
 };
 
 struct udev_pkt_hdr {

@@ -39,7 +39,7 @@ void vTsk_testOnline(void * pvParams){
     char* str = "Hello World from Serial 2\n";
     gpio_set_mode(PIN_LED1, GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
-    gpio_set_mode(PIN_LED3, GPIO_MODE_OUTPUT);
+    // gpio_set_mode(PIN_LED3, GPIO_MODE_OUTPUT);
     uint8_t leds = 1U;
     // hal_can_init(CAN1, CAN_1000KBPS, true, PIN_CAN1_TX, PIN_CAN1_RX);
     // RCC->AHB1ENR |= RCC_AHB1ENR_GPIOBEN;

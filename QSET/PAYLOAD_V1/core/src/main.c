@@ -24,32 +24,27 @@
 
 // USB Device Includes
 #include "usb_payload_defs.h"
+#include "usb_packet.h"
 #include "drivers/stusb/usb.h"
 #include "usb_desc.h"
 
 #include "test_tsks.h"
-#include "srv_ctrl.h"
+#include "servo_ctrl.h"
 
 #define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
 // USB Device
 usbd_device udev;
 uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
-// USB Drive Control Buffers
-static volatile struct udev_pkt_drvm_ctrl drvm_ctrl;
-static volatile struct udev_pkt_drvm_sts drvm_sts;
-// USB Servo Control Buffers
-static volatile struct udev_pkt_srvo_ctrl srvo_ctrl;
-static volatile struct udev_pkt_srvo_sts srvo_sts;
-// USB Sensor Control Buffers
-static volatile struct udev_pkt_sens_ctrl sens_ctrl;
-static volatile struct udev_pkt_sens_sts sens_sts;
+// USB Payload Interface Buffers
+static volatile struct udev_pkt_ctrl pyld_ctrl;
+static volatile struct udev_pkt_info  pyld_info;
+// USB VCOM Interfaces
+static volatile char vcom_txBuf[VCOM_DATA_SZ];
+static volatile char vcom_rxBuf[VCOM_DATA_SZ];
 
 // USBD Configuration Callback
 static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg);
-
-// Motor Controller Handles
-mtrCtrlHndl_t mtrControllers[eN_DrvMotor];
 
 // USB Task Handle
 static TaskHandle_t usbHndl;
@@ -61,6 +56,7 @@ void vTskUSB(void *pvParams);
 
 // Initialize all system Interfaces
 void Init(void){
+    hal_clock_init();
     // Initialize the USB Device
     hal_usb_init_rcc();
     // libusb_stm32 init device
@@ -81,25 +77,22 @@ void Init(void){
     // Initialize UART
     serial_init(&Serial3, /*baud*/ 250000, PIN_USART3_RX, PIN_USART3_TX);
     // Initialize CAN
-    can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
+    // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
-
-    // Initialize the Auto Light Control
-    lightCtrl_init();
 
     // Initialize the PWM Timer for the servos
     // DO NOT CHANGE THESE VALUES - They work for us control
-    srvCtrl_init((PLL_N/PLL_P)-1, 9999);
+    servoCtrl_init((PLL_N/PLL_P)-1, 9999);
 
     // Set Servos to default Values - in us
-    srvCtrl_set(eServo1, 1500);
-    srvCtrl_set(eServo2, 1500);
-    srvCtrl_set(eServo3, 1500);
-    srvCtrl_set(eServo4, 1500);
-    srvCtrl_set(eServo5, 1500);
-    srvCtrl_set(eServo6, 1500);
-    srvCtrl_set(eServo7, 1500);
-    srvCtrl_set(eServo8, 1500);
+    servoCtrl_set(eServo1, 1500);
+    servoCtrl_set(eServo2, 1500);
+    servoCtrl_set(eServo3, 1500);
+    servoCtrl_set(eServo4, 1500);
+    servoCtrl_set(eServo5, 1500);
+    servoCtrl_set(eServo6, 1500);
+    servoCtrl_set(eServo7, 1500);
+    servoCtrl_set(eServo8, 1500);
 
     /**
      * Initialize System Tasks...
@@ -111,27 +104,20 @@ void Init(void){
             vTskUSB, "USB", USB_STACK_SIZE, NULL,
             /*Priority*/1, puUsbStack, &pxUsbTsk);
 
-    // Initialize the motor control Tasks
-    //           Motor Control Handle,  Joint ID, AK Mtr Type, CAN ID
-    mtrCtrl_init(&mtrControllers[eDrvMtrFL], eDrvMtrFL, eAK7010, 10);
-    mtrCtrl_init(&mtrControllers[eDrvMtrFR], eDrvMtrFR, eAK7010, 11);
-    mtrCtrl_init(&mtrControllers[eDrvMtrBL], eDrvMtrBL, eAK7010, 12);
-    mtrCtrl_init(&mtrControllers[eDrvMtrBR], eDrvMtrBR, eAK7010, 13);
 }
 
 void vTskUSB(void *pvParams){
     (void)(pvParams);
-    char msg[] = "USB Task Online";
+    // char msg[] = "USB Task Online";
     struct systime time;
     gpio_set_mode(PIN_LED1, GPIO_MODE_OUTPUT);
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     gpio_write(PIN_LED1, true);
+    gpio_write(PIN_LED2, false);
     for(;;){
         systime_fromTicks(xTaskGetTickCount(), &time);
         // int stlen = strlen(time.str);
-        memcpy(srvo_sts.buf, time.str, SYSTIME_STR_LEN);
-        srvo_sts.len = SYSTIME_STR_LEN;
-        srvo_sts.core_temp = 0.0;
+        memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         gpio_toggle_pin(PIN_LED1);
         gpio_toggle_pin(PIN_LED2);
         vTaskDelay(1000);
@@ -139,85 +125,65 @@ void vTskUSB(void *pvParams){
 }
 
 
-// Triggered when the USB Host provides data to the DRVM interface
-static void drvm_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
+// Triggered when the USB Host provides data to the PYLD interface
+static void pyld_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
-    usbd_ep_read(dev, ep, (void*)&drvm_ctrl, sizeof(struct udev_pkt_drvm_ctrl));
-    enum eDrvMotors mtr_id = (enum eDrvMotors)drvm_ctrl.mtr_id;
-    if(mtr_id >= eN_DrvMotor) return;
-    mtrCtrl_update(&mtrControllers[mtr_id], (struct udev_mtr_ctrl*)&drvm_ctrl.mtr_ctrl);
-    lightCtrl_pkt(drvm_ctrl.light_ctrl);
-}
-
-// Triggered when the USB Host requests data from the DRVM interface
-static void drvm_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
-    (void)evt;
-    // Get the latest data from the motor
-    for(enum eDrvMotors m = 0; m < eN_DrvMotor; m++){
-        mtrCtrl_getInfo(&mtrControllers[m], (struct udev_mtr_info*)&drvm_sts.mtr_info[m]);
+    usbd_ep_read(dev, ep, (void*)&pyld_ctrl, sizeof(struct udev_pkt_ctrl));
+    enum ePktType type = (enum ePktType)pyld_ctrl.hdr.ePktType;
+    switch(type){
+        case ePktStepSetup:
+            break;
+        case ePktStepCtrl:
+            break;
+        case ePktStepInfo:
+            break;
+        case ePktLightCtrl:
+            break;
+        case ePktServoCtrl:
+            servoCtrl_set(pyld_ctrl.servoCtrl.ePWMChannel, pyld_ctrl.servoCtrl.value);
+            break;
+        default:
+            break;
     }
+}
+
+// Triggered when the USB Host requests data from the PYLD interface
+static void pyld_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
+    (void)evt;
 
     // Write back to the USB Memory
-    usbd_ep_write(dev, ep, (void*)&drvm_sts, sizeof(struct udev_pkt_drvm_sts));
+    usbd_ep_write(dev, ep, (void*)&pyld_info, sizeof(struct udev_pkt_info));
 }
 
-// USBD RX/TX Callbacks: Drive Control
+// USBD RX/TX Callbacks: Payload Interfaces
 // Triggered during Control Interface events
-static void drvm_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
+static void pyld_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx)
-        drvm_rx(dev, evt, ep);
+        pyld_rx(dev, evt, ep);
     else
-        drvm_tx(dev, evt, ep);
+        pyld_tx(dev, evt, ep);
 }
 
-// Triggered when the USB Host provides data to the SRVO interface
-static void srvo_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
+// Triggered when the USB Host provides data to the VCOM interface
+static void vcom_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
-    usbd_ep_read(dev, ep, (void*)&srvo_ctrl, sizeof(struct udev_pkt_srvo_ctrl));
-    enum eChassisServo srvo_id = (enum eChassisServo)srvo_ctrl.srvo_id;
-    if(srvo_id >= eN_Servo) return;
-    srvCtrl_set(srvo_id, srvo_ctrl.srvo_ctrl);
+    usbd_ep_read(dev, ep, (void*)&vcom_rxBuf, VCOM_DATA_SZ);
 }
 
-// Triggered when the USB Host requests data from the SRVO interface
-static void srvo_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
+// Triggered when the USB Host requests data from the VCOM interface
+static void vcom_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
-    // Servo Status Updates are handled in main usb task
     // Write back to the USB Memory
-    usbd_ep_write(dev, ep, (void*)&srvo_sts, sizeof(struct udev_pkt_srvo_sts));
+    usbd_ep_write(dev, ep, (void*)&vcom_txBuf, VCOM_DATA_SZ);
 }
 
-// USBD RX/TX Callbacks: Servo Control
+// USBD RX/TX Callbacks: Virtial COM Port
 // Triggered during Control Interface events
-static void srvo_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
+static void vcom_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
     if(evt == usbd_evt_eprx)
-        srvo_rx(dev, evt, ep);
+        vcom_rx(dev, evt, ep);
     else
-        srvo_tx(dev, evt, ep);
-}
-
-// Triggered when the USB Host provides data to the SRVO interface
-static void sens_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
-    (void)evt;
-    // Sensors have no controllable values
-    usbd_ep_read(dev, ep, (void*)&sens_ctrl, sizeof(struct udev_pkt_sens_ctrl));
-}
-
-// Triggered when the USB Host requests data from the SRVO interface
-static void sens_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
-    (void)evt;
-    // Servo Status Updates are handled in main usb task
-    // Write back to the USB Memory
-    usbd_ep_write(dev, ep, (void*)&srvo_sts, sizeof(struct udev_pkt_srvo_sts));
-}
-
-// USBD RX/TX Callbacks: Servo Control
-// Triggered during Control Interface events
-static void sens_rxtx(usbd_device *dev, uint8_t evt, uint8_t ep){
-    if(evt == usbd_evt_eprx)
-        sens_rx(dev, evt, ep);
-    else
-        sens_tx(dev, evt, ep);
+        vcom_tx(dev, evt, ep);
 }
 
 
@@ -225,51 +191,34 @@ static usbd_respond udev_setconf (usbd_device *dev, uint8_t cfg) {
     switch (cfg) {
     case 0:
         /* deconfiguring device */
-        usbd_ep_deconfig(dev, DRVM_NTF_EP);
-        usbd_ep_deconfig(dev, DRVM_TXD_EP);
-        usbd_ep_deconfig(dev, DRVM_RXD_EP);
-        usbd_ep_deconfig(dev, SRVO_NTF_EP);
-        usbd_ep_deconfig(dev, SRVO_TXD_EP);
-        usbd_ep_deconfig(dev, SRVO_RXD_EP);
-        usbd_ep_deconfig(dev, SENS_NTF_EP);
-        usbd_ep_deconfig(dev, SENS_TXD_EP);
-        usbd_ep_deconfig(dev, SENS_RXD_EP);
+        usbd_ep_deconfig(dev, PYLD_NTF_EP);
+        usbd_ep_deconfig(dev, PYLD_TXD_EP);
+        usbd_ep_deconfig(dev, PYLD_RXD_EP);
+        usbd_ep_deconfig(dev, VCOM_NTF_EP);
+        usbd_ep_deconfig(dev, VCOM_TXD_EP);
+        usbd_ep_deconfig(dev, VCOM_RXD_EP);
 
-        usbd_reg_endpoint(dev, DRVM_RXD_EP, 0);
-        usbd_reg_endpoint(dev, DRVM_TXD_EP, 0);
-        usbd_reg_endpoint(dev, SRVO_RXD_EP, 0);
-        usbd_reg_endpoint(dev, SRVO_TXD_EP, 0);
-        usbd_reg_endpoint(dev, SENS_RXD_EP, 0);
-        usbd_reg_endpoint(dev, SENS_TXD_EP, 0);
+        usbd_reg_endpoint(dev, PYLD_RXD_EP, 0);
+        usbd_reg_endpoint(dev, PYLD_TXD_EP, 0);
+        usbd_reg_endpoint(dev, VCOM_RXD_EP, 0);
+        usbd_reg_endpoint(dev, VCOM_TXD_EP, 0);
         return usbd_ack;
     case 1:
         /* configuring device */
-        usbd_ep_config(dev, DRVM_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, DRVM_DATA_SZ);
-        usbd_ep_config(dev, DRVM_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, DRVM_DATA_SZ);
-        usbd_ep_config(dev, DRVM_NTF_EP, USB_EPTYPE_INTERRUPT, DRVM_NTF_SZ);
-        usbd_ep_config(dev, SRVO_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, SRVO_DATA_SZ);
-        usbd_ep_config(dev, SRVO_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, SRVO_DATA_SZ);
-        usbd_ep_config(dev, SRVO_NTF_EP, USB_EPTYPE_INTERRUPT, SRVO_NTF_SZ);
-        usbd_ep_config(dev, SENS_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, SENS_DATA_SZ);
-        usbd_ep_config(dev, SENS_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, SENS_DATA_SZ);
-        usbd_ep_config(dev, SENS_NTF_EP, USB_EPTYPE_INTERRUPT, SENS_NTF_SZ);
+        usbd_ep_config(dev, PYLD_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, PYLD_DATA_SZ);
+        usbd_ep_config(dev, PYLD_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, PYLD_DATA_SZ);
+        usbd_ep_config(dev, PYLD_NTF_EP, USB_EPTYPE_INTERRUPT, PYLD_NTF_SZ);
+        usbd_ep_config(dev, VCOM_RXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, VCOM_DATA_SZ);
+        usbd_ep_config(dev, VCOM_TXD_EP, USB_EPTYPE_BULK /*| USB_EPTYPE_DBLBUF*/, VCOM_DATA_SZ);
+        usbd_ep_config(dev, VCOM_NTF_EP, USB_EPTYPE_INTERRUPT, VCOM_NTF_SZ);
 
-        // TODO: Add back these functions
-        usbd_reg_endpoint(dev, DRVM_RXD_EP, drvm_rxtx);
-        usbd_reg_endpoint(dev, DRVM_TXD_EP, drvm_rxtx);
-        usbd_reg_endpoint(dev, SRVO_RXD_EP, srvo_rxtx);
-        usbd_reg_endpoint(dev, SRVO_TXD_EP, srvo_rxtx);
-        // usbd_reg_endpoint(dev, SENS_RXD_EP, sens_rxtx);
-        // usbd_reg_endpoint(dev, SENS_TXD_EP, sens_rxtx);
+        usbd_reg_endpoint(dev, PYLD_RXD_EP, pyld_rxtx);
+        usbd_reg_endpoint(dev, PYLD_TXD_EP, pyld_rxtx);
+        usbd_reg_endpoint(dev, VCOM_RXD_EP, vcom_rxtx);
+        usbd_reg_endpoint(dev, VCOM_TXD_EP, vcom_rxtx);
 
-        // usbd_reg_endpoint(dev, DRVM_RXD_EP, srvo_rxtx);
-        // usbd_reg_endpoint(dev, DRVM_TXD_EP, srvo_rxtx);
-        usbd_reg_endpoint(dev, SENS_RXD_EP, srvo_rxtx);
-        usbd_reg_endpoint(dev, SENS_TXD_EP, srvo_rxtx);
-
-        usbd_ep_write(dev, DRVM_TXD_EP, 0, 0);
-        usbd_ep_write(dev, SRVO_TXD_EP, 0, 0);
-        usbd_ep_write(dev, SENS_TXD_EP, 0, 0);
+        usbd_ep_write(dev, PYLD_TXD_EP, 0, 0);
+        usbd_ep_write(dev, VCOM_TXD_EP, 0, 0);
         return usbd_ack;
     default:
         return usbd_fail;

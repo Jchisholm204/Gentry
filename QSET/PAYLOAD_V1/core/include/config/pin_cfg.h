@@ -19,7 +19,8 @@
 // Define the board to use
 // #define BOARD_MOCKECU
 // #define BOARD_ARMV1
-#define BOARD_CHASSISV1
+// #define BOARD_CHASSISV1
+#define BOARD_PAYLOADV1
 
 #if defined(BOARD_MOCKECU)
     #include "config/boards/mockecu.h"
@@ -29,6 +30,8 @@
     #include "config/boards/armv1.h"
 #elif defined(BOARD_CHASSISV1)
     #include "config/boards/chassisv1.h"
+#elif defined(BOARD_PAYLOADV1)
+    #include "config/boards/payloadv1.h"
 #endif
 
 #ifndef _BOARD_CONFIG_
