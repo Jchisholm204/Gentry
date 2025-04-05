@@ -104,6 +104,44 @@ class PayloadControlBoard {
          * @brief Get the reported gas resistance from the BME680 (Ohms)
          */
         float get_bmeGasRest(void);
+        /**
+         * @brief Set teh stepper Configuration
+         *
+         * @param holdCurrent Hold Current (0-31)
+         * @param runCurrent Run Current (0-31)
+         * @param holdDelay Hold Delay (0-31)
+         */
+        void set_steperConfig(uint8_t holdCurrent, uint8_t runCurrent, uint8_t holdDelay);
+        /**
+         * @brief Set the stepper movement
+         *
+         * @param speed Speed to move at
+         * @param position Number of steps to move
+         */
+        void set_stepper(int32_t speed, uint32_t position);
+        /**
+         * @brief Set the servo
+         *  Default behavior is to set servo to neutral position
+         *
+         * @param servo Servo ID to set
+         * @param value PWM value to set the servo to (us)
+         */
+        void set_servo(enum ePayloadServo servo, uint32_t value = 1500);
+        /**
+         * @brief Set the motor
+         *  Default behavior is to turn the motor off
+         *
+         * @param motor Motor to set
+         * @param power Power of the motor
+         */
+        void set_motor(enum ePayloadMotor motor, int8_t power = 0);
+        /**
+         * @brief Set the light control
+         *  Default behavior is to turn all lights off
+         *
+         * @param light to set to on
+         */
+        void set_light(enum ePayloadLight light = eLightAllOFF);
         // Latest LibUSB Error number
         int lusb_err;
         // Map enum to string

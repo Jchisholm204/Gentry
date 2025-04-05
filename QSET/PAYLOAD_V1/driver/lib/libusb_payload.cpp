@@ -137,6 +137,48 @@ float PayloadControlBoard::get_bmeGasRest(void){
     return this->pkt_info.bme_info.gas_resistance;
 }
 
+void PayloadControlBoard::set_steperConfig(uint8_t holdCurrent, uint8_t runCurrent, uint8_t holdDelay){
+    struct udev_pkt_ctrl pkt;
+    pkt.hdr.ePktType = ePktStepSetup;
+    pkt.stepSetp.holdCurrent_mA = holdCurrent;
+    pkt.stepSetp.runCurrent_mA = runCurrent;
+    pkt.stepSetp.hold_delay = holdDelay;
+    this->transmit(&pkt);
+}
+
+void PayloadControlBoard::set_stepper(int32_t speed, uint32_t position){
+    struct udev_pkt_ctrl pkt;
+    pkt.hdr.ePktType = ePktStepCtrl;
+    pkt.stepCtrl.speed = speed;
+    pkt.stepCtrl.position = position;
+    this->transmit(&pkt);
+}
+
+void PayloadControlBoard::set_servo(enum ePayloadServo servo, uint32_t value){
+    if(servo >= eN_Servo) return;
+    struct udev_pkt_ctrl pkt;
+    pkt.hdr.ePktType = ePktServoCtrl;
+    pkt.servoCtrl.ePWMChannel = (uint8_t)servo;
+    pkt.servoCtrl.value = value;
+    this->transmit(&pkt);
+}
+
+void PayloadControlBoard::set_motor(enum ePayloadMotor motor, int8_t power){
+    if(motor >= eN_Motors) return;
+    struct udev_pkt_ctrl pkt;
+    pkt.hdr.ePktType = ePktMotorCtrl;
+    pkt.mtrCtrl.eMtrChannel = (uint8_t)motor;
+    pkt.mtrCtrl.value = power;
+    this->transmit(&pkt);
+}
+
+void PayloadControlBoard::set_light(enum ePayloadLight light){
+    struct udev_pkt_ctrl pkt;
+    pkt.hdr.ePktType = ePktLightCtrl;
+    pkt.lightCtrl.eLightChannel = (uint8_t)light;
+    this->transmit(&pkt);
+}
+
 int PayloadControlBoard::transmit(struct udev_pkt_ctrl *pkt){
     if(!pkt) return -1;
     if(!connection_active) return -2;

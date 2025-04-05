@@ -26,7 +26,8 @@ int main(void){
         std::string msg;
         enum ePayloadStatus s = pcb.get_status(msg);
         // Optional, erase the newline character in the msg
-        msg.erase(msg.find("\n"), 1);
+        if(msg.find("\n") != std::string::npos)
+            msg.erase(msg.find("\n"), 1);
         std::cout << msg << ": Status = " << pcb.statusString[s].c_str() << "\n";
         sleep(1);
     }
