@@ -34,30 +34,35 @@ enum ePayloadServo {
 
 // Light Select
 enum ePayloadLight {
-    eLight1,
-    eLight2,
-    eLight3,
-    eLight4,
-    eLight5,
-    eLight6,
-    eLight7,
-    eLight8,
-    eLight9,
-    eLight10,
-    eLight11,
-    eLight12,
-    eLightAllOFF,
-    eN_Lights
+    eLight1 = 0x00,
+    eLight2 = 0x02,
+    eLight3 = 0x01,
+    eLight4 = 0x03,
+    eLight5 = 0x04,
+    eLight6 = 0x05,
+    eLight7 = 0x0A,
+    eLight8 = 0x0B,
+    eLight9 = 0x08,
+    eLight10 = 0x09,
+    eLight11 = 0x0E,
+    eLight12 = 0x0F,
+    eLightAllOFF = 0x0C,
 };
 
 
 // Motor Select
 enum ePayloadMotor {
     eMotor1,
-    eMotor2
+    eMotor2,
+    eN_Motors
 };
 
-#define SERVO_MAX_VEL 10000
+// Motor Select
+enum ePayloadStepper {
+    eStepper1,
+    eStepper2,
+    eN_Steppers
+};
 
 enum ePayloadStatus {
     ePayloadOK,
@@ -67,6 +72,8 @@ enum ePayloadStatus {
     ePayloadIniFail,
     // The board was unable to connect to an I2C Device
     ePayloadI2CFail,
+    ePayloadFail,
+    ePayloadNoConnection,
 };
 
 #ifdef __cplusplus

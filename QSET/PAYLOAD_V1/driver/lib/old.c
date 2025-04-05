@@ -1,18 +1,4 @@
-/**
- * @file libusb_chassis.c
- * @author Jacob Chisholm (Jchisholm204.github.io)
- * @brief USB Interface Library for QSET Chassis Control Board
- * @version 0.1
- * @date 2025-02-24
- * 
- * @copyright Copyright (c) 2023
- *
- *
- */
-#include "libusb_chassis.h"
-#include <unistd.h>
-#include <memory.h>
-
+#include <libusb-1.0/libusb.h>
 int is_device_connected(libusb_context *ctx) {
     libusb_device **devices;
     ssize_t count;
@@ -202,3 +188,4 @@ int chassisDev_free(chassisDev_t *pDev){
     libusb_exit(pDev->lusb_ctx);
     return 0;
 }
+

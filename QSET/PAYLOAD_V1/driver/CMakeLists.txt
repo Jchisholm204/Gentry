@@ -36,9 +36,9 @@ set(GENERIC_COMPILE_OPTIONS
     )
 
 file(GLOB_RECURSE PROJECT_SOURCES FOLLOW_SYMLINKS
-    ${PROJECT_DIR}/lib/*.c
-    ${PROJECT_DIR}/test/*.c
-    # ${PROJECT_DIR}/src/*.cpp
+    ${PROJECT_DIR}/lib/*.cpp
+    ${PROJECT_DIR}/test/*.cpp
+    ${PROJECT_DIR}/src/*.cpp
     # ${PROJECT_DIR}/src/*.cc
     )
 

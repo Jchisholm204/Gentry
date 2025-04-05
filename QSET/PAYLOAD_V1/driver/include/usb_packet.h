@@ -25,10 +25,11 @@ extern "C" {
 #include "usb_payload_defs.h"
 #include "usb_dev.h"
 
+#define UDEV_ERROR_LEN 16
+
 enum ePktType {
     ePktStepSetup,
     ePktStepCtrl,
-    ePktStepInfo,
     ePktLightCtrl,
     ePktServoCtrl,
 };
@@ -42,7 +43,7 @@ struct udev_status {
     // enum eDrvStatus code;
     uint8_t code;
     // Error Message Associated with the Code
-    char msg[16];
+    char msg[UDEV_ERROR_LEN];
 };
 
 // Setup Packet Structure for Stepper Motors
@@ -133,8 +134,7 @@ struct udev_pkt_ctrl {
 //  Must be less than 0x40 in length
 struct udev_pkt_info {
     struct udev_status status;
-    struct udev_stepper_info stepper1;
-    struct udev_stepper_info stepper2;
+    struct udev_stepper_info stepper_info[eN_Steppers];
     struct udev_adc_info     adc_info;
     struct udev_bme_info     bme_info;
 } __attribute__((packed));
