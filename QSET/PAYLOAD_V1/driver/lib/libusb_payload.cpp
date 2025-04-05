@@ -160,6 +160,7 @@ int PayloadControlBoard::pkt_poll(void){
     if(!connection_active) return -1;
     if(!lusb_devHndl){
         connection_active = false;
+        status = ePayloadNoConnection;
         return -2;
     }
     int res = 0, transfered;
@@ -169,9 +170,10 @@ int PayloadControlBoard::pkt_poll(void){
         connection_active = false;
         return res;
     }
-    if(transfered != sizeof(struct udev_pkt_ctrl)){
-        return transfered;
-    }
+    // if(transfered != sizeof(struct udev_pkt_ctrl)){
+    //     return transfered;
+    // }
+    this->status = (enum ePayloadStatus)pkt_info.status.code;
     return res;
 
 }

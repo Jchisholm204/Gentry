@@ -3,37 +3,33 @@
 #include <stdbool.h>
 #include <memory.h>
 #include <libusb-1.0/libusb.h>
-
+#include <iostream>
 
 int main(void){
-    // armDev_init(&dev);
-    // struct udev_mtr_ctrl mtr = {
-    //     .velocity = 0,
-    //     .position = 1,
-    //     .kP = 1,
-    //     .kI = 0,
-    //     .kD = 0,
-    //     .kF = 0,
-    //     .enable = AK_MTR_EN | AK_MTR_ZERO,
-    // };
-    // printf("udev_connected\n");
-    // bool dis = false;
-    // for(;;){
-    //     if (dev.err != 0) {
-    //         printf("Disconnection Event Detected\n");
-    //         // Device is disconnected, attempt to reconnect
-    //         armDev_reconnect(&dev);
-    //     }
-    //     else{
-    //         armDev_setMtr(&dev, eJoint1, &mtr);
-    //         mtr.enable = 0;
-    //         // armDev_setServo(&dev, eServo2, 2200);
-    //         // armDev_setGripper(&dev, 120);
-    //         struct udev_pkt_status *sts = armDev_getStatusPkt(&dev);
-    //         printf("Joint1: %0.2f rad/s LS: %d\n", sts->mtr[eJoint1].position, sts->limit_sw & 0x7F);
-    //     }
-    //     // sleep(1);
-    // }
-    // armDev_free(&dev);
+    std::cout << "Running...\n";
+    PayloadControlBoard pcb;
+    std::cout << "Connecting to Board\n";
+    pcb.connect(true);
+    if(!pcb.is_active(true, false)){
+        std::cout << "Connecting to Board\n";
+        sleep(1);
+    }
+    std::cout << "Connected to Board: Success!!\n";
+    
+    for(;;){
+        if(!pcb.is_active(true, false)){
+            std::cout << "Connection Lost: Reconnecting to Board\n";
+            sleep(1);
+            continue;
+        }
+        // Get the board status
+        std::string msg;
+        enum ePayloadStatus s = pcb.get_status(msg);
+        // Optional, erase the newline character in the msg
+        msg.erase(msg.find("\n"), 1);
+        std::cout << msg << ": Status = " << pcb.statusString[s].c_str() << "\n";
+        sleep(1);
+    }
+
     return 0;
 }
