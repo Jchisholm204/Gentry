@@ -140,8 +140,9 @@ class PayloadControlBoard {
          *  Default behavior is to turn all lights off
          *
          * @param light to set to on
+         * @param percent_power The Percent power applied to the light (10-100%)
          */
-        void set_light(enum ePayloadLight light = eLightAllOFF);
+        void set_light(enum ePayloadLight light = eLightAllOFF, float percent_power = 100.0);
         // Latest LibUSB Error number
         int lusb_err;
         // Map enum to string

@@ -172,10 +172,11 @@ void PayloadControlBoard::set_motor(enum ePayloadMotor motor, int8_t power){
     this->transmit(&pkt);
 }
 
-void PayloadControlBoard::set_light(enum ePayloadLight light){
+void PayloadControlBoard::set_light(enum ePayloadLight light, float percent_power){
     struct udev_pkt_ctrl pkt;
     pkt.hdr.ePktType = ePktLightCtrl;
     pkt.lightCtrl.eLightChannel = (uint8_t)light;
+    pkt.lightCtrl.percent_power = percent_power;
     this->transmit(&pkt);
 }
 

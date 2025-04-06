@@ -86,6 +86,8 @@ struct udev_servo_ctrl {
 struct udev_light_ctrl {
     // ePayloadLight to turn on
     uint8_t eLightChannel;
+    // Percent power given to the light BUS
+    float   percent_power;
 } __attribute__((packed));
 
 // PWM Motor Control Structure
