@@ -13,7 +13,10 @@
 #include "config/pin_cfg.h"
 #include "usb_payload_defs.h"
 
+#define SERVO_MAX_PWM 10000
+
 static void servoCtrl_init(uint16_t pre, uint16_t arr){
+    arr -= 1;
     // Uses several Timer Interfaces
     hal_tim_pwm_init(TIM2, pre, arr);
     hal_tim_pwm_init(TIM3, pre, arr);
@@ -55,6 +58,7 @@ static void servoCtrl_init(uint16_t pre, uint16_t arr){
 
 
 static void servoCtrl_set(enum ePayloadServo srv, uint32_t val_us){
+    if(val_us > SERVO_MAX_PWM) val_us = SERVO_MAX_PWM;
     switch(srv){
         case eServo1:
             hal_tim_pwm_set(TIM2, eTimCh1, val_us);

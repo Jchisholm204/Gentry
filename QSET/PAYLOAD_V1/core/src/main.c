@@ -30,6 +30,8 @@
 
 #include "test_tsks.h"
 #include "servo_ctrl.h"
+#include "light_ctrl.h"
+#include "motor_ctrl.h"
 
 #define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
@@ -80,9 +82,15 @@ void Init(void){
     // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
 
+    // Initialize Motor Control
+    motorCtrl_init();
+
+    motorCtrl_set(eMotor1, 0);
+    motorCtrl_set(eMotor2, 0);
+
     // Initialize the PWM Timer for the servos
     // DO NOT CHANGE THESE VALUES - They work for us control
-    servoCtrl_init((PLL_N/PLL_P)-1, 9999);
+    servoCtrl_init((PLL_N/PLL_P)-1, SERVO_MAX_PWM);
 
     // Set Servos to default Values - in us
     servoCtrl_set(eServo1, 1500);
@@ -93,6 +101,9 @@ void Init(void){
     servoCtrl_set(eServo6, 1500);
     servoCtrl_set(eServo7, 1500);
     servoCtrl_set(eServo8, 1500);
+
+    lightCtrl_init();
+    lightCtrl_setState(eLightAllOFF);
 
     /**
      * Initialize System Tasks...
@@ -120,6 +131,10 @@ void vTskUSB(void *pvParams){
         memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         gpio_toggle_pin(PIN_LED1);
         gpio_toggle_pin(PIN_LED2);
+        pyld_info.status.code = ePayloadOK;
+        size_t code_len = UDEV_ERROR_LEN;
+        if(SYSTIME_STR_LEN < UDEV_ERROR_LEN) code_len = SYSTIME_STR_LEN;
+        memcpy((void*)pyld_info.status.msg, time.str, code_len);
         vTaskDelay(1000);
     }
 }
@@ -135,12 +150,14 @@ static void pyld_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
             break;
         case ePktStepCtrl:
             break;
-        case ePktStepInfo:
-            break;
         case ePktLightCtrl:
+            lightCtrl_setState(pyld_ctrl.lightCtrl.eLightChannel);
             break;
         case ePktServoCtrl:
             servoCtrl_set(pyld_ctrl.servoCtrl.ePWMChannel, pyld_ctrl.servoCtrl.value);
+            break;
+        case ePktMotorCtrl:
+            motorCtrl_set(pyld_ctrl.mtrCtrl.eMtrChannel, pyld_ctrl.mtrCtrl.value);
             break;
         default:
             break;
@@ -150,7 +167,6 @@ static void pyld_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
 // Triggered when the USB Host requests data from the PYLD interface
 static void pyld_tx(usbd_device *dev, uint8_t evt, uint8_t ep){
     (void)evt;
-
     // Write back to the USB Memory
     usbd_ep_write(dev, ep, (void*)&pyld_info, sizeof(struct udev_pkt_info));
 }
