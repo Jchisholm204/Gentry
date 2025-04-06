@@ -50,32 +50,24 @@ int PayloadControlBoard::connect(bool blocking){
     do{
         dev_connected = this->is_dev_connected();
     } while(!dev_connected && blocking);
-    // if(blocking){
-    //     // Blocking Option - Wait until the device is connected
-    //     while(!this->is_dev_connected()){
-    //         sleep(1);
-    //     }
-    // }
-    // else{
-    //     // Non-Blocking Option - Fail and return error if device is not connected
-    //     if(!this->is_dev_connected()){
-    //         this->status = ePayloadNoConnection;
-    //         return -1;
-    //     }
-    // }
+    // Check to see if device handle needs to be allocated
     if(!lusb_devHndl)
         this->lusb_devHndl = libusb_open_device_with_vid_pid(lusb_ctx, VENDOR_ID, DEVICE_ID);
+    // Handle open failure
     if(!lusb_devHndl){
         this->status = ePayloadIniFail;
         // Confirm NULL
         lusb_devHndl = NULL;
         return -2;
     }
+    // Initialize the interfaces
     res = dev_init(PYLD_DATA_INUM);
+    // Handle Failure
     if(res != 0){
         this->status = ePayloadIniFail;
         return res;
     }
+    // Set internal connection to active
     this->connection_active = true;
     return 0;
 }
@@ -213,9 +205,6 @@ int PayloadControlBoard::pkt_poll(void){
         connection_active = false;
         return res;
     }
-    // if(transfered != sizeof(struct udev_pkt_ctrl)){
-    //     return transfered;
-    // }
     this->status = (enum ePayloadStatus)pkt_info.status.code;
     return res;
 
