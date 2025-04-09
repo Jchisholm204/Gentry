@@ -60,7 +60,6 @@ void adc_init(volatile struct udev_adc_info * const pADC_info){
 void adc_tsk(void *pvParams){
     volatile struct udev_adc_info * const pInfo = pvParams;
     for(;;){
-        // spin(99999UL);
         uint16_t reading = ADC_READINGS[0];
         float val = reading * 3.3;
         val /= 4095;
