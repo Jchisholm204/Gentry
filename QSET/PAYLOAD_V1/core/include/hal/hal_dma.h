@@ -18,7 +18,6 @@
 
 #include "stm32f4xx.h"
 #include <inttypes.h>
-#include "errors.h"
 #include <stddef.h>
 
 enum DMA_CHANNEL {

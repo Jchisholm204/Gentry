@@ -47,7 +47,7 @@ st-flash-win: build/firmware.bin
 	./Tools/ST-LINK_CLI.exe -RST
 
 st-flash-lin: build/firmware.bin
-	st-flash --reset write build/firmware.bin 0x08000000
+	st-flash --connect-under-reset --reset write build/firmware.bin 0x08000000
 
 clean:
 	rm -r build

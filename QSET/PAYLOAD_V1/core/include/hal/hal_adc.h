@@ -16,7 +16,6 @@
 #pragma once
 
 #include "stm32f4xx.h"
-#include "errors.h"
 #include "hal_clock.h"
 
 // ADC Sampling Resolution (Should always be 12bit)

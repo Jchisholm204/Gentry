@@ -33,6 +33,8 @@
 #include "light_ctrl.h"
 #include "motor_ctrl.h"
 
+#include "adc_tsk.h"
+
 #define USB_STACK_SIZE (configMINIMAL_STACK_SIZE << 2)
 
 // USB Device
@@ -81,6 +83,9 @@ void Init(void){
     // Initialize CAN
     // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
+
+    // Initialize ADC
+    adc_init(&pyld_info.adc_info);
 
     // Initialize Motor Control
     motorCtrl_init();

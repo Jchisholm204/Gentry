@@ -50,7 +50,8 @@ int main(void){
         // Optional, erase the newline character in the msg
         if(msg.find("\n") != std::string::npos)
             msg.erase(msg.find("\n"), 1);
-        std::cout << msg << ": Status = " << pcb.statusString[s].c_str() << dir << "\n";
+        // std::cout << msg << ": Status = " << pcb.statusString[s].c_str() << dir << "\n";
+        std::cout << "ADC Voltage = " << pcb.get_ADC() <<  " Temp = " << pcb.get_intTemp() << std::endl;
         sleep(1);
     }
 
