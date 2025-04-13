@@ -125,6 +125,9 @@ void Init(void){
 // I2C Reference Material:
 // https://medium.com/@jchrysaphiades/stm32-bare-metal-programming-i2c-4b1f9ed66f53
 
+#define I2C_TIMEOUT 100000
+#define WAIT_FOR(timeout, condition) for(int cnt_y = 0; cnt_y < timeout && condition; cnt_y++) __asm__("nop");
+
 void hal_i2c_init(I2C_TypeDef *I2C){
     if(I2C == I2C1) SET_BIT(RCC->APB1ENR, RCC_APB1ENR_I2C1EN);
     if(I2C == I2C2) SET_BIT(RCC->APB1ENR, RCC_APB1ENR_I2C2EN);
@@ -133,126 +136,184 @@ void hal_i2c_init(I2C_TypeDef *I2C){
     gpio_set_af(PIN_I2C1_SCL, GPIO_AF_I2C);
     gpio_set_mode(PIN_I2C1_SDA, GPIO_MODE_AF);
     gpio_set_af(PIN_I2C1_SDA, GPIO_AF_I2C);
+    gpio_pull(PIN_I2C1_SDA, GPIO_PULLUP);
+    gpio_pull(PIN_I2C1_SCL, GPIO_PULLUP);
+    gpio_set_od(PIN_I2C1_SDA, true);
+    gpio_set_od(PIN_I2C1_SCL, true);
 
     // Reset the I2C interface
     SET_BIT(I2C->CR1, I2C_CR1_SWRST);
+    WAIT_FOR(I2C_TIMEOUT, 0);
     CLEAR_BIT(I2C->CR1, I2C_CR1_SWRST);
     // Setup I2C Clock Divider
     // APB clock should be 42 MHz?
-    SET_BIT(I2C->CR2, 42);
+    CLEAR_REG(I2C->CR2);
+    SET_BIT(I2C->CR2, (uint8_t)((uint32_t)APB1_FREQUENCY/1e6) & 0x3F);
     // SCL line frequency (set to 100kHz)
-    SET_BIT(I2C->CCR, 210);
-    SET_BIT(I2C->TRISE, 43);
+    // SET_BIT(I2C->CCR, 210);
+    CLEAR_REG(I2C->CCR);
+    SET_BIT(I2C->CCR, APB1_FREQUENCY/(2*100000) & 0xFFF);
+    // SET_BIT(I2C->TRISE, 43);
+    I2C->TRISE = (APB1_FREQUENCY/1000000) + 1;
     // Enable I2C
+    // SET_BIT(I2C->CR1, I2C_CR1_START);
     SET_BIT(I2C->CR1, I2C_CR1_PE);
+
 }
 
-void hal_i2c_write(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr, uint8_t value) {
+void hal_i2c_write_byte(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr, uint8_t value) {
     // Generate START condition
     SET_BIT(I2C->CR1, I2C_CR1_START);
-    while (!(I2C->SR1 & I2C_SR1_SB));  // Wait for START condition generated
+    SET_BIT(I2C->CR1, I2C_CR1_ACK);
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB));
+    // while (!(I2C->SR1 & I2C_SR1_SB));  // Wait for START condition generated
 
     // Send device address (write)
     I2C->DR = dev_addr & ~0x01;  // Ensure LSB = 0 for write
-    while (!(I2C->SR1 & I2C_SR1_ADDR));  // Wait for address to be sent
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR));
+    // while (!(I2C->SR1 & I2C_SR1_ADDR));  // Wait for address to be sent
+
     (void)I2C->SR2;  // Clear ADDR by reading SR1 and SR2
 
     // Send register address
-    while (!(I2C->SR1 & I2C_SR1_TXE));
+    // while (!(I2C->SR1 & I2C_SR1_TXE));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
     I2C->DR = reg_addr;
-    while (!(I2C->SR1 & I2C_SR1_TXE));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
+    // while (!(I2C->SR1 & I2C_SR1_TXE));
 
     // Send data
     I2C->DR = value;
-    while (!(I2C->SR1 & I2C_SR1_BTF));  // Wait for byte transfer finished
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    // while (!(I2C->SR1 & I2C_SR1_BTF));  // Wait for byte transfer finished
 
     // Generate STOP condition
     SET_BIT(I2C->CR1, I2C_CR1_STOP);
 }
 
-// int hal_i2c_read(I2C_TypeDef * I2C, uint8_t dev, uint8_t addr, uint8_t *data, uint8_t size){
-//     SET_BIT(I2C->CR1, I2C_CR1_START | I2C_CR1_ACK);
-//     while(!(I2C->SR1 & I2C_SR1_SB));
-//     I2C->DR = dev;
-//     while(!(I2C->SR1 & I2C_SR1_ADDR));
-//     while(!(I2C->SR1 & I2C_SR1_TXE));
-//     I2C->DR = addr;
-//     while(!(I2C->SR1 & I2C_SR1_BTF));
-//     SET_BIT(I2C->CR1, I2C_CR1_START);
-//     while(!(I2C->SR1 & I2C_SR1_SB));
-//     I2C->DR = dev;
-//     while(!(I2C->SR1 & I2C_SR1_ADDR));
-//     for(int i = 0; i < size; i++, data++){
-//         if(i + 1 == size){
-//             CLEAR_BIT(I2C->CR1, I2C_CR1_ACK);
-//             SET_BIT(I2C->CR1, I2C_CR1_STOP);
-//         }
-//         while(!(I2C->SR1 & I2C_SR1_RXNE));
-//         *data = (uint8_t)I2C->DR;
-//     }
-//     return 0;
-// }
+void hal_i2c_write(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr, uint8_t *bytes, size_t n_bytes) {
+    // Generate START condition
+    SET_BIT(I2C->CR1, I2C_CR1_START);
+    SET_BIT(I2C->CR1, I2C_CR1_ACK);
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB));
+    // while (!(I2C->SR1 & I2C_SR1_SB));  // Wait for START condition generated
 
-uint8_t hal_i2c_read(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr) {
-    uint32_t reg;
-    // Send START and device address (write)
-    SET_BIT(I2C->CR1, I2C_CR1_START | I2C_CR1_ACK);
-    while (!(I2C->SR1 & I2C_SR1_SB));
-    I2C->DR = dev_addr & ~0x01;  // Write mode
-    while (!(I2C->SR1 & I2C_SR1_ADDR));
-    reg = I2C->SR1 | I2C->SR2;
+    // Send device address (write)
+    I2C->DR = dev_addr & ~0x01;  // Ensure LSB = 0 for write
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR));
+    // while (!(I2C->SR1 & I2C_SR1_ADDR));  // Wait for address to be sent
+
+    (void)I2C->SR2;  // Clear ADDR by reading SR1 and SR2
 
     // Send register address
-    while (!(I2C->SR1 & I2C_SR1_TXE));
+    // while (!(I2C->SR1 & I2C_SR1_TXE));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
     I2C->DR = reg_addr;
-    while (!(I2C->SR1 & I2C_SR1_BTF));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
+    // while (!(I2C->SR1 & I2C_SR1_TXE));
 
-    // Repeated START and device address (read)
-    SET_BIT(I2C->CR1, I2C_CR1_START);
-    while (!(I2C->SR1 & I2C_SR1_SB));
-    I2C->DR = dev_addr | 0x01;  // Read mode
-    while (!(I2C->SR1 & I2C_SR1_ADDR));
-    reg = I2C->SR1 | I2C->SR2;
-    CLEAR_BIT(I2C->CR1, I2C_CR1_ACK);  // Only reading 1 byte
+    // Send data
+    for(size_t i = 0; i < n_bytes; i++){
+        I2C->DR = bytes[i];
+        WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    }
 
-    // Stop condition
+    // Generate STOP condition
     SET_BIT(I2C->CR1, I2C_CR1_STOP);
-
-    // Wait for data
-    while (!(I2C->SR1 & I2C_SR1_RXNE));
-    return I2C->DR;
 }
 
-#define TCS34725_ADDRESS      0x39 << 1  // 7-bit address shifted left
-#define TCS34725_COMMAND_BIT  0x80
-#define TCS34725_ENABLE       0x00
-#define TCS34725_ENABLE_PON   0x01
-#define TCS34725_ENABLE_AEN   0x02
-#define TCS34725_ATIME        0x01  // Integration time
-#define TCS34725_CONTROL      0x0F  // Gain
 
-void tcs34725_init(I2C_TypeDef *I2C) {
-    // Power ON
-    hal_i2c_write(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | TCS34725_ENABLE, TCS34725_ENABLE_PON);
-    vTaskDelay(3); // Wait for power-on
-    // Enable ADC
-    hal_i2c_write(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | TCS34725_ENABLE, TCS34725_ENABLE_PON | TCS34725_ENABLE_AEN);
-    // Set integration time (e.g. 0xD5 = 101 ms)
-    hal_i2c_write(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | TCS34725_ATIME, 0xD5);
-    // Set gain (1x gain)
-    hal_i2c_write(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | TCS34725_CONTROL, 0x00);
+
+uint32_t hal_i2c_read(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr, uint8_t *bytes, size_t n_bytes) {
+    volatile uint32_t status;
+    
+    // 1. Send START and device address (write)
+    SET_BIT(I2C->CR1, I2C_CR1_START);
+    // Wait for START generated
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB)); 
+    
+    // Write to device address
+    I2C->DR = dev_addr & ~0x01; 
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR)); 
+    status = I2C->SR1 | I2C->SR2;
+    
+    // 2. Send register address
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
+    I2C->DR = reg_addr;
+    // Wait for completion
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    
+    // 3. Repeated START and switch to read
+    SET_BIT(I2C->CR1, I2C_CR1_START);
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB));
+    
+    // Read from the device address
+    I2C->DR = dev_addr | 0x01;
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR));
+    status = I2C->SR1 | I2C->SR2;
+    
+    // Setup for multiread
+    SET_BIT(I2C->CR1, I2C_CR1_ACK);
+    // Ensure the bus is clocked by the i2c master
+    SET_BIT(I2C->CR1, I2C_CR1_POS);
+    
+    // 5. Read data and STOP
+    for(size_t i = 0; i < n_bytes; i++){
+        if((i + 1) >= n_bytes){
+            SET_BIT(I2C->CR1, I2C_CR1_STOP);
+            CLEAR_BIT(I2C->CR1, I2C_CR1_ACK);
+        }
+        else if((i + 2) >= n_bytes)
+            CLEAR_BIT(I2C->CR1, I2C_CR1_POS);
+
+        // Wait for data
+        WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_RXNE)); 
+        bytes[i] = (uint8_t)I2C->DR;
+    }
+    return status;
 }
 
-uint16_t read_word(I2C_TypeDef *I2C, uint8_t reg) {
-    uint8_t low = hal_i2c_read(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | reg);
-    uint8_t high = hal_i2c_read(I2C, TCS34725_ADDRESS, TCS34725_COMMAND_BIT | (reg + 1));
-    return ((uint16_t)high << 8) | low;
-}
-
-void tcs34725_read_rgb(I2C_TypeDef *I2C, uint16_t *r, uint16_t *g, uint16_t *b) {
-    *r = read_word(I2C, 0x16);  // Red
-    *g = read_word(I2C, 0x18);  // Green
-    *b = read_word(I2C, 0x1A);  // Blue
+uint8_t hal_i2c_read_byte(I2C_TypeDef *I2C, uint8_t dev_addr, uint8_t reg_addr) {
+    volatile uint32_t status;
+    uint8_t data;
+    
+    // 1. Send START and device address (write)
+    SET_BIT(I2C->CR1, I2C_CR1_START);
+    // Wait for START generated
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB)); 
+    
+    // Write to device address
+    I2C->DR = dev_addr & ~0x01; 
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR)); 
+    status = I2C->SR1 | I2C->SR2;
+    
+    // 2. Send register address
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_TXE));
+    I2C->DR = reg_addr;
+    // Wait for completion
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_BTF));
+    
+    // 3. Repeated START and switch to read
+    SET_BIT(I2C->CR1, I2C_CR1_START);
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_SB));
+    
+    // Read from the device address
+    I2C->DR = dev_addr | 0x01;
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_ADDR));
+    status = I2C->SR1 | I2C->SR2;
+    
+    // Setup for read
+    CLEAR_BIT(I2C->CR1, I2C_CR1_ACK);
+    // Ensure the bus is clocked by the i2c master
+    SET_BIT(I2C->CR1, I2C_CR1_POS);
+    
+    // 5. Read data and STOP
+    WAIT_FOR(I2C_TIMEOUT, !(I2C->SR1 & I2C_SR1_RXNE)); 
+    data = (uint8_t)I2C->DR;
+    SET_BIT(I2C->CR1, I2C_CR1_STOP);
+    return data;
 }
 
 
@@ -266,24 +327,30 @@ void vTskUSB(void *pvParams){
     gpio_write(PIN_LED1, true);
     gpio_write(PIN_LED2, false);
     hal_i2c_init(I2C1);
-    tcs34725_init(I2C1);
+    uint8_t count = 0;
+    // tcs34725_init(I2C1);
+    uint8_t read[4];
     for(;;){
+        hal_i2c_write(I2C1, 0x08 << 1, 0x00, read, 4);
+        hal_i2c_read(I2C1, 0x08 << 1, 0x05, read, 4);
+        // read[0] = hal_i2c_read_byte(I2C1, 0x08 << 1, 0x03);
+        count++;
         // Enable sensor: power on and enable RGBC
         // hal_i2c_write(I2C1, 0x52, 0x80 | 0x00, 0x03);  // 0x00 = ENABLE register, 0x03 = PON | AEN
-        // systime_fromTicks(xTaskGetTickCount(), &time);
-        // int stlen = strlen(time.str);
+        systime_fromTicks(xTaskGetTickCount(), &time);
+        int stlen = strlen(time.str);
         // memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         gpio_toggle_pin(PIN_LED1);
         gpio_toggle_pin(PIN_LED2);
-        // pyld_info.status.code = ePayloadOK;
-        // size_t code_len = UDEV_ERROR_LEN;
-        // if(SYSTIME_STR_LEN < UDEV_ERROR_LEN) code_len = SYSTIME_STR_LEN;
-        // memcpy((void*)pyld_info.status.msg, time.str, code_len);
-        uint16_t temp[3];
-        tcs34725_read_rgb(I2C1, temp, temp + 1, temp + 2);
+        pyld_info.status.code = ePayloadOK;
+        size_t code_len = UDEV_ERROR_LEN;
+        if(SYSTIME_STR_LEN < UDEV_ERROR_LEN) code_len = SYSTIME_STR_LEN;
+        memcpy((void*)pyld_info.status.msg, time.str, code_len);
+        // uint16_t temp[3];
+        // tcs34725_read_rgb(I2C1, temp, temp + 1, temp + 2);
         // hal_i2c_read(I2C1, 0x52, 0x94 | 0x80, (void*)&temp, 2);
-        sprintf((void*)vcom_txBuf, "%d, %d, %d\n", temp[0], temp[1], temp[2]);
-        vTaskDelay(100);
+        sprintf((void*)vcom_txBuf, "I2C RX: %d %d %d %d\n", read[0], read[1], read[2], read[3]);
+        vTaskDelay(1000);
     }
 }
 

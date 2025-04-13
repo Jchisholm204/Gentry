@@ -45,7 +45,6 @@ static inline void gpio_set_mode(uint16_t pin, enum GPIO_MODE_IO mode) {
     SET_BIT(RCC->AHB1ENR, (uint32_t)(1UL << PINBANK(pin)));       // Enable GPIO clock
     gpio->MODER &= (uint32_t)~(3U << (n*2));
     gpio->MODER |= (uint32_t)((mode & 3U) << (n * 2));   // Set new mode
-
 }
 
 /**
@@ -66,6 +65,21 @@ static inline void gpio_set_speed(pin_t pin, enum GPIO_SPEED speed){
     int n = PINNO(pin);
     gpio->OSPEEDR &= (uint32_t)~(0x3UL << ((n & 7) << 1));
     gpio->OSPEEDR |= (uint32_t)~(speed << ((n & 7) << 1));
+}
+
+/**
+ * @brief Set GPIO output type to open-drain or push-pull
+ * @param pin PIN(bank, number)
+ * @param od true for open-drain, false for push-pull
+ */
+static inline void gpio_set_od(uint16_t pin, bool od) {
+    GPIO_TypeDef *gpio = GPIO(PINBANK(pin));
+    int n = PINNO(pin);
+    if (od) {
+        gpio->OTYPER |= (1U << n);   // Set open-drain
+    } else {
+        gpio->OTYPER &= ~(1U << n); // Set push-pull
+    }
 }
 
 /**
