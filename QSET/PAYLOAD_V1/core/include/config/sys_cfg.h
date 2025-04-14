@@ -49,7 +49,7 @@
 #define configUSE_ADC3 0
 
 #define configUSE_I2C1 1
-#define configUSE_I2C2 0
+#define configUSE_I2C2 1
 #define configUSE_I2C3 0
 
 

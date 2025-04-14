@@ -41,6 +41,11 @@ typedef struct _I2CDev {
     uint8_t addr;
 } I2CDev_t;
 
+static inline void i2cDev_init(I2CDev_t *pDev, I2C_t I2C, uint8_t addr){
+    pDev->pI2C = I2C;
+    pDev->addr = (uint8_t)(addr << 1U);
+}
+
 /**
  * @brief Initialize an I2C Interface - Called in Init
  *

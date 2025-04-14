@@ -34,6 +34,7 @@
 #include "servo_ctrl.h"
 #include "light_ctrl.h"
 #include "motor_ctrl.h"
+#include "drivers/MCP4017.h"
 
 #include "adc_tsk.h"
 
@@ -136,20 +137,25 @@ void vTskUSB(void *pvParams){
     gpio_write(PIN_LED2, false);
     // hal_i2c_init(I2C1, PIN_I2C1_SCL, PIN_I2C1_SDA);
     i2c_init(I2CBus1, PIN_I2C1_SDA, PIN_I2C1_SCL);
+    i2c_init(I2CBus2, PIN_I2C2_SDA, PIN_I2C2_SCL);
     uint8_t count = 0;
     // tcs34725_init(I2C1);
     uint8_t read[4];
-    I2CDev_t dev = {
-        .addr = 0x08 << 1,
-        .pI2C = I2CBus1
-    };
+    I2CDev_t dev = {0};
+    i2cDev_init(&dev, I2CBus1, 0x08);
+    lightCtrl_setState(eLight9);
     for(;;){
+        lightCtrl_setState(eLight9);
         // hal_i2c_write(I2C1, 0x08 << 1, 0x00, read, 4);
         // hal_i2c_read(I2C1, 0x08 << 1, 0x05, read, 4);
         i2c_read(&dev, 0x00, read, 4, 1000);
         i2c_write(&dev, 0x00, read, 4, 1000);
         // read[0] = hal_i2c_read_byte(I2C1, 0x08 << 1, 0x03);
-        count++;
+        count+= 10;
+        if(count >= (0x7F)) count = 0;
+        // mcp4017_init(I2CBus2);
+        mcp4017_write(I2CBus2, count);
+        // mcp4017_write(I2CBus2, 0xFF);
         // Enable sensor: power on and enable RGBC
         // hal_i2c_write(I2C1, 0x52, 0x80 | 0x00, 0x03);  // 0x00 = ENABLE register, 0x03 = PON | AEN
         systime_fromTicks(xTaskGetTickCount(), &time);
