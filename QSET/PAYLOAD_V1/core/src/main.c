@@ -45,6 +45,7 @@ usbd_device udev;
 uint32_t usb0_buf[CDC_EP0_SIZE]; // EP0 Buffer
 // USB Payload Interface Buffers
 static volatile struct udev_pkt_ctrl pyld_ctrl;
+static volatile float light_power = 0;
 static volatile struct udev_pkt_info  pyld_info;
 // USB VCOM Interfaces
 static volatile char vcom_txBuf[VCOM_DATA_SZ];
@@ -86,6 +87,9 @@ void Init(void){
     // Initialize CAN
     // can_init(&CANBus1, CAN_1000KBPS, PIN_CAN1_RX, PIN_CAN1_TX);
     // can_init(&CANBus2, CAN_1000KBPS, PIN_CAN2_RX, PIN_CAN2_TX);
+    // Initialize I2C
+    i2c_init(I2CBus1, PIN_I2C1_SDA, PIN_I2C1_SCL);
+    i2c_init(I2CBus2, PIN_I2C2_SDA, PIN_I2C2_SCL);
 
     // Initialize ADC
     adc_init(&pyld_info.adc_info);
@@ -135,32 +139,27 @@ void vTskUSB(void *pvParams){
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     gpio_write(PIN_LED1, true);
     gpio_write(PIN_LED2, false);
-    // hal_i2c_init(I2C1, PIN_I2C1_SCL, PIN_I2C1_SDA);
-    i2c_init(I2CBus1, PIN_I2C1_SDA, PIN_I2C1_SCL);
-    i2c_init(I2CBus2, PIN_I2C2_SDA, PIN_I2C2_SCL);
     uint8_t count = 0;
-    // tcs34725_init(I2C1);
     uint8_t read[4];
     I2CDev_t dev = {0};
     i2cDev_init(&dev, I2CBus1, 0x08);
-    lightCtrl_setState(eLight9);
     for(;;){
-        lightCtrl_setState(eLight9);
         // hal_i2c_write(I2C1, 0x08 << 1, 0x00, read, 4);
         // hal_i2c_read(I2C1, 0x08 << 1, 0x05, read, 4);
-        i2c_read(&dev, 0x00, read, 4, 1000);
-        i2c_write(&dev, 0x00, read, 4, 1000);
+        // i2c_read(&dev, 0x00, read, 4, 1000);
+        // read[3] = 0x00;
+        // i2c_write(&dev, 0x00, read, 4, 1000);
+        lightCtrl_setPower(light_power);
         // read[0] = hal_i2c_read_byte(I2C1, 0x08 << 1, 0x03);
-        count+= 10;
-        if(count >= (0x7F)) count = 0;
+        // count+= 10;
+        // if(count >= (0x7F)) count = 0;
         // mcp4017_init(I2CBus2);
-        mcp4017_write(I2CBus2, count);
         // mcp4017_write(I2CBus2, 0xFF);
         // Enable sensor: power on and enable RGBC
         // hal_i2c_write(I2C1, 0x52, 0x80 | 0x00, 0x03);  // 0x00 = ENABLE register, 0x03 = PON | AEN
         systime_fromTicks(xTaskGetTickCount(), &time);
         int stlen = strlen(time.str);
-        // memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
+        memcpy((void*)vcom_txBuf, time.str, SYSTIME_STR_LEN);
         gpio_toggle_pin(PIN_LED1);
         gpio_toggle_pin(PIN_LED2);
         pyld_info.status.code = ePayloadOK;
@@ -170,8 +169,8 @@ void vTskUSB(void *pvParams){
         // uint16_t temp[3];
         // tcs34725_read_rgb(I2C1, temp, temp + 1, temp + 2);
         // hal_i2c_read(I2C1, 0x52, 0x94 | 0x80, (void*)&temp, 2);
-        sprintf((void*)vcom_txBuf, "I2C RX: %d %d %d %d\n", read[0], read[1], read[2], read[3]);
-        vTaskDelay(1000);
+        // sprintf((void*)vcom_txBuf, "I2C RX: %d %d %d %d\n", read[0], read[1], read[2], read[3]);
+        vTaskDelay(100);
     }
 }
 
@@ -188,6 +187,8 @@ static void pyld_rx(usbd_device *dev, uint8_t evt, uint8_t ep){
             break;
         case ePktLightCtrl:
             lightCtrl_setState(pyld_ctrl.lightCtrl.eLightChannel);
+            light_power = pyld_ctrl.lightCtrl.percent_power;
+            // lightCtrl_setPower(pyld_ctrl.lightCtrl.percent_power);
             break;
         case ePktServoCtrl:
             servoCtrl_set(pyld_ctrl.servoCtrl.ePWMChannel, pyld_ctrl.servoCtrl.value);

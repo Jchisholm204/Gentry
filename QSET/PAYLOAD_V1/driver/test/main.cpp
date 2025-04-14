@@ -26,6 +26,7 @@ int main(void){
     }
     std::cout << "Connected to Board: Success!!\n";
     int dir = 1;
+    float light_pow = 0;
     for(;;){
         if(!pcb.is_active(true, false)){
             std::cout << "Connection Lost: Reconnecting to Board\n";
@@ -33,6 +34,9 @@ int main(void){
             continue;
         }
         pcb.set_motor(eMotor1, 127); 
+        pcb.set_light(eLight1, light_pow);
+        light_pow += 10;
+        if(light_pow >= 100) light_pow = 0;
         switch(dir){
             case -1:
                 dir = 0;
@@ -51,7 +55,7 @@ int main(void){
         if(msg.find("\n") != std::string::npos)
             msg.erase(msg.find("\n"), 1);
         // std::cout << msg << ": Status = " << pcb.statusString[s].c_str() << dir << "\n";
-        std::cout << "ADC Voltage = " << pcb.get_ADC() <<  " Temp = " << pcb.get_intTemp() << std::endl;
+        std::cout << "ADC Voltage = " << pcb.get_ADC() <<  " light %= " << light_pow << std::endl;
         sleep(1);
     }
 

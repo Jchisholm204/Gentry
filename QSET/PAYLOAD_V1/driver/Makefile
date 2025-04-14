@@ -15,5 +15,8 @@ cmake: ${BUILD_DIR}/Makefile
 build: cmake
 	$(MAKE) -C ${BUILD_DIR} --no-print-directory -j4
 
+run: build
+	./build/QSET_USB_DRIVER
+
 clean:
 	rm -r build

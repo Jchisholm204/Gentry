@@ -18,13 +18,13 @@
 #include "drivers/i2c.h"
 
 #define MCP4017_I2C_ADDR 0x2F
-#define MCP4017_RESET 0x03
-#define MCP4017_WRITE 0x02
+#define MCP4017_WIPER_MAX 0x7F
+#define MCP4017_WIPER_MIN 0x00
 
-static inline void mcp4017_write(I2C_t I2CBus, uint8_t value){
+static inline void mcp4017_write(I2C_t I2CBus, uint8_t value, TickType_t timeout){
     I2CDev_t dev = {0};
     i2cDev_init(&dev, I2CBus, MCP4017_I2C_ADDR);
-    i2c_write(&dev, value, &value, 1, 100);
+    i2c_write(&dev, value, &value, 1, timeout);
 }
 
 #endif
