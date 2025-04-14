@@ -2,8 +2,9 @@
  * @file sys_cfg.h
  * @author Jacob Chisholm (https://Jchisholm204.github.io)
  * @brief System Configuration File
- * @version 0.1
+ * @version 0.2
  * @date 2024-10-09
+ * @modified Last Modified: 2025-04-13
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -14,8 +15,12 @@
  * 
  */
 
-#ifndef _SYS_CFG_H
-#define _SYS_CFG_H
+#ifndef _SYS_CFG_H_
+#define _SYS_CFG_H_
+
+#ifndef _SYS_CFG_VER
+#define _SYS_CFG_VER 2
+#endif
 
 #ifndef STM32F446xx
 #define STM32F446xx
@@ -38,10 +43,15 @@
 #define configUSE_CAN1 1
 #define configUSE_CAN2 0
 
-// Analog to Digital Converters
+// Analog to Digital Converters (LEGACY)
 #define configUSE_ADC1 0
 #define configUSE_ADC2 0
 #define configUSE_ADC3 0
+
+#define configUSE_I2C1 1
+#define configUSE_I2C2 0
+#define configUSE_I2C3 0
+
 
 
 #endif

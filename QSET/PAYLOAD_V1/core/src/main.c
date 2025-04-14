@@ -21,6 +21,7 @@
 #include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
+#include "drivers/i2c.h"
 #include "systime.h"
 
 // USB Device Includes
@@ -133,13 +134,20 @@ void vTskUSB(void *pvParams){
     gpio_set_mode(PIN_LED2, GPIO_MODE_OUTPUT);
     gpio_write(PIN_LED1, true);
     gpio_write(PIN_LED2, false);
-    hal_i2c_init(I2C1, PIN_I2C1_SCL, PIN_I2C1_SDA);
+    // hal_i2c_init(I2C1, PIN_I2C1_SCL, PIN_I2C1_SDA);
+    i2c_init(I2CBus1, PIN_I2C1_SDA, PIN_I2C1_SCL);
     uint8_t count = 0;
     // tcs34725_init(I2C1);
     uint8_t read[4];
+    I2CDev_t dev = {
+        .addr = 0x08 << 1,
+        .pI2C = I2CBus1
+    };
     for(;;){
-        hal_i2c_write(I2C1, 0x08 << 1, 0x00, read, 4);
-        hal_i2c_read(I2C1, 0x08 << 1, 0x05, read, 4);
+        // hal_i2c_write(I2C1, 0x08 << 1, 0x00, read, 4);
+        // hal_i2c_read(I2C1, 0x08 << 1, 0x05, read, 4);
+        i2c_read(&dev, 0x00, read, 4, 1000);
+        i2c_write(&dev, 0x00, read, 4, 1000);
         // read[0] = hal_i2c_read_byte(I2C1, 0x08 << 1, 0x03);
         count++;
         // Enable sensor: power on and enable RGBC
