@@ -31,10 +31,10 @@
 #include "usb_desc.h"
 
 #include "test_tsks.h"
-#include "servo_ctrl.h"
-#include "light_ctrl.h"
-#include "motor_ctrl.h"
-#include "drivers/MCP4017.h"
+#include "controllers/servo_ctrl.h"
+#include "controllers/light_ctrl.h"
+#include "controllers/motor_ctrl.h"
+#include "devices/MCP4017.h"
 
 #include "adc_tsk.h"
 

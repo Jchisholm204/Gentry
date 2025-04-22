@@ -43,8 +43,8 @@
 #define PIN_USART2_RX PIN('A', 3)
 
 // The following are tied to both Stepper Motors
-#define PIN_STEP      PIN('A', 3)   
-#define PIN_DIR       PIN('A', 3)
+#define PIN_STEP      PIN('C', 4)   // NOT ON A TIMER PIN
+#define PIN_DIR       PIN('C', 5)
 #define PIN_SM_EN     PIN('C', 8)   // Active High
 #define PIN_MS1       PIN('B', 12)  // Used for setting step resolution
 #define PIN_MS2       PIN('C', 15)

@@ -16,7 +16,7 @@
 #include "pin_cfg.h"
 #include "usb_payload_defs.h"
 #include "hal/hal_gpio.h"
-#include "drivers/MCP4017.h"
+#include "devices/MCP4017.h"
 
 static void lightCtrl_init(void){
     gpio_set_mode(PIN_LS0, GPIO_MODE_OUTPUT);
