@@ -3,7 +3,8 @@
  * @author Jacob Chisholm (https://Jchisholm204.github.io)
  * @brief TMC2208 Stepper Motor Drivers
  * @version 0.1
- * @date 2025-04-03
+ * @date Created: 2025-04-03
+ * @modified Last Modified: 2025-04-22
  * 
  * @copyright Copyright (c) 2024
  * 
@@ -27,7 +28,16 @@ typedef struct _TMC2208_ {
     StaticStreamBuffer_t buffer_stic;
     struct _TMC2208_ *pMaster;
     struct _TMC2208_ *pSlave;
+    bool vsense;
 } TMC2208_t;
+
+struct tmc2208_datagram {
+    uint8_t sync;
+    uint8_t slave_addr;
+    uint8_t reg_addr;
+    uint32_t data;
+    uint8_t crc;
+};
 
 /**
  * @brief Initialize a TMC2208 Stepper Driver
@@ -38,7 +48,7 @@ typedef struct _TMC2208_ {
  * @param pin_step TMC2208 Step pin (Must be on timer interface)
  * @return 
  */
-extern eTMC2208Error tmc2208_init(TMC2208_t *pDev, Serial_t *pSerial, pin_t pin_dir, pin_t pin_step);
+extern eTMC2208Error tmc2208_init(TMC2208_t *pDev, Serial_t *pSerial);
 
 
 /**
@@ -49,7 +59,7 @@ extern eTMC2208Error tmc2208_init(TMC2208_t *pDev, Serial_t *pSerial, pin_t pin_
  * @param pSerial Serial Interface for the slave device or NULL if none
  * @return 
  */
-extern eTMC2208Error tmc2208_initChain(TMC2208_t *pMaster, TMC2208_t *pSlave, Serial_t *pSerial);
+extern eTMC2208Error tmc2208_initChain(TMC2208_t * const pMaster, TMC2208_t * const pSlave, Serial_t *pSerial);
 
 /**
  * @brief Move the Stepper motor

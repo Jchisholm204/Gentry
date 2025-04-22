@@ -16,13 +16,13 @@
 #include "FreeRTOS.h"
 #include "config/FreeRTOSConfig.h"
 #include "task.h"
-#include "hal/hal_i2c.h"
 #include "drivers/serial.h"
 #include "drivers/canbus.h"
 #include "config/pin_cfg.h"
 #include "hal/hal_usb.h"
 #include "drivers/i2c.h"
 #include "systime.h"
+#include "devices/TMC2208.h"
 
 // USB Device Includes
 #include "usb_payload_defs.h"
@@ -30,11 +30,9 @@
 #include "drivers/stusb/usb.h"
 #include "usb_desc.h"
 
-#include "test_tsks.h"
 #include "controllers/servo_ctrl.h"
 #include "controllers/light_ctrl.h"
 #include "controllers/motor_ctrl.h"
-#include "devices/MCP4017.h"
 
 #include "adc_tsk.h"
 
